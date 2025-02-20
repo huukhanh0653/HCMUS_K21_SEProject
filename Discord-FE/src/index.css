@@ -32,6 +32,19 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+
+   /* Purple-Black Gradient Background */
+   background: linear-gradient(135deg, #5865F2, #23272A);
+  
+   /* Make sure it covers the entire viewport */
+   min-height: 100vh;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+ 
+   /* Optional: Smooth transition */
+   transition: background 0.3s ease-in-out;
 }
 
 h1 {
