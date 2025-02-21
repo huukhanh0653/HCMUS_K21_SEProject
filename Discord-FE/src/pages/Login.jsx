@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc'; 
 import { FaFacebook } from 'react-icons/fa'; 
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useTheme } from '../context/ThemeContext';
 
 const Login = () => {
+  const { isDarkMode } = useTheme();
 
   const [email, setemail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -44,10 +49,18 @@ const Login = () => {
   return (
   <main className="bg-primary text-tertiary">
     <section className='max_padd_container flexCenter flex-col pt-32'>
-      <div className='w-[555px] h-[500px] bg-white m-auto px-14 py-10 rounded-md'>
-        <h3 className='h3 font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 via-blue-500 to-green-400'>
+      <div className={`w-[555px] h-[550px] m-auto px-14 py-10 rounded-md ${isDarkMode 
+        ? "bg-gray-500" 
+        : "bg-white "}`}
+      >
+        <h2 
+          className={`h2 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${isDarkMode 
+            ? "from-red-400 via-white-500 to-yellow-400" 
+            : "from-purple-700 via-blue-500 to-green-400"}
+          `}
+        >
           Đăng nhập
-        </h3>
+        </h2>
         <form onSubmit={handleLogin} className='flex flex-col gap-4 mt-7 items-center'>
           <input 
             type="text" 
@@ -56,12 +69,26 @@ const Login = () => {
             value={email} onChange={(e) => setemail(e.target.value)}
           />
 
-          <input 
-            type="password" 
-            placeholder='Mật khẩu' 
-            className='h-14 w-full pl-5 bg-slate-900/5 outline-none rounded-xl border border-gray-200' 
-            value={password} onChange={(e) => setPassword(e.target.value)} 
-          />
+          <div className="relative w-full">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              placeholder='Mật khẩu' 
+              className='h-14 w-full pl-5 pr-12 bg-slate-900/5 outline-none rounded-xl border border-gray-200' 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+            />
+            <button 
+              type="button" 
+              className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-transparent p-1 border-none focus:outline-none ${isDarkMode 
+                ? "text-white" 
+                : "text-gray-500"}
+              `}
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEye /> : <FaEyeSlash />}
+            </button>
+          </div>
+
 
           <button 
             type="submit" 
@@ -93,7 +120,12 @@ const Login = () => {
         </form>
         {/* Quên mật khẩu */}
         <div className="flex justify-end">
-          <Link to="/forgot-password" className="text-sm text-blue-500 hover:underline">
+          <Link to="/forgot-password" 
+            className={`text-sm hover:underline" ${isDarkMode 
+              ? "text-white hover:text-black" 
+              : "text-red-500 hover:text-red-900"}
+            `}
+          >
             Quên mật khẩu?
           </Link>
         </div>

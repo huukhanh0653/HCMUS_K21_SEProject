@@ -4,9 +4,6 @@
     title: "Learn More",
     links: [
       "About Us",
-      "Categories",
-      "Exchange Policy",
-      "Order Now",
       "FAQ",
       "Privacy Policy",
     ],

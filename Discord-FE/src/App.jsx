@@ -1,6 +1,7 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Footer from './components/Footer';
 
 function App() {
@@ -22,6 +23,16 @@ function App() {
           element={
             <>
               <Login />
+              <Footer />
+            </>
+          }
+        />
+
+        <Route
+          path="/signup"
+          element={
+            <>
+              <Signup />
               <Footer />
             </>
           }
