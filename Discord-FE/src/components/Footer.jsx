@@ -4,10 +4,15 @@ import FOOTER_LINKS from "../assets/footer_links"
 import FOOTER_CONTACT_INFO from "../assets/footer_contact"
 import SOCIALS from "../assets/socials"
 import { useTheme } from "../context/ThemeContext";
-import { FaMoon, FaSun } from "react-icons/fa";
+import { FaMoon, FaSun, FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
 
 
 const Footer = () => {
+  const socialIcons = [
+    { icon: FaFacebook, url: "/" },
+    { icon: FaTwitter, url: "/" },
+    { icon: FaInstagram, url: "/" },
+  ];
   const { isDarkMode, toggleTheme } = useTheme();
 
   return (
@@ -43,9 +48,11 @@ const Footer = () => {
               <div className='flex'>
                 <FooterColumn>
                   <ul className='flex gap-4'>
-                    {SOCIALS.links.map((link) => (
-                      <Link to="/" key={link}><img src={link} alt="socialIcons" height={22} width={22} /></Link>
-                    ))}
+                  {socialIcons.map(({ icon: Icon, url }, index) => (
+                    <Link to={url} key={index}>
+                      <Icon size={22} color={isDarkMode ? "white" : "black"} />
+                    </Link>
+                  ))}
                   </ul>
                 </FooterColumn>
               </div>

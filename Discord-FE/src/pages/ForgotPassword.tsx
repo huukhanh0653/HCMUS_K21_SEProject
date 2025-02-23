@@ -130,13 +130,13 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-6">
       <div className={`max-w-2xl w-full p-8 rounded-xl shadow-xl ${isDarkMode 
-        ? "bg-gradient-to-r from-white to-gray-500" 
-        : "bg-gradient-to-r from-blue-500 to-teal-500"
+        ? "bg-gray-500" 
+        : "bg-white "
       }`}>
-        <h1 className={`text-3xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r ${isDarkMode
-            ? "from-black via-red-900 to-red-800"
-            : "from-white via-red-500 to-yellow-400"
-            }`}>
+        <h1 className={`h2 text-xl font-bold   bg-clip-text text-transparent bg-gradient-to-r ${isDarkMode 
+            ? "from-red-800 via-gray-200 to-yellow-800" 
+            : "from-indigo-800 via-indigo-700 to-indigo-600"}
+          `}>
           Forgot Password
         </h1>
         {step === 'email' ? (
@@ -178,10 +178,7 @@ const ForgotPassword = () => {
               <button
                 type="button"
                 onClick={handleClearCode}
-                className={`py-2 text-sm rounded-lg transition duration-300 focus:outline-none ${isDarkMode
-                  ? "text-white bg-blue-400 hover:bg-black-100"
-                  : "text-indigo-600 hover:bg-indigo-100"
-                  }`}
+                className="py-2 text-sm rounded-lg transition duration-300 focus:outline-none bg-indigo-600 text-white hover:bg-indigo-100"
               >
                 Clear All
               </button>
