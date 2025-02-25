@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc'; 
 import { FaFacebook } from 'react-icons/fa'; 
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const Login = () => {
   const { isDarkMode } = useTheme();
@@ -15,8 +15,23 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (!email || !validateEmail(email)) {
+      setErrorMessage('Email không hợp lệ');
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage('Mật khẩu không được để trống');
+      return;
+    }
 
     try {
       const response = await fetch('http://localhost:5000/login', {
@@ -49,7 +64,7 @@ const Login = () => {
   return (
   <main className="bg-primary text-tertiary">
     <section className='max_padd_container flexCenter flex-col pt-32'>
-      <div className={`w-[555px] h-[550px] m-auto px-14 py-10 rounded-md ${isDarkMode 
+      <div className={`w-[555px] h-[580px] m-auto px-14 py-10 rounded-md ${isDarkMode 
         ? "bg-gray-500" 
         : "bg-white "}`}
       >

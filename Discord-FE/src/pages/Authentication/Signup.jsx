@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Signup = () => {
@@ -15,8 +15,33 @@ const Signup = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const validatePhone = (phone) => {
+    const re = /^[0-9]+$/;
+    return re.test(String(phone));
+  };
+
   const handleSignup = async (e) => {
     e.preventDefault();
+
+    if (!email || !validateEmail(email)) {
+      setErrorMessage('Email không hợp lệ');
+      return;
+    }
+
+    if (!phone || !validatePhone(phone)) {
+      setErrorMessage('Số điện thoại không hợp lệ');
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage('Mật khẩu không được để trống');
+      return;
+    }
 
     try {
       const response = await fetch('http://localhost:5000/signup', {

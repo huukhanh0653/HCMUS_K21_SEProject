@@ -1,14 +1,9 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import ForgotPassword from './pages/ForgotPassword';
+import Login from './pages/Authentication/Login';
+import Signup from './pages/Authentication/Signup';
+import ForgotPassword from './pages/Authentication/ForgotPassword';
 import Footer from './components/Footer';
-
-
-import AdminLayout from './admin/layout/AdminLayout';
-import AdminDashboard from './admin/pages/Dashboard/Dashboard';
-import UsersManagement from './admin/pages/Users_Management/UsersManagement';
 
 function App() {
   return (
@@ -53,12 +48,6 @@ function App() {
             </>
           }
         />
-
-        {/* Admin Routes */}
-        <Route path="/">
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="users-management" element={<UsersManagement />} />
-        </Route>
       </Routes>
     </BrowserRouter>
   );
