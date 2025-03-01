@@ -17,7 +17,7 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let timer: NodeJS.Timeout | undefined;
+    let timer;
     if (isCountdownActive && countdown > 0) {
       timer = setInterval(() => {
         setCountdown((prev) => prev - 1);
@@ -31,7 +31,7 @@ const ForgotPassword = () => {
     };
   }, [isCountdownActive, countdown]);
 
-  const handleEmailSubmit = async (e: any) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post(`http://localhost:4000/user/forgot-password`, { email });
@@ -41,13 +41,13 @@ const ForgotPassword = () => {
         setIsCountdownActive(true); // Start countdown
         setCountdown(60); // Reset countdown
       }*/
-    } catch (error: any) {
+    } catch (error) {
       setStep('code');
       //setMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
     }
   };
 
-  const handleCodeChange = (e: any, index: number) => {
+  const handleCodeChange = (e, index) => {
     const newCode = [...code];
     newCode[index] = e.target.value.slice(0, 1); // Limit to one character
     setCode(newCode);
@@ -56,12 +56,12 @@ const ForgotPassword = () => {
     if (e.target.value !== '' && index < 8) {
       const nextInput = document.getElementById(`code-input-${index + 1}`);
       if (nextInput) {
-        (nextInput as HTMLInputElement).focus();
+        nextInput.focus();
       }
     }
   };
 
-  const handleCodeSubmit = async (e: any) => {
+  const handleCodeSubmit = async (e) => {
     e.preventDefault();
     const codeInput = code.join('');
     try {
@@ -71,7 +71,7 @@ const ForgotPassword = () => {
       /*if (response.status === 200) {
         setStep('password'); // Move to password input step
       }*/
-    } catch (error: any) {
+    } catch (error) {
       setMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
     }
   };
@@ -87,15 +87,15 @@ const ForgotPassword = () => {
     try {
       const response = await axios.post(`http://localhost:4000/user/forgot-password`, { email });
       setMessage(response.data.message);
-    } catch (error: any) {
+    } catch (error) {
       setMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
     }
   };
 
-  const handlePasswordSubmit = async (e: any) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    const newPassword = e.target[0].value; // Lấy mật khẩu mới từ input
-    const confirmPassword = e.target[1].value; // Lấy mật khẩu xác nhận từ input
+    const newPassword = e.target[0].value; // Get new password from input
+    const confirmPassword = e.target[1].value; // Get confirm password from input
 
     if (newPassword !== confirmPassword) {
       setMessage('Passwords do not match.');
@@ -103,7 +103,7 @@ const ForgotPassword = () => {
     }
 
     try {
-      // Gửi yêu cầu API để reset mật khẩu
+      // Send API request to reset password
       const response = await axios.post(`http://localhost:4000/user/reset-password`, {
         email,
         newPassword,
@@ -121,7 +121,7 @@ const ForgotPassword = () => {
         });
         navigate("/auth");
       }
-    } catch (error: any) {
+    } catch (error) {
       setMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
     }
   };

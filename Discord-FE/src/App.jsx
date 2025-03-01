@@ -5,6 +5,8 @@ import Signup from './pages/Authentication/Signup';
 import ForgotPassword from './pages/Authentication/ForgotPassword';
 import Footer from './components/Footer';
 
+import AdminLogin from './pages/Authentication/AdminLogin';
+
 function App() {
   return (
     <BrowserRouter>
@@ -45,6 +47,16 @@ function App() {
             <>
               <ForgotPassword />
               <Footer />
+            </>
+          }
+        />
+
+         {/* Admin Routes */}
+         <Route
+          path="/admin/login"
+          element={
+            <>
+              <AdminLogin/>
             </>
           }
         />
