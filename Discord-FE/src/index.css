@@ -2,117 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base Styles */
-:root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 45%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
 
-  /* Light mode defaults */
-  --bg-gradient: linear-gradient(to bottom right, #D9BFFF, #ffffff);
-  --text-color: #23272A;
-  --link-color: #5865F2;
-  --button-bg: #5865F2;
-  --button-text: white;
-  --button-hover-bg: #404EED;
+    /* Dark Mode */
+  .dark {
+    --background: 222 45% 12%; /* #0f172a */
+    --foreground: 0 0% 98%;
+    --card: 217 28% 20%; /* #1e293b */
+    --card-foreground: 0 0% 98%;
+    --popover: 217 28% 20%; /* #1e293b */
+    --popover-foreground: 0 0% 98%;
+    --primary: 217 20% 80%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 217 20% 30%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 217 20% 30%;
+    --muted-foreground: 217 15% 65%;
+    --accent: 217 20% 35%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 217 20% 40%;
+    --input: 217 20% 30%;
+    --ring: 217 20% 70%;
+  }
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 
-/* Dark Mode */
-[data-theme="dark"] {
-  --bg-gradient: linear-gradient(to bottom right, #3a0ca3, #23272A);
-  --text-color: white;
-  --link-color: #8ea6ff;
-  --button-bg: #8ea6ff;
-  --button-text: #23272A;
-  --button-hover-bg: #5865F2;
-}
+  * {
+    @apply border-border;
+  }
 
-/* Apply variables */
-html, body {
-  background: var(--bg-gradient);
-  color: var(--text-color);
-  transition: background 0.5s ease-in-out, color 0.3s ease-in-out;
-}
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* General Link Styling */
-a {
-  font-weight: 500;
-  color: var(--link-color);
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: var(--button-hover-bg);
-}
-
-/* Button Styling */
-button {
-  border-radius: 6px;
-  padding: 10px 16px;
-  font-size: 1rem;
-  font-weight: 600;
-  background-color: var(--button-bg);
-  color: var(--button-text);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
-}
-
-button:hover {
-  background-color: var(--button-hover-bg);
-}
-
-button:active {
-  transform: scale(0.98);
-}
-
-/* Input Fields */
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  transition: border 0.2s ease-in-out;
-}
-
-input:focus {
-  border-color: var(--button-bg);
-  outline: none;
-}
-
-/* Forgot Password Button */
-.forgot-password {
-  margin-top: 10px;
-  font-size: 0.9rem;
-  color: #bbb;
-  cursor: pointer;
-  transition: color 0.2s ease-in-out;
-}
-
-.forgot-password:hover {
-  color: var(--text-color);
-}
-
-/* Smooth Theme Transition */
-* {
-  transition: background 0.5s ease-in-out, color 0.3s ease-in-out;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
 }
