@@ -57,61 +57,6 @@ function App() {
       </LanguageProvider>
     </ThemeProvider>
   );
-  return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route
-          path="/"
-          element={
-            <>
-              <h1 className="text-2xl font-bold text-blue-500">Hello World</h1>
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <>
-              <Login />
-              <Footer />
-            </>
-          }
-        />
-
-        <Route
-          path="/signup"
-          element={
-            <>
-              <Signup />
-              <Footer />
-            </>
-          }
-        />
-
-        <Route
-          path="/forgot-password"
-          element={
-            <>
-              <ForgotPassword />
-              <Footer />
-            </>
-          }
-        />
-
-         {/* Admin Routes */}
-         <Route
-          path="/admin/login"
-          element={
-            <>
-              <AdminLogin/>
-            </>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
-  );
 }
 
 export default App;
