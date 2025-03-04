@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc'; 
 import { FaFacebook } from 'react-icons/fa'; 
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/';
 
 const Login = () => {
   const { isDarkMode } = useTheme();

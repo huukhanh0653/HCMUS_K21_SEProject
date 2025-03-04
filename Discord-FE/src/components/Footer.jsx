@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import FOOTER_LINKS from "../assets/footer_links"
 import FOOTER_CONTACT_INFO from "../assets/footer_contact"
 import SOCIALS from "../assets/socials"
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../context/";
 import { FaMoon, FaSun, FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
 
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Signup = () => {
