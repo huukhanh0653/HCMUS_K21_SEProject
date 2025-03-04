@@ -4,6 +4,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa'; 
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTheme } from '../../context/';
+import 'Authentication.css';
 
 const Login = () => {
   const { isDarkMode } = useTheme();
