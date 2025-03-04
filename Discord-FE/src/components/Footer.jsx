@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import FOOTER_LINKS from "../assets/footer_links"
 import FOOTER_CONTACT_INFO from "../assets/footer_contact"
 import SOCIALS from "../assets/socials"
-import { useTheme } from "../context/";
+import { useTheme } from './ThemeProvider'
 import { FaMoon, FaSun, FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
-
+import "../pages/Authentication/Authentication.css"
 
 const Footer = () => {
   const socialIcons = [
@@ -16,14 +16,11 @@ const Footer = () => {
   const { isDarkMode, toggleTheme } = useTheme();
 
   return (
-    <main className="bg-primary text-tertiary">
+    <main className="min-h-screen flex items-center justify-center py-12 px-6">
       <footer className='flexCenter pb-24 pt-20'>
         <div className='max_padd_container flex w-full flex-col gap-14'>
           <div className='flex flex-col items-start justify-center gap-[10%] md:flex-row'>
             <div className='flex flex-wrap gap-8 sm:justify-between md:flex-1'>
-              <div className="theme-toggle" onClick={toggleTheme}>
-              {isDarkMode ? <FaSun size={20} className="text-white" /> : <FaMoon size={20} className="text-black" />}
-              </div>
               {FOOTER_LINKS.map((col) => (
                 <FooterColumn 
                   title={<h3 className={`${isDarkMode ? "text-white" : "text-black"}`}>{col.title}</h3>} 

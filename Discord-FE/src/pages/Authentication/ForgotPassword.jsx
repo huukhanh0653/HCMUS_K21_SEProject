@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { useTheme } from '../../context/';
-import 'Authentication.css';
+import { useTheme } from '../../components/ThemeProvider';
+import './Authentication.css';
 
 const ForgotPassword = () => {
   const { isDarkMode } = useTheme();

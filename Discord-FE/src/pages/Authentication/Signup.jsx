@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTheme } from '../../context/';
+import { useTheme } from '../../components/ThemeProvider';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import 'Authentication.css';
+import './Authentication.css';
 
 const Signup = () => {
   const { isDarkMode } = useTheme();
@@ -76,7 +76,7 @@ const Signup = () => {
   };
 
   return (
-    <main className="bg-primary text-tertiary">
+    <main className="text-tertiary ">
       <section className='max_padd_container flexCenter flex-col pt-32'>
         <div className={`max-w-[555px] h-[600px] m-auto px-14 py-10 rounded-md ${isDarkMode 
         ? "bg-gray-500" 

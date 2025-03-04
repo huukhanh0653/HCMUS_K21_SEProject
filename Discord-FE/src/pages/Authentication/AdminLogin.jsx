@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTheme } from '../../context/';
+import { useTheme } from '../../components/ThemeProvider';
 import { useNavigate } from 'react-router-dom';
-import 'Authentication.css';
+import './Authentication.css';
 
 const AdminLogin = () => {
     const { isDarkMode } = useTheme();

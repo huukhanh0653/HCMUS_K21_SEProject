@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc'; 
 import { FaFacebook } from 'react-icons/fa'; 
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useTheme } from '../../context/';
-import 'Authentication.css';
+import { useTheme } from '../../components/ThemeProvider';
+import './Authentication.css';
 
 const Login = () => {
   const { isDarkMode } = useTheme();
@@ -63,7 +63,7 @@ const Login = () => {
   };
 
   return (
-  <main className="bg-primary text-tertiary">
+  <main className="text-tertiary">
     <section className='max_padd_container flexCenter flex-col pt-32'>
       <div className={`w-[555px] h-[580px] m-auto px-14 py-10 rounded-md ${isDarkMode 
         ? "bg-gray-500" 
