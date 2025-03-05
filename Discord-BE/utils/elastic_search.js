@@ -1,10 +1,10 @@
 const { Client } = require("@elastic/elasticsearch");
+require("dotenv").config();
 
 const elasticClient = new Client({
-  node: "http://localhost:9200",
+  node: process.env.ELASTIC_NODE,
   auth: {
-    username: "Nguyễn Quang",
-    password: "",
+    apiKey: process.env.ELASTIC_API_KEY,
   },
 });
 
