@@ -23,7 +23,7 @@
 }
 
 /* Dark Mode */
-[data-theme="dark"] {
+.dark {
   --bg-gradient: linear-gradient(to bottom right, #3a0ca3, #23272A);
   --text-color: white;
   --link-color: #8ea6ff;

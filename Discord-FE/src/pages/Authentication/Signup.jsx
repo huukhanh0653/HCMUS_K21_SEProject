@@ -76,7 +76,7 @@ const Signup = () => {
   };
 
   return (
-    <main className="text-tertiary ">
+    <main className="text-tertiary auth-container">
       <section className='max_padd_container flexCenter flex-col pt-32'>
         <div className={`max-w-[555px] h-[600px] m-auto px-14 py-10 rounded-md ${isDarkMode 
         ? "bg-gray-500" 
@@ -116,7 +116,10 @@ const Signup = () => {
             
             <p className="flex items-center justify-center text-black font-bold gap-1">
               Đã có tài khoản?
-              <Link to="/login" className="text-secondary underline cursor-pointer">
+              <Link to="/login" className={`text-secondary underline cursor-pointer ${isDarkMode 
+                ? "text-white" 
+                : "text-blue-800"}
+              `}>
                 Đăng nhập
               </Link>
             </p>

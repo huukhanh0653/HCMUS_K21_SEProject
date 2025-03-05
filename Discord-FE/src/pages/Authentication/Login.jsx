@@ -128,7 +128,10 @@ const Login = () => {
 
           <p className="flex items-center justify-center text-black font-bold gap-1">
             Chưa có tài khoản?
-            <Link to="/signup" className="text-secondary underline cursor-pointer">
+            <Link to="/signup" className={`text-secondary underline cursor-pointer ${isDarkMode 
+              ? "text-white" 
+              : "text-blue-800"}
+            `}>
               Đăng ký
             </Link>
           </p>
@@ -138,7 +141,7 @@ const Login = () => {
         <div className="flex justify-end">
           <Link to="/forgot-password" 
             className={`text-sm hover:underline" ${isDarkMode 
-              ? "text-white hover:text-black" 
+              ? "text-red-600 font-bold hover:text-white" 
               : "text-red-500 hover:text-red-900"}
             `}
           >
