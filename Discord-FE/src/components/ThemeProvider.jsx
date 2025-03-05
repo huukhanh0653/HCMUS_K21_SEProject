@@ -1,30 +1,31 @@
 import { createContext, useState, useEffect, useContext } from "react";
 
-// Tạo Context để lưu trạng thái theme
 const ThemeContext = createContext();
 
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useTheme must be used within a ThemeProvider");
+  }
+  return context;
+};
+
 export const ThemeProvider = ({ children }) => {
-  // Kiểm tra localStorage để lấy theme đã lưu
-  const storedTheme = localStorage.getItem("theme") || "light";
-  const [theme, setTheme] = useState(storedTheme);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme ? savedTheme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
-  // Cập nhật class trên <html> mỗi khi theme thay đổi
   useEffect(() => {
-    document.documentElement.className = theme;
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    document.documentElement.className = isDarkMode ? "dark" : "light";
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
 
-  // Hàm chuyển đổi giữa light/dark
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  };
+  const toggleTheme = () => setIsDarkMode((prev) => !prev);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 };
-
-// Custom hook để sử dụng theme dễ dàng hơn
-export const useTheme = () => useContext(ThemeContext);
