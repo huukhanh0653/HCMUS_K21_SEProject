@@ -3,13 +3,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBKlHIrMJDTZbNPK3xl8x1MoSNZTFYSAFQ",
-    authDomain: "discord-4ed5d.firebaseapp.com",
-    projectId: "discord-4ed5d",
-    storageBucket: "discord-4ed5d.firebasestorage.app",
-    messagingSenderId: "865225418567",
-    appId: "1:865225418567:web:3e3a2831a0fc01d106ce62",
-    measurementId: "G-0MZ8JV6C14"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
   };
 
 const app = initializeApp(firebaseConfig);
