@@ -4,6 +4,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa'; 
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTheme } from '../../components/ThemeProvider';
+import { signInWithGoogle, signInWithFacebook } from '../../firebase';
 import './Authentication.css';
 
 const Login = () => {
@@ -61,7 +62,7 @@ const Login = () => {
       setErrorMessage('Có lỗi xảy ra!');
     }
   };
-
+  
   return (
   <main className="text-tertiary">
     <section className='max_padd_container flexCenter flex-col pt-32'>
@@ -115,16 +116,40 @@ const Login = () => {
           </button>
 
           {/* Google Login Button */}
-          <button className="flex items-center justify-center w-80 h-10 bg-white border border-gray-300 rounded-md font-semibold text-gray-700 shadow-md hover:bg-gray-100">
-              <FcGoogle className="text-2xl" />
-              Đăng nhập bằng Google
-            </button>
+          <button 
+  onClick={async () => {
+    try {
+      const user = await signInWithGoogle();
+      localStorage.setItem('email', user.email);
+      window.location.replace("/");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Google đăng nhập thất bại");
+    }
+  }}
+  className="flex items-center justify-center w-80 h-10 bg-white border border-gray-300 rounded-md font-semibold text-gray-700 shadow-md hover:bg-gray-100"
+>
+  <FcGoogle className="text-2xl" />
+  Đăng nhập bằng Google
+</button>
 
-            {/* Facebook Login Button */}
-            <button className="flex items-center justify-center gap-2 w-80 h-10 bg-blue-600 text-white rounded-md font-semibold shadow-md hover:bg-blue-700">
-              <FaFacebook className="text-2xl" />
-              Đăng nhập bằng Facebook
-            </button>
+<button 
+  onClick={async () => {
+    try {
+      const user = await signInWithFacebook();
+      localStorage.setItem('email', user.email);
+      window.location.replace("/");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Facebook đăng nhập thất bại");
+    }
+  }}
+  className="flex items-center justify-center gap-2 w-80 h-10 bg-blue-600 text-white rounded-md font-semibold shadow-md hover:bg-blue-700"
+>
+  <FaFacebook className="text-2xl" />
+  Đăng nhập bằng Facebook
+</button>
+
 
           <p className="flex items-center justify-center text-black font-bold gap-1">
             Chưa có tài khoản?
