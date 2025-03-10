@@ -66,7 +66,7 @@ const Login = () => {
   <main className="text-tertiary">
     <section className='max_padd_container flexCenter flex-col pt-32'>
       <div className={`w-[555px] h-[580px] m-auto px-14 py-10 rounded-md ${isDarkMode 
-        ? "bg-gray-500" 
+        ? "bg-[#292929]" 
         : "bg-white "}`}
       >
         <h2 
@@ -126,8 +126,12 @@ const Login = () => {
               Đăng nhập bằng Facebook
             </button>
 
-          <p className="flex items-center justify-center text-black font-bold gap-1">
-            Chưa có tài khoản?
+          <p className={`flex items-center justify-center font-bold gap-1${isDarkMode 
+              ? "text-[#616A6F]" 
+              : "text-black"}
+            `}>
+            Chưa có tài khoản? &nbsp;
+
             <Link to="/signup" className={`text-secondary underline cursor-pointer ${isDarkMode 
               ? "text-white" 
               : "text-blue-800"}

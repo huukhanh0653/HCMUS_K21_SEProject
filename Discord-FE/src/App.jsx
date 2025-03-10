@@ -6,11 +6,6 @@ import { ThemeProvider, useTheme } from './components/ThemeProvider';
 import { LanguageProvider, useLanguage } from './components/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import Member from './components/admin/Members/Member';
-import Server from './components/admin/Servers/Servers';
-import AdminSettings from './components/admin/AdminSettings/AdminSettings';
-import Profile from './components/admin/pages/Profile';
-import AdminAccountSettings from './components/admin/Account/AccountSettings';
-import AccountProfile from './components/admin/Account/AccountProfile';
 import Login from './pages/Authentication/Login';
 import Signup from './pages/Authentication/Signup';
 import ForgotPassword from './pages/Authentication/ForgotPassword';
@@ -26,14 +21,6 @@ function AppContent() {
     <div className={isDarkMode ? "dark" : "light"}>
       {/* Container chứa cả hai nút */}
       <div className="fixed top-4 right-4 flex items-center gap-2">
-        {/* Nút chuyển đổi ngôn ngữ */}
-        <button 
-          onClick={toggleLanguage} 
-          className="p-2 bg-primary text-white rounded-md shadow-md transition"
-        >
-          {t("change_language") || "🌍"}
-        </button>
-
         {/* Nút chuyển đổi theme */}
         <button 
           onClick={toggleTheme} 
