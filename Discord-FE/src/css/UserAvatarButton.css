@@ -1,0 +1,6 @@
+.btn-circle, .btn-circle:hover, .btn-circle:active{
+    background-color: none;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+}
