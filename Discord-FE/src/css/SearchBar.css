@@ -1,6 +1,6 @@
 .DarkSearchBar::placeholder{
-    color: rgb(168, 168, 168);  
+    color: rgb(168, 168, 168) !important;  
   }
 .LightSearchBar::placeholder{
-    color: rgb(17, 17, 17);
+    color: rgb(17, 17, 17) !important;
 }

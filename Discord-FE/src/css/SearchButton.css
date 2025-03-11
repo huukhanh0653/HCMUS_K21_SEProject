@@ -2,9 +2,9 @@
 
 }
 .DarkButton, .DarkButton:hover, .DarkButton:active{
-    background-color: #18191c;
-    border-color: #18191c;
-    color: rgb(165, 165, 165);
+    background-color: #18191c !important;
+    border-color: #18191c !important;
+    color: rgb(165, 165, 165) !important;
 }
 
 

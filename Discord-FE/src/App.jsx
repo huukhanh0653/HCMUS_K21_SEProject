@@ -16,7 +16,7 @@ import Signup from './pages/Authentication/Signup';
 import ForgotPassword from './pages/Authentication/ForgotPassword';
 import Footer from './components/Footer';
 import AdminLogin from './pages/Authentication/AdminLogin';
-
+import Home from './pages/Home';
 // Component con để dùng hooks trong Provider
 function AppContent() {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -43,6 +43,7 @@ function AppContent() {
 
           {/* Authentication Routes (No LanguageProvider here) */}
           <Route path="/login" element={<><Login /><Footer /></>} />
+          <Route path="/chat" element={<Home/>} /> 
           <Route path="/signup" element={<><Signup /><Footer /></>} />
           <Route path="/forgot-password" element={<><ForgotPassword /><Footer /></>} />
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -58,6 +59,7 @@ function AppContent() {
                     <Route path="/admin" element={<Admin key="admin" />}>
                       <Route path="dashboard" element={<AdminPanel key="dashboard" />} />
                       <Route path="member" element={<Member key="member" />} />
+                      
                     </Route>
                   </Routes>
                 </LanguageProvider>

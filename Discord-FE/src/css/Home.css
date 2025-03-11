@@ -1,26 +1,26 @@
 .wrapper {
-    display: flex;
-    flex-direction: row;
-    min-height: 100vh;
+    display: flex !important;
+    flex-direction: row !important;
+    min-height: 100vh !important; 
   }
 
   .page-main {
-    flex-grow: 1;
+    flex-grow: 1 !important;
   }
   .firstCol {
-    background-color: #1e2124;
-    width: 5%;
+    background-color: #1e2124 !important;
+    width: 5% !important;
   }
   .secondCol {
-    background-color: #282b30;
-    padding: 0px;
-    width: 18%;
-    display: flex;
-    flex-direction: column;
+    background-color: #282b30 !important;
+    padding: 0px !important;
+    width: 18% !important;
+    display: flex !important;
+    flex-direction: column !important;
 
-    flex-wrap: wrap;
+    flex-wrap: wrap !important;
   }
   .thirdCol {
 
-    width: 77%;
+    width: 77% !important;
   }
