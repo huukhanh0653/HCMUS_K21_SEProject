@@ -49,114 +49,25 @@ export default function AdminPanel() {
 
   return (
     <div className="flex min-h-screen w-full">
-    {/*
-      <aside className="fixed inset-y-0 left-0 z-10 flex h-screen w-16 flex-col border-r bg-background sm:w-64">
-        <div className="flex h-16 items-center justify-between border-b px-4">
-          <Link to="#" className="flex items-center gap-2" prefetch={false}>
-            <DiscIcon className="h-8 w-8 text-primary" />
-            <span className="text-lg font-bold text-primary sm:block">Discord</span>
-          </Link>
-          <Button size="icon" variant="ghost" className="rounded-full">
-            <PowerIcon className="h-6 w-6" />
-          </Button>
-        </div>
-        <nav className="flex flex-1 flex-col gap-2 overflow-y-auto px-2 py-4">
-          <Link
-            to="#"
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90 sm:h-12 sm:w-12"
-            prefetch={false}
-          >
-            <ServerIcon className="h-6 w-6" />
-            <span className="sr-only">Servers</span>
-          </Link>
-          <Link
-            to="#"
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-12 sm:w-12"
-            prefetch={false}
-          >
-            <UsersIcon className="h-6 w-6" />
-            <span className="sr-only">Members</span>
-          </Link>
-          <Link
-            to="#"
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-12 sm:w-12"
-            prefetch={false}
-          >
-            <PlayIcon className="h-6 w-6" />
-            <span className="sr-only">Roles</span>
-          </Link>
-          <Link
-            to="#"
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-12 sm:w-12"
-            prefetch={false}
-          >
-            <SettingsIcon className="h-6 w-6" />
-            <span className="sr-only">Settings</span>
-          </Link>
-        </nav>
-      </aside>*/}
-    
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b bg-background px-4 sm:px-6">
-          <div className="flex items-center gap-4">
-            <Button size="icon" variant="ghost" className="rounded-full sm:hidden">
-              <MenuIcon className="h-6 w-6" />
-            </Button>
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink to="/admin" onClick={() => navigate("/admin", { replace: true })} className = 'cursor-pointer text-2xl'>Admin</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className = 'cursor-pointer text-2xl'>Dashboard</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-          <div className="flex items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <img
-                    src="/placeholder.svg"
-                    width="32"
-                    height="32"
-                    className="rounded-full"
-                    alt="Avatar"
-                    style={{ aspectRatio: "32/32", objectFit: "cover" }}
-                  />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>John Doe</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className = 'cursor-pointer'>Profile</DropdownMenuItem>
-                <DropdownMenuItem className = 'cursor-pointer'>Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem >Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
         <main className="flex-1 overflow-y-auto w-full">
-          <div className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 lg:p-8">
+          <div className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 lg:p-8">
             
             {/* Server Analytics */}
             <Card className="p-6 lg:p-8">
               <CardHeader>
                 <CardTitle className="text-lg lg:text-xl">Server Analytics</CardTitle>
-                <CardDescription>Overview of your server's performance and activity.</CardDescription>
+                <CardDescription className="text-foreground">Overview of your server's performance and activity.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={newMembersData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="Servers" stroke="#8884d8" />
+                    <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                    <XAxis dataKey="day" stroke="hsl(var(--foreground))" />
+                    <YAxis stroke="hsl(var(--foreground))" />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", color: "hsl(var(--card-foreground))" }} />
+                    <Legend wrapperStyle={{ color: "hsl(var(--foreground))" }} />
+                    <Line type="monotone" dataKey="Servers" stroke="hsl(var(--primary))" />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -166,17 +77,17 @@ export default function AdminPanel() {
             <Card className="p-6 lg:p-8">
               <CardHeader>
                 <CardTitle className="text-lg lg:text-xl">Member Activity</CardTitle>
-                <CardDescription>Recent activity and engagement from your members.</CardDescription>
+                <CardDescription className="text-foreground">Recent activity and engagement from your members.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={weeklyActivity}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="week" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="Members" fill="#82ca9d" />
+                    <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                    <XAxis dataKey="week" stroke="hsl(var(--foreground))"/>
+                    <YAxis stroke="hsl(var(--foreground))"/>
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", color: "hsl(var(--card-foreground))" }}/>
+                    <Legend wrapperStyle={{ color: "hsl(var(--foreground))" }}/>
+                    <Bar dataKey="Members" fill="#82ca9d" stroke="hsl(var(--primary))"/>
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -186,11 +97,11 @@ export default function AdminPanel() {
             <Card className="p-6 lg:p-8">
               <CardHeader>
                 <CardTitle className="text-lg lg:text-xl">Moderation Tools</CardTitle>
-                <CardDescription>Manage and monitor your server's moderation activities.</CardDescription>
+                <CardDescription className="text-foreground">Manage and monitor your server's moderation activities.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
+                  <PieChart >
                     <Pie
                       dataKey="value"
                       data={moderationData}
@@ -214,17 +125,17 @@ export default function AdminPanel() {
             <Card className="p-6 lg:p-8">
               <CardHeader>
                 <CardTitle className="text-lg lg:text-xl">Roles Management</CardTitle>
-                <CardDescription>Create, edit, and manage roles for your server members.</CardDescription>
+                <CardDescription className="text-foreground">Create, edit, and manage roles for your server members.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart layout="vertical" data={roleData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis type="category" dataKey="name" />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="Roles" fill="#ff7300" />
+                    <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3"/>
+                    <XAxis type="number" stroke="hsl(var(--foreground))"/>
+                    <YAxis type="category" dataKey="name" stroke="hsl(var(--foreground))"/>
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", color: "hsl(var(--card-foreground))"}}/>
+                    <Legend wrapperStyle={{ color: "hsl(var(--foreground))" }}/>
+                    <Bar dataKey="Roles" fill="#ff7300" stroke="hsl(var(--border))"/>
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -232,7 +143,6 @@ export default function AdminPanel() {
 
           </div>
         </main>
-
       </div>
     </div>
   )

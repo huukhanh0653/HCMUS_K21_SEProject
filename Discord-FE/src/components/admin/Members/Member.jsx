@@ -12,9 +12,8 @@ import { DatePicker } from '../../ui/date-picker';
 export default function Member() {
   const [AddMemberOpen, setAddMemberOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(5);
   const [totalSize, setTotalSize] = useState(0);
-  const [members, setMembers] = useState([]); // State để lưu trữ dữ liệu thành viên
+  const [members, setMembers] = useState([]); // State to store members
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -25,9 +24,16 @@ export default function Member() {
   };
 
   const handleAddMember = (newMember) => {
+    console.log("Adding member:", newMember);
     setMembers((prevMembers) => [...prevMembers, newMember]);
     setTotalSize((prevSize) => prevSize + 1);
   };
+
+  const pageSize = 5; // Number of items per page
+  const totalPages = Math.ceil(members.length / pageSize); // Derived value
+  const paginatedMembers = members.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+
 
   return (
     <DefaultLayout>
@@ -38,14 +44,19 @@ export default function Member() {
           open={AddMemberOpen} 
           setOpen={setAddMemberOpen} 
           formComponent={AddMemberForm} 
-          props={{title: "Thêm thành viên mới", description: "Nhập thông tin thành viên", onAddMember: handleAddMember}}
+          props={{
+            title: "Thêm thành viên mới",
+            description: "Nhập thông tin thành viên",
+            onAddMember: handleAddMember,  // Kiểm tra xem giá trị này có đúng không
+          }}
         >
           <Button className="px-6 py-0 text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 rounded-lg ml-6">
-            Thêm nhân viên
+            Thêm thành viên
           </Button>
         </PopupModal>
       </div>
-      <DataTable columns={columns} data={members} filterProps={{column: "HoTen", placeholder: "Tìm thành viên bằng tên..."}}/>
+      <DataTable columns={columns} data={paginatedMembers} filterProps={{ column: "HoTen", placeholder: "Tìm thành viên bằng tên..." }}/>
+
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
@@ -69,6 +80,7 @@ export default function Member() {
 }
 
 function AddMemberForm({ className, setOpen, onAddMember }) {
+  console.log("Props received in AddMemberForm:", { setOpen, onAddMember });
   const handleClose = () => {
     setOpen(false); // This will close the popup modal
   };
@@ -80,6 +92,7 @@ function AddMemberForm({ className, setOpen, onAddMember }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log("Adding new member...");
 
     const newMember = {
       MaNV: Date.now().toString(),
@@ -130,48 +143,67 @@ function AddMemberForm({ className, setOpen, onAddMember }) {
   );
 }
 
-export function EditMemberForm({ className, setOpen, Member }) {
+export function EditMemberForm({ className, setOpen, Member, onEditMember }) {
+  const [editedMember, setEditedMember] = useState({ ...Member });
+
   const handleClose = () => {
-    setOpen(false); // This will close the popup modal
+    setOpen(false); // Đóng modal
   };
-  const [birthDate, setBirthDate] = useState(Member.NgaySinh);
-  const [startDate, setStartDate] = useState(Member.NgayVaoLam);
-  const [terminateDate, setTerminateDate] = useState(Member.NgayNghiViec);
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setEditedMember((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Selected Date:", birthDate);
+    console.log("Dữ liệu sau khi chỉnh sửa:", editedMember);
+    onEditMember(editedMember); // Gửi dữ liệu lên component cha
+    setOpen(false); // Đóng modal sau khi sửa
   };
-  
+
   return (
     <form onSubmit={handleSubmit} className={cn("grid items-start gap-4", className)}>
       <div className="grid gap-2">
         <Label htmlFor="name">Họ tên</Label>
-        <Input type="text" id="name" defaultValue={Member.HoTen}/>
+        <Input
+          type="text"
+          id="HoTen"
+          value={editedMember.HoTen}
+          onChange={handleChange}
+        />
       </div>
       <div className="grid gap-2">
         <Label htmlFor="dob">Ngày sinh</Label>
         <DatePicker
-          date={birthDate} /* Pass state value */
-          onDateChange={setBirthDate} /* Pass state handlers */
+          date={editedMember.NgaySinh}
+          onDateChange={(date) => setEditedMember((prev) => ({ ...prev, NgaySinh: date }))}
         />
       </div>
       <div className="grid gap-2">
         <Label htmlFor="start_date">Ngày vào Discord</Label>
-        <DatePicker 
-          date={startDate} /* Pass state value */
-          onDateChange={setStartDate} /* Pass state handlers */
+        <DatePicker
+          date={editedMember.NgayVaoLam}
+          onDateChange={(date) => setEditedMember((prev) => ({ ...prev, NgayVaoLam: date }))}
         />
       </div>
       <div className="grid gap-2">
         <Label htmlFor="department">RoleID</Label>
-        <Input id="department" defaultValue={Member.MaBP} />
+        <Input
+          id="MaBP"
+          value={editedMember.MaBP}
+          onChange={handleChange}
+        />
       </div>
       <Button className="bg-blue-500 text-white" type="submit">Sửa</Button>
       <Button onClick={handleClose} variant="outline">Hủy</Button>
     </form>
   );
 }
+
 
 export function TerminateMemberForm({ className, setOpen }) {
   const handleClose = () => {

@@ -24,7 +24,7 @@ import {
 
 
 export function PopupModal({ children, formComponent: FormComponent, props, open, setOpen, className, ...rest }) {
-  const isDesktop = useMediaQuery("(min-width: 768px)")
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
     return (
@@ -35,14 +35,13 @@ export function PopupModal({ children, formComponent: FormComponent, props, open
         <DialogContent className={cn("sm:max-w-[425px]", className)}>
           <DialogHeader>
             <DialogTitle>{props.title}</DialogTitle>
-            <DialogDescription>
-              {props.description}
-            </DialogDescription>
+            <DialogDescription>{props.description}</DialogDescription>
           </DialogHeader>
-          {FormComponent && <FormComponent setOpen= {setOpen} {...rest}/>}
+          {FormComponent && <FormComponent setOpen={setOpen} {...props} {...rest} />}  
+          {/* ✅ Đã truyền đủ props vào FormComponent */}
         </DialogContent>
       </Dialog>
-    )
+    );
   }
 
   return (
@@ -53,11 +52,10 @@ export function PopupModal({ children, formComponent: FormComponent, props, open
       <DrawerContent>
         <DrawerHeader className="text-left">
           <DrawerTitle>{props.title}</DrawerTitle>
-          <DrawerDescription>
-            {props.description}
-          </DrawerDescription>
+          <DrawerDescription>{props.description}</DrawerDescription>
         </DrawerHeader>
-        {FormComponent && <FormComponent className= "px-4" />}
+        {FormComponent && <FormComponent setOpen={setOpen} {...props} {...rest} className="px-4" />}  
+        {/* ✅ Đã truyền đủ props vào FormComponent */}
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>
@@ -65,5 +63,5 @@ export function PopupModal({ children, formComponent: FormComponent, props, open
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }
