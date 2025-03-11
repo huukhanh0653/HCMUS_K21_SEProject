@@ -18,7 +18,7 @@ function ChatWelcome({ channelName, theme }) {
   }
   return (
     <div>
-      <div className="d-flex justify-content-center align-items-center ms-3" style={HashStyle}>
+      <div className="d-flex justify-content-center align-items-center ms-3 mt-2" style={HashStyle}>
         <img src={DarkHashIcon} style={{ height: "30px" }} />
       </div>
       <p className="ms-3 mb-1" style={

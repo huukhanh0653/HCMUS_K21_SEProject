@@ -1,0 +1,10 @@
+.LightButton{
+
+}
+.DarkButton, .DarkButton:hover, .DarkButton:active{
+    background-color: #18191c;
+    border-color: #18191c;
+    color: rgb(165, 165, 165);
+}
+
+

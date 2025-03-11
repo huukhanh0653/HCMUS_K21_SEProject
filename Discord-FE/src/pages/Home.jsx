@@ -1,7 +1,8 @@
 import "../css/Home.css";
-import "../css/ServerNavbar.css";
-import SearchBar from "../components/ConversationSearchBar";
+
 import ChatZone from "../components/ChatZone";
+import ServerName from "../components/ServerNamePanel";
+import ServerChannel from "../components/ServerChannelPanel";
 function Home() {
   const secondCol = {
     backgroundColor: "#282b30",
@@ -12,9 +13,12 @@ function Home() {
 
   return (
     <div className="wrapper">
-      <div className="firstCol">aaaa</div>
-      <div className="secondCol"></div>
-      <ChatZone theme={"DarkMode"}></ChatZone>
+      <div className="firstCol"></div>
+      <div className="secondCol">
+        <ServerName serverName={"Đồ án công nghệ phần mềm"}/>
+        <ServerChannel/>
+      </div>
+      <ChatZone theme={"DarkMode"}/>
     </div>
   );
 }
