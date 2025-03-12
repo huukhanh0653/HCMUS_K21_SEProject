@@ -1,32 +1,73 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Mic, Headphones, Settings, MessageSquare, Users, Hash, Icon, XCircle } from "lucide-react"
+import {
+  Plus,
+  Mic,
+  Headphones,
+  Settings,
+  MessageSquare,
+  Users,
+  Gamepad2,
+  TreePine,
+  BellIcon as Ball,
+  Ghost,
+  Sword,
+  Crown,
+  Rocket,
+} from "lucide-react"
 
 export default function Home({ onProfileClick }) {
   const [activeTab, setActiveTab] = useState("friends")
+
+  // Server list data with icons and colors
+  const servers = [
+    { icon: TreePine, color: "#3ba55c", label: "Nature Gaming" },
+    { icon: Gamepad2, color: "#5865f2", label: "Gaming Hub" },
+    { icon: Ball, color: "#faa61a", label: "Sports Club" },
+    { icon: Ghost, color: "#ed4245", label: "Ghost Gaming" },
+    { icon: Sword, color: "#9b59b6", label: "RPG Community" },
+    { icon: Crown, color: "#f1c40f", label: "Royal Gaming" },
+    { icon: Rocket, color: "#e91e63", label: "Space Station" },
+  ]
 
   return (
     <div className="fixed inset-0 flex h-screen w-screen overflow-hidden bg-[#313338] text-gray-100">
       {/* Left sidebar - Server list */}
       <div className="h-full w-[72px] bg-[#1e1f22] flex flex-col items-center pt-3 gap-2">
-        <div className="w-12 h-12 bg-[#5865f2] rounded-full flex items-center justify-center mb-2 cursor-pointer">
+        {/* Discord DM Button */}
+        <div className="w-12 h-12 bg-[#5865f2] rounded-full flex items-center justify-center mb-2 cursor-pointer hover:rounded-2xl transition-all duration-200 ease-linear">
           <MessageSquare className="text-white" size={24} />
         </div>
         <div className="w-12 h-[2px] bg-[#35363c] rounded-full mb-2"></div>
 
-        {/* Server icons would go here */}
-        <div className="w-12 h-12 bg-[#36393f] rounded-full flex items-center justify-center mb-2 cursor-pointer">
-          <Users className="text-[#3ba55d]" size={24} />
+        {/* Server icons */}
+        <div className="flex flex-col gap-2 items-center max-h-[calc(100vh-120px)] overflow-y-auto scrollbar-hide">
+          {servers.map((server, index) => (
+            <div
+              key={index}
+              className="group relative w-12 h-12 rounded-full hover:rounded-2xl transition-all duration-200 ease-linear flex items-center justify-center cursor-pointer"
+              style={{ backgroundColor: server.color }}
+            >
+              <server.icon className="text-white" size={24} />
+
+              {/* Server hover indicator */}
+              <div className="absolute left-0 w-1 h-0 bg-white rounded-r-full group-hover:h-5 transition-all duration-200 -translate-x-2"></div>
+
+              {/* Server name tooltip */}
+              <div className="absolute left-full ml-4 px-3 py-2 bg-black rounded-md text-white text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                {server.label}
+              </div>
+            </div>
+          ))}
         </div>
 
-        <div className="w-12 h-12 bg-[#36393f] rounded-full flex items-center justify-center mb-2 cursor-pointer">
-          <Hash className="text-gray-400" size={24} />
-        </div>
+        {/* Separator before Add Server button */}
+        <div className="w-12 h-[2px] bg-[#35363c] rounded-full my-2"></div>
 
         {/* Add server button */}
-        <div className="w-12 h-12 bg-[#36393f] hover:bg-[#3ba55d] rounded-full flex items-center justify-center mt-auto mb-2 cursor-pointer">
-          <Plus className="text-[#3ba55d] hover:text-white" size={24} />
+        <div className="w-12 h-12 bg-[#36393f] hover:bg-[#3ba55d] rounded-full hover:rounded-2xl transition-all duration-200 ease-linear flex items-center justify-center cursor-pointer group mb-2">
+          <Plus className="text-[#3ba55d] group-hover:text-white transition-colors" size={24} />
         </div>
       </div>
 
@@ -119,10 +160,13 @@ export default function Home({ onProfileClick }) {
 
         {/* Empty state */}
         <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
-            <div className="w-20 h-20 text-red-500">
-                <XCircle size={80} className="w-full h-full" />
-            </div>
-
+          <div className="w-72 h-72 mb-4">
+            <img
+              src="/placeholder.svg?height=300&width=300"
+              alt="No friends online"
+              className="w-full h-full object-contain"
+            />
+          </div>
           <p className="text-gray-400 mt-4">Không có bạn bè nào trực tuyến vào lúc này. Hãy quay lại sau!</p>
 
           <div className="mt-8 text-gray-300">

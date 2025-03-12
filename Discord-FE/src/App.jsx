@@ -8,23 +8,14 @@ import { ThemeProvider, useTheme } from "./components/ThemeProvider"
 import { LanguageProvider } from "./components/LanguageProvider"
 import { useTranslation } from "react-i18next"
 import Member from "./components/admin/Members/Member"
-
-//Authentication
 import Login from "./pages/Authentication/Login"
 import Signup from "./pages/Authentication/Signup"
 import ForgotPassword from "./pages/Authentication/ForgotPassword"
 import Footer from "./components/Footer"
 import AdminLogin from "./pages/Authentication/AdminLogin"
-
 import Home from "./pages/Homepage/Home"
+import Profile from "./pages/Homepage/profile"
 import { useState } from "react"
-
-//import Admin
-import Server from './components/admin/Servers/Servers';
-import AdminSettings from './components/admin/AdminSettings/AdminSettings';
-import Profile from './components/admin/pages/Profile';
-import AdminAccountSettings from './components/admin/Account/AccountSettings';
-import AccountProfile from './components/admin/Account/AccountProfile';
 
 // Component con để dùng hooks trong Provider
 function AppContent() {
@@ -106,13 +97,10 @@ function AppContent() {
               <ThemeProvider>
                 <LanguageProvider>
                   <Routes>
-                    <Route path="/admin/*" element={<Admin />}>
-                      <Route path="dashboard" element={<AdminPanel />} />
-                      <Route path="member" element={<Member />} />
-                      <Route path="server" element={<Server />} />
-                      <Route path="setting" element={<AdminSettings />} />
-                      <Route path="account/profile" element={<AccountProfile/>} />
-                      <Route path="account/settings" element={<AdminAccountSettings />} />
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={<Admin key="admin" />}>
+                      <Route path="dashboard" element={<AdminPanel key="dashboard" />} />
+                      <Route path="member" element={<Member key="member" />} />
                     </Route>
                   </Routes>
                 </LanguageProvider>
@@ -131,4 +119,3 @@ function App() {
 }
 
 export default App
-
