@@ -1,5 +1,3 @@
-"use client"
-
 import "./App.css"
 import Admin from "./components/admin/Admin"
 import AdminPanel from "./components/admin/AdminPanel"
@@ -8,14 +6,24 @@ import { ThemeProvider, useTheme } from "./components/ThemeProvider"
 import { LanguageProvider } from "./components/LanguageProvider"
 import { useTranslation } from "react-i18next"
 import Member from "./components/admin/Members/Member"
+
+//Authentication
 import Login from "./pages/Authentication/Login"
 import Signup from "./pages/Authentication/Signup"
 import ForgotPassword from "./pages/Authentication/ForgotPassword"
 import Footer from "./components/Footer"
 import AdminLogin from "./pages/Authentication/AdminLogin"
+
 import Home from "./pages/Homepage/Home"
-import Profile from "./pages/Homepage/profile"
+import UserProfile from "./pages/Homepage/UserProfile"
 import { useState } from "react"
+
+//import Admin
+import Server from './components/admin/Servers/Servers';
+import AdminSettings from './components/admin/AdminSettings/AdminSettings';
+import Profile from './components/admin/pages/Profile';
+import AdminAccountSettings from './components/admin/Account/AccountSettings';
+import AccountProfile from './components/admin/Account/AccountProfile';
 
 // Component con để dùng hooks trong Provider
 function AppContent() {
@@ -55,7 +63,7 @@ function AppContent() {
             element={
               <>
                 <Home onProfileClick={toggleProfile} />
-                {showProfile && <Profile onClose={closeProfile} />}
+                {showProfile && <UserProfile onClose={closeProfile} />}
               </>
             }
           />

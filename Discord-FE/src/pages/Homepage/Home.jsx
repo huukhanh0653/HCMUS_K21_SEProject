@@ -16,9 +16,34 @@ import {
   Crown,
   Rocket,
 } from "lucide-react"
+import DirectMessage from "../../components/friends/direct-message"
+import FriendsView from "../../components/friends/friends-view"
 
 export default function Home({ onProfileClick }) {
   const [activeTab, setActiveTab] = useState("friends")
+  const [selectedFriend, setSelectedFriend] = useState(null)
+
+  // Mock messages data
+  const mockMessages = {
+    Levii: [
+      { id: 1, sender: "Levii", content: "Hey there!", timestamp: "Today at 1:09 PM" },
+      { id: 2, sender: "You", content: "Hi Levii!", timestamp: "Today at 1:10 PM" },
+    ],
+    Dolphin: [{ id: 1, sender: "Dolphin", content: "How's it going?", timestamp: "Today at 2:30 PM" }],
+    // Add more mock messages for other friends
+  }
+
+  // Friends data with status
+  const friends = [
+    { name: "Levii", status: "online", avatar: "/placeholder.svg?height=32&width=32" },
+    { name: "Dolphin", status: "idle", avatar: "/placeholder.svg?height=32&width=32" },
+    { name: "Cutehome", status: "dnd", avatar: "/placeholder.svg?height=32&width=32" },
+    { name: "Ngoc Tran", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
+    { name: "trstvxmnh", status: "online", avatar: "/placeholder.svg?height=32&width=32" },
+    { name: "s...", status: "online", avatar: "/placeholder.svg?height=32&width=32" },
+    { name: "DraNox", status: "idle", avatar: "/placeholder.svg?height=32&width=32" },
+    { name: "MEE6", status: "online", avatar: "/placeholder.svg?height=32&width=32" },
+  ]
 
   // Server list data with icons and colors
   const servers = [
@@ -30,6 +55,22 @@ export default function Home({ onProfileClick }) {
     { icon: Crown, color: "#f1c40f", label: "Royal Gaming" },
     { icon: Rocket, color: "#e91e63", label: "Space Station" },
   ]
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "online":
+        return "bg-green-500"
+      case "idle":
+        return "bg-yellow-500"
+      case "dnd":
+        return "bg-red-500"
+      default:
+        return "bg-gray-500"
+    }
+  }
+
+  // Get the selected friend object
+  const selectedFriendObj = selectedFriend ? friends.find((f) => f.name === selectedFriend) : null
 
   return (
     <div className="fixed inset-0 flex h-screen w-screen overflow-hidden bg-[#313338] text-gray-100">
@@ -50,11 +91,7 @@ export default function Home({ onProfileClick }) {
               style={{ backgroundColor: server.color }}
             >
               <server.icon className="text-white" size={24} />
-
-              {/* Server hover indicator */}
               <div className="absolute left-0 w-1 h-0 bg-white rounded-r-full group-hover:h-5 transition-all duration-200 -translate-x-2"></div>
-
-              {/* Server name tooltip */}
               <div className="absolute left-full ml-4 px-3 py-2 bg-black rounded-md text-white text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                 {server.label}
               </div>
@@ -62,10 +99,7 @@ export default function Home({ onProfileClick }) {
           ))}
         </div>
 
-        {/* Separator before Add Server button */}
         <div className="w-12 h-[2px] bg-[#35363c] rounded-full my-2"></div>
-
-        {/* Add server button */}
         <div className="w-12 h-12 bg-[#36393f] hover:bg-[#3ba55d] rounded-full hover:rounded-2xl transition-all duration-200 ease-linear flex items-center justify-center cursor-pointer group mb-2">
           <Plus className="text-[#3ba55d] group-hover:text-white transition-colors" size={24} />
         </div>
@@ -73,7 +107,6 @@ export default function Home({ onProfileClick }) {
 
       {/* Channel/DM sidebar */}
       <div className="h-full w-60 bg-[#2b2d31] flex flex-col">
-        {/* Search bar */}
         <div className="p-3">
           <div className="bg-[#1e1f22] rounded-md flex items-center px-2">
             <input
@@ -84,12 +117,14 @@ export default function Home({ onProfileClick }) {
           </div>
         </div>
 
-        {/* Navigation tabs */}
         <div className="px-2 mb-2">
           <div className="flex items-center gap-2 mb-2">
             <button
               className={`px-2 py-1 rounded ${activeTab === "friends" ? "bg-[#404249] text-white" : "text-gray-400 hover:bg-[#35373c]"}`}
-              onClick={() => setActiveTab("friends")}
+              onClick={() => {
+                setActiveTab("friends")
+                setSelectedFriend(null)
+              }}
             >
               Bạn bè
             </button>
@@ -115,7 +150,6 @@ export default function Home({ onProfileClick }) {
           </div>
         </div>
 
-        {/* Direct Messages section */}
         <div className="px-2 text-xs text-gray-400 font-semibold flex items-center justify-between">
           <span>TIN NHẮN TRỰC TIẾP</span>
           <Plus size={16} className="cursor-pointer" />
@@ -124,14 +158,27 @@ export default function Home({ onProfileClick }) {
         {/* Friends list */}
         <div className="flex-1 overflow-y-auto">
           <div className="px-2 py-1">
-            {["Levii", "Dolphin", "Cutehome", "Ngoc Tran", "trstvxmnh", "s...", "DraNox", "MEE6"].map(
-              (friend, index) => (
-                <div key={index} className="flex items-center gap-2 p-1 rounded hover:bg-[#35373c] cursor-pointer">
-                  <div className="w-8 h-8 bg-[#36393f] rounded-full flex-shrink-0"></div>
-                  <span className="text-gray-300">{friend}</span>
+            {friends.map((friend, index) => (
+              <div
+                key={index}
+                className={`flex items-center gap-2 p-1 rounded hover:bg-[#35373c] cursor-pointer ${selectedFriend === friend.name ? "bg-[#35373c]" : ""}`}
+                onClick={() => setSelectedFriend(friend.name)}
+              >
+                <div className="relative">
+                  <div className="w-8 h-8 bg-[#36393f] rounded-full flex-shrink-0 overflow-hidden">
+                    <img
+                      src={friend.avatar || "/placeholder.svg"}
+                      alt={friend.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div
+                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#2b2d31] ${getStatusColor(friend.status)}`}
+                  ></div>
                 </div>
-              ),
-            )}
+                <span className="text-gray-300">{friend.name}</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -154,29 +201,31 @@ export default function Home({ onProfileClick }) {
       <div className="flex-1 h-full flex flex-col bg-[#313338]">
         {/* Header */}
         <div className="h-12 border-b border-[#232428] flex items-center px-4">
-          <Users size={20} className="text-gray-400 mr-2" />
-          <span className="font-semibold">Bạn bè</span>
+          {selectedFriendObj ? (
+            <>
+              <div className="w-8 h-8 bg-[#36393f] rounded-full mr-2 overflow-hidden">
+                <img
+                  src={selectedFriendObj.avatar || "/placeholder.svg"}
+                  alt={selectedFriendObj.name}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              </div>
+              <span className="font-semibold">{selectedFriendObj.name}</span>
+            </>
+          ) : (
+            <>
+              <Users size={20} className="text-gray-400 mr-2" />
+              <span className="font-semibold">Bạn bè</span>
+            </>
+          )}
         </div>
 
-        {/* Empty state */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
-          <div className="w-72 h-72 mb-4">
-            <img
-              src="/placeholder.svg?height=300&width=300"
-              alt="No friends online"
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <p className="text-gray-400 mt-4">Không có bạn bè nào trực tuyến vào lúc này. Hãy quay lại sau!</p>
-
-          <div className="mt-8 text-gray-300">
-            <h2 className="text-xl font-bold mb-2">Đang Hoạt Động</h2>
-            <p className="text-gray-400 max-w-md">
-              Hiện tại không có cập nhật mới nào cả... Nếu bạn bè của bạn có hoạt động mới, ví dụ như chơi game hoặc trò
-              chuyện thoại, chúng tôi sẽ hiển thị hoạt động đó ở đây!
-            </p>
-          </div>
-        </div>
+        {/* Main content - either DirectMessage or FriendsView */}
+        {selectedFriendObj ? (
+          <DirectMessage friend={selectedFriendObj} messages={mockMessages[selectedFriend] || []} />
+        ) : (
+          <FriendsView />
+        )}
       </div>
     </div>
   )
