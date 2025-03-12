@@ -1,19 +1,16 @@
-import DarkEvent from "../assets/Dark Event.png"
-function ServerEventButton()
-{
-    const Button = {
-        backgroundColor: "none",
-        border: "none",
-        width: "15px",
-        height: "15px",
-    }
-    return(
-    <div className="d-flex align-items-center mt-3 me-3 ms-3 pb-3 border-bottom  border-1 border-dark-subtle border-opacity-10">
-        <button className = "d-flex justify-content-center align-items-center ms-3 me-3"style={Button}>
-            <img src = {DarkEvent} style={{height: "30px"}}/>
-        </button>
-        <a href = "/" style={{color: "#868c94", textDecoration: "none"}}>Events</a>
+import DarkEvent from "../assets/Dark Event.png";
+
+function ServerEventButton() {
+  return (
+    <div className="flex items-center mt-3 mx-3 pb-3 border-b border-gray-300 border-opacity-10">
+      <button className="flex justify-center items-center mx-3 bg-transparent border-none w-[15px] h-[15px]">
+        <img src={DarkEvent} className="h-[30px]" />
+      </button>
+      <a href="/" className="text-gray-500 no-underline">
+        Events
+      </a>
     </div>
-    )
-}   
+  );
+}
+
 export default ServerEventButton;

@@ -1,13 +1,13 @@
 import DisordIcon from "../assets/discord-mark-black.png";
-import "../css/UserAvatarButton.css";
 
 function UserAvatarButton() {
   return (
     <div>
-      <a className="btn btn-circle d-flex justify-content-center align-items-center">
-        <img src={DisordIcon} style={{ height: "30px" }}></img>
+      <a className="flex justify-center items-center w-[60px] h-[60px] rounded-full">
+        <img src={DisordIcon} className="h-[30px]" alt="User Avatar" />
       </a>
     </div>
   );
 }
+
 export default UserAvatarButton;

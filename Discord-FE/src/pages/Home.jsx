@@ -1,25 +1,25 @@
-import "../css/Home.css";
-
 import ChatZone from "../components/ChatZone";
 import ServerName from "../components/ServerNamePanel";
 import ServerChannel from "../components/ServerChannelPanel";
-function Home() {
-  const secondCol = {
-    backgroundColor: "#282b30",
-  };
-  const thirdCol = {
-    backgroundColor: "#36393e",
-  };
 
+function Home() {
   return (
-    <div className="wrapper">
-      <div className="firstCol"></div>
-      <div className="secondCol">
-        <ServerName serverName={"Đồ án công nghệ phần mềm"}/>
-        <ServerChannel/>
+    <div className="flex min-h-screen">
+      {/* Sidebar (First Column) */}
+      <div className="bg-[#1e2124] w-[5%]"></div>
+
+      {/* Server Info & Channels (Second Column) */}
+      <div className="bg-[#282b30] w-[18%] flex flex-col flex-wrap p-0">
+        <ServerName serverName={"Đồ án công nghệ phần mềm"} />
+        <ServerChannel />
       </div>
-      <ChatZone theme={"DarkMode"}/>
+
+      {/* Chat Zone (Third Column) */}
+      <div className="w-[77%]">
+        <ChatZone theme={"DarkMode"} />
+      </div>
     </div>
   );
 }
+
 export default Home;

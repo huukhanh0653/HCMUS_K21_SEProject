@@ -9,12 +9,12 @@
   }
   .firstCol {
     background-color: #1e2124 !important;
-    width: 5% !important;
+
   }
   .secondCol {
     background-color: #282b30 !important;
     padding: 0px !important;
-    width: 18% !important;
+
     display: flex !important;
     flex-direction: column !important;
 
@@ -22,5 +22,5 @@
   }
   .thirdCol {
 
-    width: 77% !important;
+    flex-grow: 1;
   }
