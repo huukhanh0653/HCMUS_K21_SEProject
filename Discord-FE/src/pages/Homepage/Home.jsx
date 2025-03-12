@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import {
   Plus,
@@ -16,8 +14,10 @@ import {
   Crown,
   Rocket,
 } from "lucide-react"
-import DirectMessage from "../../components/friends/direct-message"
-import FriendsView from "../../components/friends/friends-view"
+
+import DirectMessage from "../../components/friends/direct_message"
+import FriendContextMenu from "../../components/friends/friend_context_menu"
+import FriendsView from "../../components/friends/friends_view"
 
 export default function Home({ onProfileClick }) {
   const [activeTab, setActiveTab] = useState("friends")
@@ -71,6 +71,20 @@ export default function Home({ onProfileClick }) {
 
   // Get the selected friend object
   const selectedFriendObj = selectedFriend ? friends.find((f) => f.name === selectedFriend) : null
+
+  const handleFriendAction = (action, friend) => {
+    switch (action) {
+      case "profile":
+        console.log(`View profile of ${friend.name}`)
+        break
+      case "unfriend":
+        console.log(`Unfriend ${friend.name}`)
+        break
+      case "block":
+        console.log(`Block ${friend.name}`)
+        break
+    }
+  }
 
   return (
     <div className="fixed inset-0 flex h-screen w-screen overflow-hidden bg-[#313338] text-gray-100">
@@ -159,25 +173,28 @@ export default function Home({ onProfileClick }) {
         <div className="flex-1 overflow-y-auto">
           <div className="px-2 py-1">
             {friends.map((friend, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-2 p-1 rounded hover:bg-[#35373c] cursor-pointer ${selectedFriend === friend.name ? "bg-[#35373c]" : ""}`}
-                onClick={() => setSelectedFriend(friend.name)}
-              >
-                <div className="relative">
-                  <div className="w-8 h-8 bg-[#36393f] rounded-full flex-shrink-0 overflow-hidden">
-                    <img
-                      src={friend.avatar || "/placeholder.svg"}
-                      alt={friend.name}
-                      className="w-full h-full object-cover"
-                    />
+              <FriendContextMenu key={index} friend={friend} onAction={handleFriendAction}>
+                <div
+                  className={`flex items-center gap-2 p-1 rounded hover:bg-[#35373c] cursor-pointer ${
+                    selectedFriend === friend.name ? "bg-[#35373c]" : ""
+                  }`}
+                  onClick={() => setSelectedFriend(friend.name)}
+                >
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-[#36393f] rounded-full flex-shrink-0 overflow-hidden">
+                      <img
+                        src={friend.avatar || "/placeholder.svg"}
+                        alt={friend.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div
+                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#2b2d31] ${getStatusColor(friend.status)}`}
+                    ></div>
                   </div>
-                  <div
-                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#2b2d31] ${getStatusColor(friend.status)}`}
-                  ></div>
+                  <span className="text-gray-300">{friend.name}</span>
                 </div>
-                <span className="text-gray-300">{friend.name}</span>
-              </div>
+              </FriendContextMenu>
             ))}
           </div>
         </div>

@@ -1,3 +1,5 @@
+import plugin from 'tailwindcss';
+
 /** @type {import('tailwindcss').Config} */
 const defaultTheme = require("tailwindcss/defaultTheme");
 export default {
@@ -67,4 +69,5 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate")],
+  plugin: [require("tailwind-scrollbar-hide")],
 }
