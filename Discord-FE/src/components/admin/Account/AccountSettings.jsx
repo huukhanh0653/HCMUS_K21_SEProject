@@ -41,35 +41,35 @@ export default function AdminAccountSettings() {
 
           <div className="space-y-4">
             {/* Họ và tên */}
-            <div>
-              <Label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+            <div className="flex items-center space-x-4">
+              <Label htmlFor="fullName" className="text-sm font-medium text-gray-700 w-32">
                 Họ và tên
               </Label>
-              <Input id="fullName" name="fullName" value={account.fullName} onChange={handleChange} className="mt-1 w-full" />
+              <Input id="fullName" name="fullName" value={account.fullName} onChange={handleChange} className="flex-1" />
             </div>
 
             {/* Email */}
-            <div>
-              <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <div className="flex items-center space-x-4">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700 w-32">
                 Email
               </Label>
-              <Input id="email" name="email" type="email" value={account.email} onChange={handleChange} className="mt-1 w-full" />
+              <Input id="email" name="email" type="email" value={account.email} onChange={handleChange} className="flex-1" />
             </div>
 
             {/* Mật khẩu mới */}
-            <div>
-              <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <div className="flex items-center space-x-4">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700 w-32">
                 Mật khẩu mới
               </Label>
-              <Input id="password" name="password" type="password" value={account.password} onChange={handleChange} className="mt-1 w-full" />
+              <Input id="password" name="password" type="password" value={account.password} onChange={handleChange} className="flex-1" />
             </div>
 
             {/* Xác nhận mật khẩu */}
-            <div>
-              <Label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Xác nhận mật khẩu
+            <div className="flex items-center space-x-4">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 w-32">
+                Xác nhận
               </Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" value={account.confirmPassword} onChange={handleChange} className="mt-1 w-full" />
+              <Input id="confirmPassword" name="confirmPassword" type="password" value={account.confirmPassword} onChange={handleChange} className="flex-1" />
             </div>
 
             {/* Bật/Tắt 2FA */}

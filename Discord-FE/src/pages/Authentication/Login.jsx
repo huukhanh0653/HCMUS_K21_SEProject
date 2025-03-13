@@ -12,20 +12,36 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   return (
-    <main className="text-tertiary">
-      <section className='max_padd_container flexCenter flex-col pt-32'>
-      <div className={`w-[400px] h-[260px] m-auto px-14 py-10 rounded-md ${isDarkMode ? "bg-gray-500" : "bg-white "}`}>
-          <h2 
-            className={`h2 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${isDarkMode 
-              ? "from-red-400 via-white-500 to-yellow-400" 
-              : "from-purple-700 via-blue-500 to-green-400"}
-            `}
-          >
-            Đăng nhập
-          </h2>
+  <main className="text-tertiary">
+    <section className='max_padd_container flexCenter flex-col pt-32'>
+      <div className={`w-[555px] h-[580px] m-auto px-14 py-10 rounded-md ${isDarkMode 
+        ? "bg-[#292929]" 
+        : "bg-white "}`}
+      >
+        <h2 
+          className={`h2 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${isDarkMode 
+            ? "from-red-400 via-white-500 to-yellow-400" 
+            : "from-purple-700 via-blue-500 to-green-400"}
+          `}
+        >
+          Đăng nhập
+        </h2>
+        <form onSubmit={handleLogin} className='flex flex-col gap-4 mt-7 items-center'>
+          <input 
+            type="text" 
+            placeholder='Email' 
+            className='h-14 w-full pl-5 bg-slate-900/5 outline-none rounded-xl border border-gray-200' 
+            value={email} onChange={(e) => setemail(e.target.value)}
+          />
 
-          {/* Button Container */}
-          <div className="flex flex-col w-full gap-4 mt-6">
+          <div className="relative w-full">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              placeholder='Mật khẩu' 
+              className='h-14 w-full pl-5 pr-12 bg-slate-900/5 outline-none rounded-xl border border-gray-200' 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+            />
             <button 
               onClick={async () => {
                 try {
@@ -59,14 +75,39 @@ const Login = () => {
               <FaFacebook className="text-2xl" />
               Đăng nhập bằng Facebook
             </button>
-          </div>
 
-          {errorMessage && <p className="text-center text-red-500 mt-4">{errorMessage}</p>}
-          {successMessage && <p className="text-center text-green-500 mt-4">{successMessage}</p>}
+          <p className={`flex items-center justify-center font-bold gap-1${isDarkMode 
+              ? "text-[#616A6F]" 
+              : "text-black"}
+            `}>
+            Chưa có tài khoản? &nbsp;
+
+            <Link to="/signup" className={`text-secondary underline cursor-pointer ${isDarkMode 
+              ? "text-white" 
+              : "text-blue-800"}
+            `}>
+              Đăng ký
+            </Link>
+          </p>
+
+        </form>
+        {/* Quên mật khẩu */}
+        <div className="flex justify-end">
+          <Link to="/forgot-password" 
+            className={`text-sm hover:underline" ${isDarkMode 
+              ? "text-red-600 font-bold hover:text-white" 
+              : "text-red-500 hover:text-red-900"}
+            `}
+          >
+            Quên mật khẩu?
+          </Link>
         </div>
-      </section>
-    </main>
-  );
+        {errorMessage && <p className='flexCenter text-base py-5 text-red-500'>{errorMessage}</p>}
+        {successMessage && <p className='text-green-500'>{successMessage}</p>}
+      </div>
+    </section>
+  </main>
+  )
 }
 
 export default Login;

@@ -34,34 +34,42 @@ export default function AdminSettings() {
           <h2 className="text-2xl font-bold text-center mb-6">Cài đặt hệ thống</h2>
 
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="systemName" className="block text-sm font-medium text-gray-700">Tên hệ thống</Label>
+            {/* Tên hệ thống */}
+            <div className="flex items-center gap-4">
+              <Label htmlFor="systemName" className="w-1/3 text-sm font-medium text-gray-700">
+                Tên hệ thống
+              </Label>
               <Input
                 id="systemName"
                 name="systemName"
                 value={settings.systemName}
                 onChange={handleChange}
-                className="w-full mt-1 border-gray-300 rounded-md"
+                className="w-2/3 mt-1 border-gray-300 rounded-md"
               />
             </div>
 
-            <div>
-              <Label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700">Email liên hệ</Label>
+            {/* Email liên hệ */}
+            <div className="flex items-center gap-4">
+              <Label htmlFor="contactEmail" className="w-1/3 text-sm font-medium text-gray-700">
+                Email liên hệ
+              </Label>
               <Input
                 id="contactEmail"
                 name="contactEmail"
                 type="email"
                 value={settings.contactEmail}
                 onChange={handleChange}
-                className="w-full mt-1 border-gray-300 rounded-md"
+                className="w-2/3 mt-1 border-gray-300 rounded-md"
               />
             </div>
 
+            {/* Kích hoạt tính năng X */}
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium text-gray-700">Kích hoạt tính năng X</Label>
               <Switch checked={settings.enableFeatureX} onCheckedChange={handleToggle} />
             </div>
 
+            {/* Nút Lưu */}
             <Button className="w-full bg-black text-white py-2 rounded-lg mt-4" onClick={handleSave}>
               Lưu cài đặt
             </Button>
