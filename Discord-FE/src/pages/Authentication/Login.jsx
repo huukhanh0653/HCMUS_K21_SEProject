@@ -1,15 +1,66 @@
-import React from 'react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc'; 
 import { FaFacebook } from 'react-icons/fa'; 
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTheme } from '../../components/ThemeProvider';
-import { signInWithGoogle, signInWithFacebook } from '../../firebase';
 import './Authentication.css';
 
 const Login = () => {
   const { isDarkMode } = useTheme();
+
+  const [email, setemail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    if (!email || !validateEmail(email)) {
+      setErrorMessage('Email không hợp lệ');
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage('Mật khẩu không được để trống');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        setErrorMessage(error.message || 'Login failed');
+        return;
+      }
+
+      const result = await response.json();
+      setSuccessMessage(result.message);
+      setErrorMessage('');
+
+      // Redirect to the homepage
+       window.location.replace("/");
+       localStorage.setItem('email', email);
+       console.log(response.user)
+
+    } catch (error) {
+      console.error(error);
+      setErrorMessage('Có lỗi xảy ra!');
+    }
+  };
 
   return (
   <main className="text-tertiary">
@@ -43,35 +94,34 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)} 
             />
             <button 
-              onClick={async () => {
-                try {
-                  const user = await signInWithGoogle();
-                  localStorage.setItem('email', user.email);
-                  window.location.replace("/");
-                } catch (error) {
-                  console.error(error);
-                  setErrorMessage("Google đăng nhập thất bại");
-                }
-              }}
-              className="flex items-center justify-center w-full h-10 bg-white border border-gray-300 rounded-md font-semibold text-gray-700 shadow-md hover:bg-gray-100"
+              type="button" 
+              className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-transparent p-1 border-none focus:outline-none ${isDarkMode 
+                ? "text-white" 
+                : "text-gray-500"}
+              `}
+              onClick={() => setShowPassword(!showPassword)}
             >
-              <FcGoogle className="text-2xl mr-2" />
+              {showPassword ? <FaEye /> : <FaEyeSlash />}
+            </button>
+          </div>
+
+
+          <button 
+            type="submit" 
+            className="btn_dark_rounded border-gray my-2 w-full rounded-md font-bold 
+            bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:from-blue-700 hover:to-blue-900"
+          >
+            Đăng nhập
+          </button>
+
+          {/* Google Login Button */}
+          <button className="flex items-center justify-center w-80 h-10 bg-white border border-gray-300 rounded-md font-semibold text-gray-700 shadow-md hover:bg-gray-100">
+              <FcGoogle className="text-2xl" />
               Đăng nhập bằng Google
             </button>
 
-            <button 
-              onClick={async () => {
-                try {
-                  const user = await signInWithFacebook();
-                  localStorage.setItem('email', user.email);
-                  window.location.replace("/");
-                } catch (error) {
-                  console.error(error);
-                  setErrorMessage("Facebook đăng nhập thất bại");
-                }
-              }}
-              className="flex items-center justify-center gap-2 w-full h-10 bg-blue-600 text-white rounded-md font-semibold shadow-md hover:bg-blue-700"
-            >
+            {/* Facebook Login Button */}
+            <button className="flex items-center justify-center gap-2 w-80 h-10 bg-blue-600 text-white rounded-md font-semibold shadow-md hover:bg-blue-700">
               <FaFacebook className="text-2xl" />
               Đăng nhập bằng Facebook
             </button>
@@ -110,4 +160,4 @@ const Login = () => {
   )
 }
 
-export default Login;
+export default Login
