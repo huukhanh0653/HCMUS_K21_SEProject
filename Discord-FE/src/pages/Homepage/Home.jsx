@@ -13,15 +13,24 @@ import {
   Sword,
   Crown,
   Rocket,
+  UserPlus,
 } from "lucide-react"
 
 import DirectMessage from "../../components/friends/direct_message"
-import FriendContextMenu from "../../components/friends/friend_context_menu"
 import FriendsView from "../../components/friends/friends_view"
+import FriendContextMenu from "../../components/friends/friend_context_menu"
+import FriendProfile from "../../components/friends/friend_profile"
+
+import { useTheme } from '../../components/ThemeProvider';
 
 export default function Home({ onProfileClick }) {
+  //Dark mode & Light mode toggle
+  const { isDarkMode } = useTheme();
+
   const [activeTab, setActiveTab] = useState("friends")
   const [selectedFriend, setSelectedFriend] = useState(null)
+  const [showProfile, setShowProfile] = useState(false)
+  const [selectedProfileFriend, setSelectedProfileFriend] = useState(null)
 
   // Mock messages data
   const mockMessages = {
@@ -35,7 +44,7 @@ export default function Home({ onProfileClick }) {
 
   // Friends data with status
   const friends = [
-    { name: "Levii", status: "online", avatar: "/placeholder.svg?height=32&width=32" },
+    { name: "Levii", status: "online", avatar: "/placeholder.svg?height=32&width=32", phone: "0123456789", email: "Levi@gmail.com"},
     { name: "Dolphin", status: "idle", avatar: "/placeholder.svg?height=32&width=32" },
     { name: "Cutehome", status: "dnd", avatar: "/placeholder.svg?height=32&width=32" },
     { name: "Ngoc Tran", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
@@ -75,7 +84,8 @@ export default function Home({ onProfileClick }) {
   const handleFriendAction = (action, friend) => {
     switch (action) {
       case "profile":
-        console.log(`View profile of ${friend.name}`)
+        setSelectedProfileFriend(friend)
+        setShowProfile(true)
         break
       case "unfriend":
         console.log(`Unfriend ${friend.name}`)
@@ -132,41 +142,67 @@ export default function Home({ onProfileClick }) {
         </div>
 
         <div className="px-2 mb-2">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex flex-col items-start gap-2 mb-2">
             <button
-              className={`px-2 py-1 rounded ${activeTab === "friends" ? "bg-[#404249] text-white" : "text-gray-400 hover:bg-[#35373c]"}`}
+              className={`w-full px-2 py-1 rounded text-left ${
+                activeTab === "friends"
+                  ? isDarkMode
+                    ? "bg-[#5865f2] text-white"
+                    : "bg-blue-500 text-white"
+                  : isDarkMode
+                  ? "text-gray-400 hover:bg-[#35373c]"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`}
               onClick={() => {
-                setActiveTab("friends")
-                setSelectedFriend(null)
+                setActiveTab("friends");
+                setSelectedFriend(null);
               }}
             >
               Bạn bè
             </button>
+
             <button
-              className={`px-2 py-1 rounded ${activeTab === "online" ? "bg-[#404249] text-white" : "text-gray-400 hover:bg-[#35373c]"}`}
+              className={`w-full px-2 py-1 rounded text-left ${
+                activeTab === "online"
+                  ? isDarkMode
+                    ? "bg-[#5865f2] text-white"
+                    : "bg-blue-500 text-white"
+                  : isDarkMode
+                  ? "text-gray-400 hover:bg-[#35373c]"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`}
               onClick={() => setActiveTab("online")}
             >
               Trực tuyến
             </button>
+
             <button
-              className={`px-2 py-1 rounded ${activeTab === "all" ? "bg-[#404249] text-white" : "text-gray-400 hover:bg-[#35373c]"}`}
+              className={`w-full px-2 py-1 rounded text-left ${
+                activeTab === "all"
+                  ? isDarkMode
+                    ? "bg-[#5865f2] text-white"
+                    : "bg-blue-500 text-white"
+                  : isDarkMode
+                  ? "text-gray-400 hover:bg-[#35373c]"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`}
               onClick={() => setActiveTab("all")}
             >
               Tất cả
             </button>
+
             <button
-              className={`px-2 py-1 rounded ${activeTab === "pending" ? "bg-[#404249] text-white" : "text-gray-400 hover:bg-[#35373c]"}`}
-              onClick={() => setActiveTab("pending")}
+              className={`w-full px-2 py-1 rounded text-left flex items-center gap-2 ${
+                isDarkMode ? "bg-green-600 text-white" : "bg-green-500 text-black"
+              }`}
             >
-              Đang chờ xử lý
+              <UserPlus size={16} /> Thêm Bạn
             </button>
-            <button className="bg-[#248046] text-white px-2 py-1 rounded text-sm">Thêm Bạn</button>
           </div>
         </div>
 
         <div className="px-2 text-xs text-gray-400 font-semibold flex items-center justify-between">
           <span>TIN NHẮN TRỰC TIẾP</span>
-          <Plus size={16} className="cursor-pointer" />
         </div>
 
         {/* Friends list */}
@@ -244,6 +280,15 @@ export default function Home({ onProfileClick }) {
           <FriendsView />
         )}
       </div>
+      {showProfile && selectedProfileFriend && (
+        <FriendProfile
+          friend={selectedProfileFriend}
+          onClose={() => {
+            setShowProfile(false)
+            setSelectedProfileFriend(null)
+          }}
+        />
+      )}
     </div>
   )
 }
