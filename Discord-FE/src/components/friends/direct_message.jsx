@@ -1,20 +1,44 @@
-"use client"
-
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Plus, SmilePlus, Gift, Sticker, ImageIcon } from "lucide-react"
+import SampleAvt from "../../assets/sample_avatar.svg"
 
-export default function DirectMessage({ friend, messages = [] }) {
+export default function DirectMessage({ friend, messages: initialMessages = [] }) {
   const [messageInput, setMessageInput] = useState("")
+  const [messages, setMessages] = useState(initialMessages)
+  const messagesEndRef = useRef(null)
+
+  // Scroll to bottom of messages when messages change
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  // Update local messages when prop changes
+  useEffect(() => {
+    setMessages(initialMessages)
+  }, [initialMessages])
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !friend) return
 
+    // Create a new message object
+    const newMessage = {
+      id: Date.now(), // Use timestamp as a simple unique ID
+      sender: "You",
+      content: messageInput,
+      timestamp: `Today at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+    }
+
+    // Add the new message to the messages array
+    setMessages([...messages, newMessage])
+
     // In a real app, you would send this to your backend
     console.log(`Sending message to ${friend.name}: ${messageInput}`)
 
-    // You could emit an event or call a callback function passed as prop
-    // onSendMessage(friend.name, messageInput)
-
+    // Clear the input field
     setMessageInput("")
   }
 
@@ -23,30 +47,33 @@ export default function DirectMessage({ friend, messages = [] }) {
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4">
         {messages.length > 0 ? (
-          messages.map((message) => (
-            <div key={message.id} className="mb-4">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden">
-                  {message.sender === "You" ? (
-                    <img src="/placeholder.svg?height=40&width=40" alt="You" className="w-full h-full object-cover" />
-                  ) : (
-                    <img
-                      src={friend.avatar || "/placeholder.svg?height=40&width=40"}
-                      alt={friend.name}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{message.sender}</span>
-                    <span className="text-xs text-gray-400">{message.timestamp}</span>
+          <div>
+            {messages.map((message) => (
+              <div key={message.id} className="mb-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden">
+                    {message.sender === "You" ? (
+                      <img src={SampleAvt} alt="You" className="w-full h-full object-cover" />
+                    ) : (
+                      <img
+                        src={friend.avatar || "/placeholder.svg?height=40&width=40"}
+                        alt={friend.name}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
-                  <p className="text-gray-100">{message.content}</p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{message.sender}</span>
+                      <span className="text-xs text-gray-400">{message.timestamp}</span>
+                    </div>
+                    <p className="text-gray-100">{message.content}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-16 h-16 rounded-full bg-[#36393f] overflow-hidden mb-4">

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { X, LogOut, Camera, User, Lock } from "lucide-react"
 import { useNavigate } from "react-router-dom";
+import SampleAvt from "../../assets/sample_avatar.svg"
 
 export default function UserProfile({ onClose }) {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export default function UserProfile({ onClose }) {
 
   // Form states
   const [username, setUsername] = useState("Gengar_B")
-  const [avatar, setAvatar] = useState("/placeholder.svg?height=80&width=80")
+  const [avatar, setAvatar] = useState(SampleAvt)
   const [wallpaper, setWallpaper] = useState("")
 
   const [currentPassword, setCurrentPassword] = useState("")
