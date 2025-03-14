@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Plus, SmilePlus, Gift, Sticker, ImageIcon } from "lucide-react"
+import SampleAvt from "../../assets/sample_avatar.svg"
 
 export default function ServerChat({ channel }) {
   const [messageInput, setMessageInput] = useState("")
@@ -43,7 +44,7 @@ export default function ServerChat({ channel }) {
       id: Date.now(),
       user: {
         name: "You",
-        avatar: "/placeholder.svg?height=40&width=40",
+        avatar: SampleAvt,
       },
       content: messageInput,
       timestamp: new Date().toLocaleString("en-US", {
