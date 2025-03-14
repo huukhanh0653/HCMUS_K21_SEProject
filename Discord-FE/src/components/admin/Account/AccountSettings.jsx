@@ -35,51 +35,80 @@ export default function AdminAccountSettings() {
 
   return (
     <div className="flex justify-center items-center min-h-screen px-4">
-      <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-white shadow-lg rounded-lg p-6">
+      <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
         <CardContent>
-          <h2 className="text-xl font-bold text-center mb-6">Cài đặt tài khoản</h2>
+          <h2 className="text-xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Cài đặt tài khoản</h2>
 
           <div className="space-y-4">
             {/* Họ và tên */}
             <div className="flex items-center space-x-4">
-              <Label htmlFor="fullName" className="text-sm font-medium text-gray-700 w-32">
+              <Label htmlFor="fullName" className="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">
                 Họ và tên
               </Label>
-              <Input id="fullName" name="fullName" value={account.fullName} onChange={handleChange} className="flex-1" />
+              <Input 
+                id="fullName" 
+                name="fullName" 
+                value={account.fullName} 
+                onChange={handleChange} 
+                className="flex-1 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md" 
+              />
             </div>
 
             {/* Email */}
             <div className="flex items-center space-x-4">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700 w-32">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">
                 Email
               </Label>
-              <Input id="email" name="email" type="email" value={account.email} onChange={handleChange} className="flex-1" />
+              <Input 
+                id="email" 
+                name="email" 
+                type="email" 
+                value={account.email} 
+                onChange={handleChange} 
+                className="flex-1 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md" 
+              />
             </div>
 
             {/* Mật khẩu mới */}
             <div className="flex items-center space-x-4">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700 w-32">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">
                 Mật khẩu mới
               </Label>
-              <Input id="password" name="password" type="password" value={account.password} onChange={handleChange} className="flex-1" />
+              <Input 
+                id="password" 
+                name="password" 
+                type="password" 
+                value={account.password} 
+                onChange={handleChange} 
+                className="flex-1 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md" 
+              />
             </div>
 
             {/* Xác nhận mật khẩu */}
             <div className="flex items-center space-x-4">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 w-32">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">
                 Xác nhận
               </Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" value={account.confirmPassword} onChange={handleChange} className="flex-1" />
+              <Input 
+                id="confirmPassword" 
+                name="confirmPassword" 
+                type="password" 
+                value={account.confirmPassword} 
+                onChange={handleChange} 
+                className="flex-1 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md" 
+              />
             </div>
 
             {/* Bật/Tắt 2FA */}
             <div className="flex items-center justify-between mt-4">
-              <Label className="text-sm font-medium text-gray-700">Bật xác thực hai yếu tố (2FA)</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Bật xác thực hai yếu tố (2FA)
+              </Label>
               <Switch checked={account.enable2FA} onCheckedChange={handleToggle2FA} />
             </div>
 
             {/* Nút Lưu */}
-            <Button className="w-full mt-6 bg-black text-white" onClick={validateAndSave}>
+            <Button className="w-full mt-6 bg-black dark:bg-blue-600 text-white dark:text-gray-100" onClick={validateAndSave}>
               Lưu thay đổi
             </Button>
           </div>
@@ -87,4 +116,5 @@ export default function AdminAccountSettings() {
       </Card>
     </div>
   );
+
 }

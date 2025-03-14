@@ -65,7 +65,7 @@ const Signup = () => {
   };
 
   return (
-    <main className="text-tertiary auth-container">
+    <main className="text-tertiary auth-container authen">
       <section className='max_padd_container flexCenter flex-col pt-32'>
         <div className={`max-w-[555px] h-[600px] m-auto px-14 py-10 rounded-md ${isDarkMode 
         ? "bg-[#292929]" 

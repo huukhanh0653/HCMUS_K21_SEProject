@@ -2,28 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base Styles */
-:root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  /* Light mode defaults */
+/* Scoped Styles for Authentication */
+.authen {
   --bg-gradient: linear-gradient(to bottom right, #D9BFFF, #ffffff);
   --text-color: #23272A;
   --link-color: #5865F2;
   --button-bg: #5865F2;
   --button-text: white;
   --button-hover-bg: #404EED;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
 }
 
-/* Dark Mode */
-.dark {
+.authen.dark {
   --bg-gradient: linear-gradient(to bottom right, #3a0ca3, #23272A);
   --text-color: white;
   --link-color: #8ea6ff;
@@ -32,37 +25,23 @@
   --button-hover-bg: #5865F2;
 }
 
-/* Apply variables */
-html, body {
+.authen {
   background: var(--bg-gradient);
   color: var(--text-color);
   transition: background 0.5s ease-in-out, color 0.3s ease-in-out;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* General Link Styling */
-a {
+.authen a {
   font-weight: 500;
   color: var(--link-color);
   text-decoration: inherit;
 }
 
-a:hover {
+.authen a:hover {
   color: var(--button-hover-bg);
 }
 
-/* Button Styling */
-button {
+.authen button {
   border-radius: 6px;
   padding: 10px 16px;
   font-size: 1rem;
@@ -75,16 +54,11 @@ button {
   transition: all 0.3s ease-in-out;
 }
 
-button:hover {
+.authen button:hover {
   background-color: var(--button-hover-bg);
 }
 
-button:active {
-  transform: scale(0.98);
-}
-
-/* Input Fields */
-input {
+.authen input {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
@@ -94,13 +68,12 @@ input {
   transition: border 0.2s ease-in-out;
 }
 
-input:focus {
+.authen input:focus {
   border-color: var(--button-bg);
   outline: none;
 }
 
-/* Forgot Password Button */
-.forgot-password {
+.authen .forgot-password {
   margin-top: 10px;
   font-size: 0.9rem;
   color: #bbb;
@@ -108,11 +81,10 @@ input:focus {
   transition: color 0.2s ease-in-out;
 }
 
-.forgot-password:hover {
+.authen .forgot-password:hover {
   color: var(--text-color);
 }
 
-/* Smooth Theme Transition */
-* {
+.authen * {
   transition: background 0.5s ease-in-out, color 0.3s ease-in-out;
 }
