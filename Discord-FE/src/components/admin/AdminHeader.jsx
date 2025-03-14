@@ -8,14 +8,21 @@ import { useState } from "react";
 export default function AdminHeader() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+
   return (
     <>
-      <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b bg-background px-4 sm:px-6">
-        {/* Breadcrumb + Menu Button */}
+      <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b bg-background px-4 sm:px-6">
         <div className="flex items-center gap-4">
-          {/*<Button size="icon" variant="ghost" className="rounded-full sm:hidden" onClick={() => setSidebarOpen(true)}>
+          {/* Nút toggle Sidebar */}
+          <Button
+            size="icon"
+            variant="ghost"
+            className="rounded-full bg-red-500 text-white"
+            onClick={() => setSidebarOpen((prev) => !prev)} // Toggle trạng thái
+          >
             <MenuIcon className="h-6 w-6" />
-          </Button>*/}
+          </Button>
+
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -25,7 +32,6 @@ export default function AdminHeader() {
           </Breadcrumb>
         </div>
 
-        {/* Avatar Dropdown */}
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -52,7 +58,6 @@ export default function AdminHeader() {
         </div>
       </header>
 
-      {/* Sidebar */}
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
     </>
   );

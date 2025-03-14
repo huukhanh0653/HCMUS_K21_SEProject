@@ -129,7 +129,7 @@ const ForgotPassword = () => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-6">
+    <div className="min-h-screen flex items-center justify-center py-12 px-6 authen">
       <div className={`max-w-2xl w-full p-8 rounded-xl shadow-xl ${isDarkMode 
         ? "bg-gray-500" 
         : "bg-white "

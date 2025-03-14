@@ -24,7 +24,7 @@ import AdminSettings from './components/admin/AdminSettings/AdminSettings';
 import Profile from './components/admin/pages/Profile';
 import AdminAccountSettings from './components/admin/Account/AccountSettings';
 import AccountProfile from './components/admin/Account/AccountProfile';
-
+import ServerManagement from "./components/admin/Servers/Servers"
 // Component con để dùng hooks trong Provider
 function AppContent() {
   const { isDarkMode, toggleTheme } = useTheme()
@@ -109,6 +109,10 @@ function AppContent() {
                     <Route path="/admin" element={<Admin key="admin" />}>
                       <Route path="dashboard" element={<AdminPanel key="dashboard" />} />
                       <Route path="member" element={<Member key="member" />} />
+                      <Route path="server" element={<ServerManagement key="server" />} />
+                      <Route path="setting" element={<AdminSettings key="setting" />} />
+                      <Route path="account/profile" element={<AccountProfile key="setting" />} />
+                      <Route path="account/settings" element={<AdminAccountSettings key="setting" />} />
                     </Route>
                   </Routes>
                 </LanguageProvider>

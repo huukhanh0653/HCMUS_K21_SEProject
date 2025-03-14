@@ -4,43 +4,14 @@ import { useState,useEffect } from "react";
 import { DiscIcon, PowerIcon, ServerIcon, UsersIcon, PlayIcon, SettingsIcon, MenuIcon, XIcon } from "lucide-react";
 import { cn } from "../../lib/utils"; // Hàm tiện ích để nối classnames
 
-export default function AdminSidebar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isHidden, setIsHidden] = useState(window.innerWidth < 1800);
-
-  // Theo dõi kích thước màn hình để cập nhật trạng thái Sidebar
-  useEffect(() => {
-    const handleResize = () => {
-      setIsHidden(window.innerWidth < 1800);
-      if (window.innerWidth >= 1800) setIsOpen(false); // Đóng Sidebar khi mở rộng màn hình
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
+export default function AdminSidebar({ isOpen, onClose }) {
   return (
     <>
-      {/* Nút mở Sidebar (Chỉ xuất hiện khi Sidebar bị ẩn) */}
-      {isHidden && (
-        <Button
-          size="lg"
-          variant="outline"
-          className={cn(
-            "fixed top-4 left- z-50 rounded-full border border-gray-300 bg-white shadow-md transition-all duration-300",
-            isOpen ? "translate-x-60 opacity-0" : "opacity-100"
-          )}
-          onClick={() => setIsOpen(true)}
-        >
-          <MenuIcon className="h-6 w-6 text-primary" />
-        </Button>
-      )}
-
       {/* Overlay để đóng Sidebar khi nhấn ra ngoài */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 transition-opacity"
-          onClick={() => setIsOpen(false)}
+          onClick={onClose}
         />
       )}
 
@@ -48,7 +19,7 @@ export default function AdminSidebar() {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r bg-background transition-transform shadow-lg",
-          isOpen || !isHidden ? "translate-x-0" : "-translate-x-full"
+          isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex h-16 items-center justify-between border-b px-4">
@@ -56,12 +27,13 @@ export default function AdminSidebar() {
             <DiscIcon className="h-8 w-8 text-primary" />
             <span className="hidden text-lg font-bold text-primary sm:block">Discord</span>
           </Link>
-          {/* Nút đóng Sidebar (chỉ hiện khi Sidebar mở) */}
+
+          {/* Nút đóng Sidebar */}
           <Button
             size="icon"
             variant="ghost"
-            className="rounded-full sm:hidden transition-all duration-300 hover:bg-gray-200"
-            onClick={() => setIsOpen(false)}
+            className="rounded-full transition-all duration-300 hover:bg-gray-200"
+            onClick={onClose}
           >
             <XIcon className="h-6 w-6" />
           </Button>
