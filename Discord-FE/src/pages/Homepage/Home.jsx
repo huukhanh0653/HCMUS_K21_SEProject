@@ -24,6 +24,7 @@ import FriendProfile from "../../components/friends/friend_profile"
 import ServerChannels from "./server_channels"
 import ServerChat from "../../components/server/server_chat"
 import ServerMembers from "../../components/server/server_members"
+import CreateServerModal from "../../components/server/create_server_modal"
 
 import SampleAvt from "../../assets/sample_avatar.svg"
 
@@ -31,12 +32,16 @@ import { useTheme } from '../../components/ThemeProvider';
 import UserPanel from "../../components/user_panel"
 
 export default function Home({ onProfileClick }) {
+  // Dark mode & Light mode toggle
+  const { isDarkMode } = useTheme();
+
   const [activeTab, setActiveTab] = useState("friends")
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [showProfile, setShowProfile] = useState(false)
   const [selectedProfileFriend, setSelectedProfileFriend] = useState(null)
   const [selectedServer, setSelectedServer] = useState(null)
   const [selectedChannel, setSelectedChannel] = useState(null)
+  const [showCreateServer, setShowCreateServer] = useState(false)
 
   // Default channels for servers
   const defaultChannels = [
@@ -173,7 +178,10 @@ export default function Home({ onProfileClick }) {
         </div>
 
         <div className="w-12 h-[2px] bg-[#35363c] rounded-full my-2"></div>
-        <div className="w-12 h-12 bg-[#36393f] hover:bg-[#3ba55d] rounded-full hover:rounded-2xl transition-all duration-200 ease-linear flex items-center justify-center cursor-pointer group mb-2">
+        <div
+          className="w-12 h-12 bg-[#36393f] hover:bg-[#3ba55d] rounded-full hover:rounded-2xl transition-all duration-200 ease-linear flex items-center justify-center cursor-pointer group mb-2"
+          onClick={() => setShowCreateServer(true)}
+        >
           <Plus className="text-[#3ba55d] group-hover:text-white transition-colors" size={24} />
         </div>
       </div>
@@ -199,35 +207,62 @@ export default function Home({ onProfileClick }) {
           </div>
 
           <div className="px-2 mb-2">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-col items-start gap-2 mb-2">
               <button
-                className={`px-2 py-1 rounded ${activeTab === "friends" ? "bg-[#404249] text-white" : "text-gray-400 hover:bg-[#35373c]"}`}
+                className={`w-full px-2 py-1 rounded text-left ${
+                  activeTab === "friends"
+                    ? isDarkMode
+                      ? "bg-[#5865f2] text-white"
+                      : "bg-blue-500 text-white"
+                    : isDarkMode
+                    ? "text-gray-400 hover:bg-[#35373c]"
+                    : "text-gray-700 hover:bg-gray-200"
+                }`}
                 onClick={() => {
-                  setActiveTab("friends")
-                  setSelectedFriend(null)
+                  setActiveTab("friends");
+                  setSelectedFriend(null);
                 }}
               >
                 Bạn bè
               </button>
+
               <button
-                className={`px-2 py-1 rounded ${activeTab === "online" ? "bg-[#404249] text-white" : "text-gray-400 hover:bg-[#35373c]"}`}
+                className={`w-full px-2 py-1 rounded text-left ${
+                  activeTab === "online"
+                    ? isDarkMode
+                      ? "bg-[#5865f2] text-white"
+                      : "bg-blue-500 text-white"
+                    : isDarkMode
+                    ? "text-gray-400 hover:bg-[#35373c]"
+                    : "text-gray-700 hover:bg-gray-200"
+                }`}
                 onClick={() => setActiveTab("online")}
               >
                 Trực tuyến
               </button>
+
               <button
-                className={`px-2 py-1 rounded ${activeTab === "all" ? "bg-[#404249] text-white" : "text-gray-400 hover:bg-[#35373c]"}`}
+                className={`w-full px-2 py-1 rounded text-left ${
+                  activeTab === "all"
+                    ? isDarkMode
+                      ? "bg-[#5865f2] text-white"
+                      : "bg-blue-500 text-white"
+                    : isDarkMode
+                    ? "text-gray-400 hover:bg-[#35373c]"
+                    : "text-gray-700 hover:bg-gray-200"
+                }`}
                 onClick={() => setActiveTab("all")}
               >
                 Tất cả
               </button>
+
               <button
-                className={`px-2 py-1 rounded ${activeTab === "pending" ? "bg-[#404249] text-white" : "text-gray-400 hover:bg-[#35373c]"}`}
-                onClick={() => setActiveTab("pending")}
+                className={`w-full px-2 py-1 rounded text-left flex items-center gap-2 ${
+                  isDarkMode ? "bg-green-600 text-white" : "bg-green-500 text-black"
+                }`}
               >
-                Đang chờ xử lý
+                <UserPlus size={16} /> Thêm Bạn
               </button>
-              <button className="bg-[#248046] text-white px-2 py-1 rounded text-sm">Thêm Bạn</button>
             </div>
           </div>
 
@@ -315,6 +350,8 @@ export default function Home({ onProfileClick }) {
           <FriendsView />
         )}
       </div>
+
+      {/* Friend profile modal */}
       {showProfile && selectedProfileFriend && (
         <FriendProfile
           friend={selectedProfileFriend}
@@ -324,6 +361,9 @@ export default function Home({ onProfileClick }) {
           }}
         />
       )}
+
+      {/* Create server modal */}
+      {showCreateServer && <CreateServerModal onClose={() => setShowCreateServer(false)} />}
     </div>
   )
 }
