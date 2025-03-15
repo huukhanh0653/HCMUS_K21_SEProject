@@ -1,11 +1,15 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, LogOut, Camera, User, Lock } from "lucide-react"
+import { X, LogOut, Camera, User, Lock, Moon, Sun } from "lucide-react"
 import { useNavigate } from "react-router-dom";
+import { useTheme } from '../../components/ThemeProvider';
 import SampleAvt from "../../assets/sample_avatar.svg"
 
 export default function UserProfile({ onClose }) {
+  // Ligh & Dark mode toggle
+  const { isDarkMode, toggleTheme } = useTheme()
+
   const navigate = useNavigate();
   const modalRef = useRef(null)
   const [showEditProfile, setShowEditProfile] = useState(false)
@@ -109,7 +113,6 @@ export default function UserProfile({ onClose }) {
               }}
               className="w-8 h-8 rounded-full bg-[#2b2d31] flex items-center justify-center hover:bg-[#232428]"
             >
-              <X size={20} />
               <span className="text-gray-400 text-sm">ESC</span>
             </button>
           </div>
@@ -229,6 +232,14 @@ export default function UserProfile({ onClose }) {
                 <div className="text-xs font-semibold text-gray-400 mb-2">USER SETTINGS</div>
               </div>
               <div className="mt-auto">
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-2 text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white p-2 rounded w-full"
+              >
+                {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+                <span>{isDarkMode ? "Change Light Mode" : "Change Dark Mode"}</span>
+              </button>
+
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 text-[#ed4245] hover:bg-[#ed4245] hover:text-white p-2 rounded w-full"
