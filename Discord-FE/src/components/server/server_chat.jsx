@@ -1,11 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Plus, SmilePlus, Gift, Sticker, ImageIcon } from "lucide-react"
-import SampleAvt from "../../assets/sample_avatar.svg"
+import { useState, useRef, useEffect } from "react";
+import {
+  Plus,
+  SmilePlus,
+  Gift,
+  Sticker,
+  ImageIcon,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+import SampleAvt from "../../assets/sample_avatar.svg";
 
 export default function ServerChat({ channel }) {
-  const [messageInput, setMessageInput] = useState("")
+  const [showEditTip, setShowEditTip] = useState(false);
+  const [showRemoveTip, setShowRemoveTip] = useState(false);
+  const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -23,22 +33,23 @@ export default function ServerChat({ channel }) {
         name: "qduyisme",
         avatar: "/placeholder.svg?height=40&width=40",
       },
-      content: "tui đi toilet cái, có gì nhớ @Hữu Khánh add cái schema lên đây vs bên trello lun nha",
+      content:
+        "tui đi toilet cái, có gì nhớ @Hữu Khánh add cái schema lên đây vs bên trello lun nha",
       timestamp: "3/10/2025 10:26 AM",
     },
-  ])
-  const messagesEndRef = useRef(null)
+  ]);
+  const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = () => {
-    if (!messageInput.trim()) return
+    if (!messageInput.trim()) return;
 
     const newMessage = {
       id: Date.now(),
@@ -55,18 +66,53 @@ export default function ServerChat({ channel }) {
         minute: "2-digit",
         hour12: true,
       }),
-    }
+    };
 
-    setMessages([...messages, newMessage])
-    setMessageInput("")
-  }
+    setMessages([...messages, newMessage]);
+    setMessageInput("");
+  };
 
   return (
     <div className="flex-1 flex flex-col">
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4">
         {messages.map((message) => (
-          <div key={message.id} className="mb-4 hover:bg-[#2e3035] rounded p-2 -mx-2">
+          <div
+            key={message.id}
+            className="relative group mb-4 hover:bg-[#2e3035] rounded p-2 -mx-2"
+          >
+            {/* Edit Delete popup */}
+            <div className="absolute top-0 right-0 m-2 w-16 h-8 bg-[#2b2d31] flex justify-around items-center text-xs rounded-md opacity-0 group-hover:opacity-100">
+              <div className="relative">
+                {showEditTip && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-10 text-white text-sm text-center py-1 rounded-md bg-black">
+                    Edit
+                  </div>
+                )}
+                <Pencil
+                  size={20}
+                  className="text-gray-200 cursor-pointer"
+                  onMouseEnter={() => setShowEditTip(true)}
+                  onMouseLeave={() => setShowEditTip(false)}
+                  onClick={() => {}}
+                />
+              </div>
+              <div className="relative">
+                {showRemoveTip && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-14 text-[#c73539] text-sm text-center py-1 rounded-md bg-black">
+                    Remove
+                  </div>
+                )}
+                <Trash2
+                  size={20}
+                  className="text-gray-200 cursor-pointer"
+                  color="#c73539"
+                  onMouseEnter={() => setShowRemoveTip(true)}
+                  onMouseLeave={() => setShowRemoveTip(false)}
+                  onClick={() => {}}
+                />
+              </div>
+            </div>
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden flex-shrink-0">
                 <img
@@ -78,10 +124,12 @@ export default function ServerChat({ channel }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{message.user.name}</span>
-                  <span className="text-xs text-gray-400">{message.timestamp}</span>
+                  <span className="text-xs text-gray-400">
+                    {message.timestamp}
+                  </span>
                 </div>
                 <p className="text-gray-100 whitespace-pre-wrap break-words text-left">
-                    {message.content}
+                  {message.content}
                 </p>
               </div>
             </div>
@@ -115,7 +163,10 @@ export default function ServerChat({ channel }) {
               <button className="p-2 hover:bg-[#404249] rounded-lg">
                 <Sticker size={20} className="text-gray-200" />
               </button>
-              <button className="p-2 hover:bg-[#404249] rounded-lg" onClick={handleSendMessage}>
+              <button
+                className="p-2 hover:bg-[#404249] rounded-lg"
+                onClick={handleSendMessage}
+              >
                 <SmilePlus size={20} className="text-gray-200" />
               </button>
             </div>
@@ -123,6 +174,5 @@ export default function ServerChat({ channel }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

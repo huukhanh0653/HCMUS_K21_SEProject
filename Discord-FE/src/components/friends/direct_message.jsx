@@ -1,46 +1,62 @@
-import { useState, useRef, useEffect } from "react"
-import { Plus, SmilePlus, Gift, Sticker, ImageIcon } from "lucide-react"
-import SampleAvt from "../../assets/sample_avatar.svg"
+import { useState, useRef, useEffect } from "react";
+import {
+  Plus,
+  SmilePlus,
+  Gift,
+  Sticker,
+  ImageIcon,
+  Trash2,
+  Pencil,
+} from "lucide-react";
+import SampleAvt from "../../assets/sample_avatar.svg";
 
-export default function DirectMessage({ friend, messages: initialMessages = [] }) {
-  const [messageInput, setMessageInput] = useState("")
-  const [messages, setMessages] = useState(initialMessages)
-  const messagesEndRef = useRef(null)
+export default function DirectMessage({
+  friend,
+  messages: initialMessages = [],
+}) {
+  const [showEditTip, setShowEditTip] = useState(false);
+  const [showRemoveTip, setShowRemoveTip] = useState(false);
+  const [messageInput, setMessageInput] = useState("");
+  const [messages, setMessages] = useState(initialMessages);
+  const messagesEndRef = useRef(null);
 
   // Scroll to bottom of messages when messages change
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [messages]);
 
   // Update local messages when prop changes
   useEffect(() => {
-    setMessages(initialMessages)
-  }, [initialMessages])
+    setMessages(initialMessages);
+  }, [initialMessages]);
 
   const handleSendMessage = () => {
-    if (!messageInput.trim() || !friend) return
+    if (!messageInput.trim() || !friend) return;
 
     // Create a new message object
     const newMessage = {
       id: Date.now(), // Use timestamp as a simple unique ID
       sender: "You",
       content: messageInput,
-      timestamp: `Today at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
-    }
+      timestamp: `Today at ${new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`,
+    };
 
     // Add the new message to the messages array
-    setMessages([...messages, newMessage])
+    setMessages([...messages, newMessage]);
 
     // In a real app, you would send this to your backend
-    console.log(`Sending message to ${friend.name}: ${messageInput}`)
+    console.log(`Sending message to ${friend.name}: ${messageInput}`);
 
     // Clear the input field
-    setMessageInput("")
-  }
+    setMessageInput("");
+  };
 
   return (
     <div className="flex-1 flex flex-col">
@@ -49,14 +65,55 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
         {messages.length > 0 ? (
           <div>
             {messages.map((message) => (
-              <div key={message.id} className="mb-4">
+              <div
+                key={message.id}
+                className="relative group mb-4 hover:bg-[#2e3035]"
+              >
+                {/* Edit Delete popup */}
+                <div className="absolute top-0 right-0 m-2 w-16 h-8 bg-[#2b2d31] flex justify-around items-center text-xs rounded-md opacity-0 group-hover:opacity-100">
+                  <div className="relative">
+                    {showEditTip && (
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-10 text-white text-sm text-center py-1 rounded-md bg-black">
+                        Edit
+                      </div>
+                    )}
+                    <Pencil
+                      size={20}
+                      className="text-gray-200 cursor-pointer"
+                      onMouseEnter={() => setShowEditTip(true)}
+                      onMouseLeave={() => setShowEditTip(false)}
+                      onClick={() => {}}
+                    />
+                  </div>
+                  <div className="relative">
+                    {showRemoveTip && (
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-14 text-[#c73539] text-sm text-center py-1 rounded-md bg-black">
+                        Remove
+                      </div>
+                    )}
+                    <Trash2
+                      size={20}
+                      className="text-gray-200 cursor-pointer"
+                      color="#c73539"
+                      onMouseEnter={() => setShowRemoveTip(true)}
+                      onMouseLeave={() => setShowRemoveTip(false)}
+                      onClick={() => {}}
+                    />
+                  </div>
+                </div>
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden">
                     {message.sender === "You" ? (
-                      <img src={SampleAvt} alt="You" className="w-full h-full object-cover" />
+                      <img
+                        src={SampleAvt}
+                        alt="You"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <img
-                        src={friend.avatar || "/placeholder.svg?height=40&width=40"}
+                        src={
+                          friend.avatar || "/placeholder.svg?height=40&width=40"
+                        }
                         alt={friend.name}
                         className="w-full h-full object-cover"
                       />
@@ -65,7 +122,9 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{message.sender}</span>
-                      <span className="text-xs text-gray-400">{message.timestamp}</span>
+                      <span className="text-xs text-gray-400">
+                        {message.timestamp}
+                      </span>
                     </div>
                     <p className="text-gray-100">{message.content}</p>
                   </div>
@@ -125,6 +184,5 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
         </div>
       </div>
     </div>
-  )
+  );
 }
-
