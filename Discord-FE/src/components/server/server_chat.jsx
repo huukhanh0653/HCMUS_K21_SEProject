@@ -9,27 +9,7 @@ const socket = io("http://localhost:5000") // Replace with your server URL
 
 export default function ServerChat({ channel }) {
   const [messageInput, setMessageInput] = useState("")
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      user: {
-        name: "Giang",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content:
-        "chi tiết yêu cầu thuyết trình giữa kì:\n\nDemo bảng đồ án của nhóm các công cụ nhóm sử dụng để đảm bảo coding standards.\nDemo bảng đồ án của nhóm các UI frameworks, libraries và components nhóm sử dụng để tăng tốc độ phát triển và đảm bảo chất lượng giao diện hệ thống.",
-      timestamp: "2/25/2025 6:12 PM",
-    },
-    {
-      id: 2,
-      user: {
-        name: "qduyisme",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: "tui đi toilet cái, có gì nhớ @Hữu Khánh add cái schema lên đây vs bên trello lun nha",
-      timestamp: "3/10/2025 10:26 AM",
-    },
-  ])
+  const [messages, setMessages] = useState([])
   const [editingMessageId, setEditingMessageId] = useState(null)
   const [editedContent, setEditedContent] = useState("")
   const inputRef = useRef(null)
@@ -54,10 +34,15 @@ export default function ServerChat({ channel }) {
     socket.on("receiveMessage", (newMessage) => {
       setMessages((prevMessages) => [...prevMessages, newMessage])
     })
+    socket.on('messageUpdated', (data) => {
+      setMessages((prev) => prev.map((msg) => (msg.message_id === data.message_id ? data : msg)));
+    });
+    socket.on('messageDeleted', (data) => {
+      setMessages((prev) => prev.filter((msg) => msg.message_id !== data.message_id));
+    });
 
     return () => {
-      socket.off("previousMessages")
-      socket.off("receiveMessage")
+      socket.off()
     }
   }, ["default-channel"])
 
@@ -85,7 +70,7 @@ export default function ServerChat({ channel }) {
   }
 
   const handleDeleteMessage = (id) => {
-    setMessages(messages.filter((message) => message.id !== id))
+    socket.emit('deleteMessage', { message_id: id }); 
   }
 
   const handleEditMessage = (id, content) => {
@@ -94,11 +79,11 @@ export default function ServerChat({ channel }) {
   }
 
   const handleSaveEdit = (id) => {
-    setMessages(
-      messages.map((message) =>
-        message.id === id ? { ...message, content: editedContent } : message
-      )
-    )
+    socket.emit('editMessage', {
+      message_id: id,
+      content: editedContent,
+      attachments: []
+    });
     setEditingMessageId(null)
     setEditedContent("")
   }
@@ -123,22 +108,31 @@ export default function ServerChat({ channel }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{message.user.name}</span>
-                    <span className="text-xs text-gray-400">{message.timestamp}</span>
+                    <span className="font-semibold">{message.sender_id}</span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(message.timestamp).toLocaleString('vi-VN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </span>
                   </div>
 
                   {/* Edit & Delete Icons (Only for 'You') */}
-                  {message.user.name === "You" && (
+                  {message.sender_id === "currentUserId" && (
                     <div className="flex items-center gap-2">
                       <button
                         className="p-1 text-gray-400 hover:text-gray-200"
-                        onClick={() => handleEditMessage(message.id, message.content)}
+                        onClick={() => handleEditMessage(message.message_id, message.content)}
                       >
                         <Edit size={16} />
                       </button>
                       <button
                         className="p-1 text-gray-400 hover:text-red-500"
-                        onClick={() => handleDeleteMessage(message.id)}
+                        onClick={() => handleDeleteMessage(message.message_id)}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -147,14 +141,19 @@ export default function ServerChat({ channel }) {
                 </div>
 
                 {/* Edit Mode */}
-                {editingMessageId === message.id ? (
+                {editingMessageId === message.message_id ? (
                   <textarea
                     value={editedContent}
                     onChange={(e) => setEditedContent(e.target.value)}
                     className="w-full bg-[#404249] text-gray-100 p-2 mt-1 rounded-md focus:outline-none resize-none break-words whitespace-pre-wrap"
                     rows={2}
                     autoFocus
-                    onBlur={() => handleSaveEdit(message.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSaveEdit(message.message_id);
+                      }
+                    }}
                   />
                 ) : (
                   <p className="text-gray-100 break-words whitespace-pre-wrap break-all text-left overflow-hidden">
