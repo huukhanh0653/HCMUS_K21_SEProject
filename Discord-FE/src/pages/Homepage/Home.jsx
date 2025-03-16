@@ -309,7 +309,7 @@ export default function Home({ onProfileClick }) {
       {/* Main content area */}
       <div className="flex-1 h-full flex flex-col bg-[#313338]">
         {/* Header */}
-        <div className="h-12 border-b border-[#232428] flex items-center px-4">
+        <div className="h-12 min-h-[3rem] flex-shrink-0 border-b border-[#232428] flex items-center px-4">
           {selectedServer && selectedChannel ? (
             <>
               {selectedChannel.type === "text" ? (

@@ -113,7 +113,7 @@ export default function UserProfile({ onClose }) {
               }}
               className="w-8 h-8 rounded-full bg-[#2b2d31] flex items-center justify-center hover:bg-[#232428]"
             >
-              <span className="text-gray-400 text-sm">ESC</span>
+              <X size={20} />
             </button>
           </div>
         </div>

@@ -22,7 +22,7 @@ export default function CreateServerModal({ onClose }) {
           onClick={onClose}
           className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 text-gray-400 hover:text-gray-100 hover:bg-gray-600"
         >
-          X
+          <X size={20} />
         </button>
 
         {modalType === "main" && (
