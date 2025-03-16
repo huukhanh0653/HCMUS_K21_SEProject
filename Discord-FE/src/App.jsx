@@ -81,7 +81,6 @@ function AppContent() {
           element={
             <>
               <Login />
-              <Footer />
             </>
           }
         />

@@ -1,19 +1,19 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { useTheme } from '../../components/ThemeProvider';
-import './Authentication.css';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useTheme } from "../../components/ThemeProvider";
+import Logo from "../../assets/echochat_logo.svg";
 
 const Signup = () => {
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode } = useTheme();
 
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone) => /^[0-9]+$/.test(phone);
@@ -22,111 +22,154 @@ const Signup = () => {
     e.preventDefault();
 
     if (!email || !validateEmail(email)) {
-      setErrorMessage('Email không hợp lệ');
+      setErrorMessage("Email không hợp lệ");
       return;
     }
     if (!phone || !validatePhone(phone)) {
-      setErrorMessage('Số điện thoại không hợp lệ');
+      setErrorMessage("Số điện thoại không hợp lệ");
       return;
     }
     if (!password) {
-      setErrorMessage('Mật khẩu không được để trống');
+      setErrorMessage("Mật khẩu không được để trống");
       return;
     }
     if (password !== confirmPassword) {
-      setErrorMessage('Mật khẩu xác nhận không khớp');
+      setErrorMessage("Mật khẩu xác nhận không khớp");
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:5000/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("http://localhost:5000/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, phone, password }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        setErrorMessage(error.message || 'Đăng kí thất bại!');
+        setErrorMessage(error.message || "Đăng kí thất bại!");
         return;
       }
 
-      setSuccessMessage('Đăng ký thành công!');
-      setTimeout(() => window.location.replace('/login'), 3000);
+      setSuccessMessage("Đăng ký thành công!");
+      setTimeout(() => window.location.replace("/login"), 3000);
     } catch (error) {
-      setErrorMessage('Có lỗi xảy ra!');
+      setErrorMessage("Có lỗi xảy ra!");
     }
   };
 
   return (
-    <>
-      <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Discord</h1>
-      <div className={`flex w-[600px] ${isDarkMode ? 'bg-[#2F3136] text-white' : 'bg-white text-gray-900'} p-6 rounded-lg shadow-lg flex-col gap-6 mx-auto mt-20`}> 
-        <div className="flex justify-between">
-          <h2 className="text-xl font-bold">Đăng ký</h2>
-
-        </div>
-        
-        <form onSubmit={handleSignup} className="flex flex-col gap-4">
-          <input 
-            type="email" 
-            placeholder='Email' 
-            className={`p-3 rounded-md border focus:border-blue-500 outline-none ${isDarkMode ? 'bg-[#202225] text-white border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`} 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input 
-            type="tel" 
-            placeholder='Số điện thoại' 
-            className={`p-3 rounded-md border focus:border-blue-500 outline-none ${isDarkMode ? 'bg-[#202225] text-white border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`} 
-            value={phone} 
-            onChange={(e) => setPhone(e.target.value)}
-          />
-          
-          <div className="relative">
-            <input 
-              type={showPassword ? "text" : "password"} 
-              placeholder='Mật khẩu' 
-              className={`p-3 w-full rounded-md border focus:border-blue-500 outline-none ${isDarkMode ? 'bg-[#202225] text-white border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`} 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-            />
-          </div>
-          
-          <div className="relative">
-            <input 
-              type={showPassword ? "text" : "password"} 
-              placeholder='Xác nhận mật khẩu' 
-              className={`p-3 w-full rounded-md border focus:border-blue-500 outline-none ${isDarkMode ? 'bg-[#202225] text-white border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`} 
-              value={confirmPassword} 
-              onChange={(e) => setConfirmPassword(e.target.value)} 
-            />
-            <button 
-              type="button" 
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <FaEye /> : <FaEyeSlash />}
-            </button>
-          </div>
-
-          <button 
-            type="submit" 
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-md"
-          >
-            Tiếp tục
-          </button>
-        </form>
-
-        {errorMessage && <p className='text-red-500 text-center'>{errorMessage}</p>}
-        {successMessage && <p className='text-green-500 text-center'>{successMessage}</p>}
-
-        <p className="text-gray-400 text-sm text-center">
-          Đã có tài khoản? 
-          <Link to="/login" className="text-blue-400 hover:underline"> Đăng nhập</Link>
-        </p>
+    <div
+      className="flex flex-col items-center min-h-screen w-full py-10"
+      style={{
+        background: isDarkMode
+          ? "linear-gradient(135deg, #1e1e1e, #3a3a3a)" // Dark Grey
+          : "linear-gradient(135deg, #e0e0e0, #ffffff)", // Light Grey
+      }}
+    >
+      {/* Logo + Title */}
+      <div className="flex items-center gap-2 mb-6">
+        <img src={Logo} alt="EchoChat Logo" className="h-10" />
+        <h1
+          className="text-4xl font-bold bg-clip-text text-transparent"
+          style={{
+            backgroundImage: isDarkMode
+              ? "linear-gradient(90deg, #a0a0a0, #d0d0d0)" // Dark Mode Grey Gradient
+              : "linear-gradient(90deg, #606060, #404040)", // Light Mode Grey Gradient
+          }}
+        >
+          EchoChat
+        </h1>
       </div>
-    </>
+
+      <div className="flex w-[800px] bg-[#2F3136] p-6 rounded-lg shadow-lg text-white mx-auto">
+        {/* Left Side: Signup Info */}
+        <div className="w-1/3 flex flex-col justify-center items-center border-r border-gray-700 p-6">
+          <h2 className="text-xl font-bold text-center mb-4">Tham gia ngay</h2>
+          <p className="text-gray-400 text-center">
+            Đăng ký để kết nối với bạn bè và cộng đồng EchoChat.
+          </p>
+        </div>
+
+        {/* Right Side: Signup Form */}
+        <div className="w-2/3 p-6">
+          <h2 className="text-2xl font-bold text-center mb-4">Đăng ký</h2>
+
+          <form onSubmit={handleSignup} className="flex flex-col gap-4">
+            {/* Email Input */}
+            <input
+              type="email"
+              placeholder="Email"
+              className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            {/* Phone Input */}
+            <input
+              type="tel"
+              placeholder="Số điện thoại"
+              className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+
+            {/* Password Input */}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Mật khẩu"
+                className="bg-[#202225] text-white p-3 w-full rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            {/* Confirm Password Input */}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Xác nhận mật khẩu"
+                className="bg-[#202225] text-white p-3 w-full rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEye /> : <FaEyeSlash />}
+              </button>
+            </div>
+
+            {/* Signup Button */}
+            <button
+              type="submit"
+              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition"
+            >
+              Đăng ký
+            </button>
+          </form>
+
+          {/* Error Message */}
+          <p className="text-red-500 text-xs text-center mt-2 min-h-[16px]">
+            {errorMessage || "\u00A0"}
+          </p>
+
+          {/* Success Message */}
+          <p className="text-green-500 text-xs text-center mt-2 min-h-[16px]">
+            {successMessage || "\u00A0"}
+          </p>
+
+          {/* Already have an account? */}
+          <p className="text-gray-400 text-sm text-center mt-5">
+            Đã có tài khoản?
+            <Link to="/login" className="text-gray-300 hover:underline transition"> Đăng nhập</Link>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 

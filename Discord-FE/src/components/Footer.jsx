@@ -5,8 +5,6 @@ import FOOTER_CONTACT_INFO from "../assets/footer_contact"
 import SOCIALS from "../assets/socials"
 import { useTheme } from './ThemeProvider'
 import { FaMoon, FaSun, FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
-import "../pages/Authentication/Authentication.css"
-
 const Footer = () => {
   const socialIcons = [
     { icon: FaFacebook, url: "/" },
