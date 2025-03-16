@@ -1,30 +1,22 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useTheme } from '../../components/ThemeProvider';
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 import './Authentication.css';
 
 const Signup = () => {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, toggleTheme } = useTheme();
 
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const navigate = useNavigate();
 
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-  };
-
-  const validatePhone = (phone) => {
-    const re = /^[0-9]+$/;
-    return re.test(String(phone));
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhone = (phone) => /^[0-9]+$/.test(phone);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -33,17 +25,18 @@ const Signup = () => {
       setErrorMessage('Email không hợp lệ');
       return;
     }
-
     if (!phone || !validatePhone(phone)) {
       setErrorMessage('Số điện thoại không hợp lệ');
       return;
     }
-
     if (!password) {
       setErrorMessage('Mật khẩu không được để trống');
       return;
     }
-
+    if (password !== confirmPassword) {
+      setErrorMessage('Mật khẩu xác nhận không khớp');
+      return;
+    }
 
     try {
       const response = await fetch('http://localhost:5000/signup', {
@@ -58,89 +51,83 @@ const Signup = () => {
         return;
       }
 
-      const result = await response.json();
-      alert(`Đăng kí thành công!`);
-      window.location.replace('/login');
-      setSuccessMessage(result.message);
-      setErrorMessage('');
-
-      // // Delay navigation for a moment to allow users to see the message
-      // setTimeout(() => {
-      //   // Redirect to login page
-      //   window.location.replace('/login');
-      // }, 3000); // Delay of 4 seconds 
-
+      setSuccessMessage('Đăng ký thành công!');
+      setTimeout(() => window.location.replace('/login'), 3000);
     } catch (error) {
-      console.error(error);
       setErrorMessage('Có lỗi xảy ra!');
     }
   };
 
   return (
-    <main className="text-tertiary auth-container authen">
-      <section className='max_padd_container flexCenter flex-col pt-32'>
-        <div className={`max-w-[555px] h-[600px] m-auto px-14 py-10 rounded-md ${isDarkMode 
-        ? "bg-[#292929]" 
-        : "bg-white "}`}>
-        <h2 
-          className={`h2 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${isDarkMode 
-            ? "from-red-400 via-white-500 to-yellow-400" 
-            : "from-purple-700 via-blue-500 to-green-400"}
-          `}
-        >
-          Đăng ký
-        </h2>
-          <form onSubmit={handleSignup} className='flex flex-col gap-4 mt-7'>
-            <input type="email" placeholder='Email' className='h-14 w-full pl-5 bg-slate-900/5 outline-none rounded-xl' value={email} onChange={(e) => setEmail(e.target.value)} />
-            <input type="tel" placeholder='Số điện thoại' className='h-14 w-full pl-5 bg-slate-900/5 outline-none rounded-xl' value={phone} onChange={(e) => setPhone(e.target.value)} />
-            <div className="relative w-full">
-              <input 
-                type={showPassword ? "text" : "password"} 
-                placeholder='Mật khẩu' 
-                className='h-14 w-full pl-5 bg-slate-900/5 outline-none rounded-xl'
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button 
-                type="button" 
-                className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-transparent p-1 border-none focus:outline-none ${isDarkMode 
-                  ? "text-white" 
-                  : "text-gray-500"}
-                `}
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <FaEye /> : <FaEyeSlash />}
-                </button>
-            </div>
+    <>
+      <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Discord</h1>
+      <div className={`flex w-[600px] ${isDarkMode ? 'bg-[#2F3136] text-white' : 'bg-white text-gray-900'} p-6 rounded-lg shadow-lg flex-col gap-6 mx-auto mt-20`}> 
+        <div className="flex justify-between">
+          <h2 className="text-xl font-bold">Đăng ký</h2>
 
-            {/* Submit form button to go next step*/}
-            <button type='submit' className={`btn_dark_rounded my-5 w-full !rounded-md ${isDarkMode 
-              ? "from-red-400 via-white-500 to-yellow-400" 
-              : "from-purple-700 via-blue-500 to-green-400"}
-            `}>
-              Tiếp tục
-            </button>
-            
-            <p className={`flex items-center justify-center font-bold gap-1${isDarkMode 
-              ? "text-white" 
-              : "text-black"}
-            `}>
-              Đã có tài khoản? &nbsp;
-              <Link to="/login" className={`underline ${isDarkMode 
-                ? "text-white" 
-                : "text-blue-800"}
-              `}>
-                Đăng nhập
-              </Link>
-            </p>
-
-          </form>
-          {errorMessage && <p className='flexCenter text-base py-5 text-red-500'>{errorMessage}</p>}
-          {successMessage && <p className='text-green-500'>{successMessage}</p>}
         </div>
-      </section>
-    </main>
-  )
-}
+        
+        <form onSubmit={handleSignup} className="flex flex-col gap-4">
+          <input 
+            type="email" 
+            placeholder='Email' 
+            className={`p-3 rounded-md border focus:border-blue-500 outline-none ${isDarkMode ? 'bg-[#202225] text-white border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`} 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input 
+            type="tel" 
+            placeholder='Số điện thoại' 
+            className={`p-3 rounded-md border focus:border-blue-500 outline-none ${isDarkMode ? 'bg-[#202225] text-white border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`} 
+            value={phone} 
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          
+          <div className="relative">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              placeholder='Mật khẩu' 
+              className={`p-3 w-full rounded-md border focus:border-blue-500 outline-none ${isDarkMode ? 'bg-[#202225] text-white border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`} 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+            />
+          </div>
+          
+          <div className="relative">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              placeholder='Xác nhận mật khẩu' 
+              className={`p-3 w-full rounded-md border focus:border-blue-500 outline-none ${isDarkMode ? 'bg-[#202225] text-white border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`} 
+              value={confirmPassword} 
+              onChange={(e) => setConfirmPassword(e.target.value)} 
+            />
+            <button 
+              type="button" 
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEye /> : <FaEyeSlash />}
+            </button>
+          </div>
 
-export default Signup
+          <button 
+            type="submit" 
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-md"
+          >
+            Tiếp tục
+          </button>
+        </form>
+
+        {errorMessage && <p className='text-red-500 text-center'>{errorMessage}</p>}
+        {successMessage && <p className='text-green-500 text-center'>{successMessage}</p>}
+
+        <p className="text-gray-400 text-sm text-center">
+          Đã có tài khoản? 
+          <Link to="/login" className="text-blue-400 hover:underline"> Đăng nhập</Link>
+        </p>
+      </div>
+    </>
+  );
+};
+
+export default Signup;
