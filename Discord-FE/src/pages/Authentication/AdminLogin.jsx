@@ -63,7 +63,7 @@ const AdminLogin = () => {
       <div className="flex items-center gap-2 mb-6">
         <img src={Logo} alt="EchoChat Logo" className="h-10" />
         <h1
-          className="text-4xl font-bold bg-clip-text text-transparent"
+          className="text-4xl font-bold bg-clip-text text-transparent h-12"
           style={{
             backgroundImage: isDarkMode
               ? "linear-gradient(90deg, #a0a0a0, #d0d0d0)"
@@ -124,12 +124,6 @@ const AdminLogin = () => {
             </button>
           </form>
 
-          {/* Error Message */}
-          <p className="text-red-500 text-xs text-center mt-2 min-h-[16px]">{errorMessage || "\u00A0"}</p>
-
-          {/* Success Message */}
-          <p className="text-green-500 text-xs text-center mt-2 min-h-[16px]">{successMessage || "\u00A0"}</p>
-
           {/* Forgot Password & Back to Login */}
           <p className="text-gray-400 text-sm text-center mt-5">
             <Link to="/forgot-password" className="text-gray-300 hover:underline transition">
@@ -141,6 +135,14 @@ const AdminLogin = () => {
             Không phải Admin?
             <Link to="/login" className="text-gray-300 hover:underline transition"> Đăng nhập người dùng</Link>
           </p>
+
+          
+
+          {/* Error Message */}
+          <p className="text-red-500 text-xs text-center mt-2 min-h-[8px]">{errorMessage || "\u00A0"}</p>
+
+          {/* Success Message */}
+          <p className="text-green-500 text-xs text-center mt-2 min-h-[8px]">{successMessage || "\u00A0"}</p>
         </div>
       </div>
     </div>

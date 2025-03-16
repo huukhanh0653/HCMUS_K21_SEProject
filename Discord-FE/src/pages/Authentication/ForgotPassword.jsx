@@ -118,24 +118,24 @@ const ForgotPassword = () => {
               : "linear-gradient(90deg, #606060, #404040)",
           }}
         >
-          Forgot Password
+          Quên mật khẩu
         </h1>
       </div>
 
       <div className="flex w-[800px] bg-[#2F3136] p-6 rounded-lg shadow-lg text-white mx-auto">
-        <div className="w-2/6 flex flex-col justify-center items-center border-r border-gray-700 p-6">
-          <h2 className="text-xl font-bold text-center mb-4">Reset your password</h2>
+        <div className="w-1/3 flex flex-col justify-center items-center border-r border-gray-700 p-6">
+          <h2 className="text-xl font-bold text-center mb-4">Reset lại mật khẩu</h2>
           <p className="text-gray-400 text-center">
-            Follow the steps to regain access to your account.
+            Làm theo các bước sau để reset lại tài khoản của bạn.
           </p>
         </div>
 
-        <div className="w-4/6 p-6">
+        <div className="w-2/3 p-6">
           {step === "email" ? (
             <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Nhập email"
                 className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -144,7 +144,7 @@ const ForgotPassword = () => {
                 type="submit"
                 className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition"
               >
-                Send Reset Code
+                Xác nhận
               </button>
             </form>
           ) : step === "code" ? (
@@ -166,7 +166,7 @@ const ForgotPassword = () => {
                 type="submit"
                 className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition w-full"
               >
-                Verify Code
+                Xác nhận mã
               </button>
             </form>
           ) : step === "password" ? (
@@ -185,7 +185,7 @@ const ForgotPassword = () => {
                 type="submit"
                 className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition"
               >
-                Reset Password
+                Xác nhận thay đổi mật khẩu
               </button>
             </form>
           ) : null}
