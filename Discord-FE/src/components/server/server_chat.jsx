@@ -1,11 +1,16 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { io } from "socket.io-client"
+import { Plus, SmilePlus, Gift, Sticker, ImageIcon } from "lucide-react"
 import { Plus, SmilePlus, Gift, Sticker, ImageIcon, Edit, Trash2 } from "lucide-react"
 import SampleAvt from "../../assets/sample_avatar.svg"
 
+const socket = io("http://localhost:5000") // Replace with your server URL
+
 export default function ServerChat({ channel }) {
   const [messageInput, setMessageInput] = useState("")
+  const [messages, setMessages] = useState([])
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -38,6 +43,27 @@ export default function ServerChat({ channel }) {
   }
 
   useEffect(() => {
+    console.log("default-channel")
+    // Join the channel room
+    socket.emit("joinChannel", "default-channel")
+
+    // Listen for previous messages
+    socket.on("previousMessages", (previousMessages) => {
+      setMessages(previousMessages)
+    })
+
+    // Listen for new messages
+    socket.on("receiveMessage", (newMessage) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage])
+    })
+
+    return () => {
+      socket.off("previousMessages")
+      socket.off("receiveMessage")
+    }
+  }, ["default-channel"])
+
+  useEffect(() => {
     scrollToBottom()
   }, [messages])
 
@@ -45,23 +71,13 @@ export default function ServerChat({ channel }) {
     if (!messageInput.trim()) return
 
     const newMessage = {
-      id: Date.now(),
-      user: {
-        name: "You",
-        avatar: SampleAvt,
-      },
+      channel_id: "default-channel",
+      sender_id: "currentUserId", // Replace with the actual user ID
       content: messageInput,
-      timestamp: new Date().toLocaleString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
+      attachments: [],
     }
 
-    setMessages([...messages, newMessage])
+    socket.emit("sendMessage", newMessage)
     setMessageInput("")
 
     // Reset textarea height after sending message
@@ -94,13 +110,13 @@ export default function ServerChat({ channel }) {
       {/* Messages area with scrollbar */}
       <div className="flex-1 overflow-y-auto max-h-[calc(100vh-80px)] p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
         {messages.map((message) => (
-          <div key={message.id} className="mb-4 hover:bg-[#2e3035] rounded p-2 -mx-2">
+          <div key={message.message_id} className="mb-4 hover:bg-[#2e3035] rounded p-2 -mx-2">
             <div className="flex items-start gap-4">
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden flex-shrink-0">
                 <img
-                  src={message.user.avatar || "/placeholder.svg"}
-                  alt={message.user.name}
+                  src={message.sender_avatar || SampleAvt}
+                  alt={message.sender_name || "User"}
                   className="w-full h-full object-cover"
                 />
               </div>
