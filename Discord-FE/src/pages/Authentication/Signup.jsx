@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTheme } from "../../components/ThemeProvider";
 import Logo from "../../assets/echochat_logo.svg";
+import { auth, signUpWithEmail } from "../../firebase"; // Firebase auth
 
 const Signup = () => {
   const { isDarkMode } = useTheme();
@@ -39,22 +40,11 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, phone, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        setErrorMessage(error.message || "Đăng kí thất bại!");
-        return;
-      }
-
+      await signUpWithEmail(email, password);
       setSuccessMessage("Đăng ký thành công!");
       setTimeout(() => window.location.replace("/login"), 3000);
     } catch (error) {
-      setErrorMessage("Có lỗi xảy ra!");
+      setErrorMessage(error.message || "Đăng ký thất bại!");
     }
   };
 
@@ -63,8 +53,8 @@ const Signup = () => {
       className="flex flex-col items-center min-h-screen w-full py-10"
       style={{
         background: isDarkMode
-          ? "linear-gradient(135deg, #1e1e1e, #3a3a3a)" // Dark Grey
-          : "linear-gradient(135deg, #e0e0e0, #ffffff)", // Light Grey
+          ? "linear-gradient(135deg, #1e1e1e, #3a3a3a)"
+          : "linear-gradient(135deg, #e0e0e0, #ffffff)",
       }}
     >
       {/* Logo + Title */}
@@ -74,8 +64,8 @@ const Signup = () => {
           className="text-4xl font-bold bg-clip-text text-transparent"
           style={{
             backgroundImage: isDarkMode
-              ? "linear-gradient(90deg, #a0a0a0, #d0d0d0)" // Dark Mode Grey Gradient
-              : "linear-gradient(90deg, #606060, #404040)", // Light Mode Grey Gradient
+              ? "linear-gradient(90deg, #a0a0a0, #d0d0d0)"
+              : "linear-gradient(90deg, #606060, #404040)",
           }}
         >
           EchoChat

@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react"
 import { io } from "socket.io-client"
-import { Plus, SmilePlus, Gift, Sticker, ImageIcon } from "lucide-react"
 import { Plus, SmilePlus, Gift, Sticker, ImageIcon, Edit, Trash2 } from "lucide-react"
 import SampleAvt from "../../assets/sample_avatar.svg"
 
@@ -10,7 +9,6 @@ const socket = io("http://localhost:5000") // Replace with your server URL
 
 export default function ServerChat({ channel }) {
   const [messageInput, setMessageInput] = useState("")
-  const [messages, setMessages] = useState([])
   const [messages, setMessages] = useState([
     {
       id: 1,
