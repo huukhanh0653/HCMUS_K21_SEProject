@@ -91,7 +91,16 @@ export default function ServerChat({ channel }) {
   return (
     <div className="flex-1 flex flex-col relative ">
       {/* Messages area with scrollbar */}
-      <div className="flex-1 overflow-y-auto max-h-[calc(100vh-80px)] p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+      <div 
+        className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+        style={{
+          minHeight: "200px",  // Ensures it doesn't collapse completely
+          maxHeight: "calc(100vh - 100px)", // Adjust height dynamically without overflow
+          scrollbarWidth: "thin", // Firefox scrollbar styling
+          scrollbarColor: "grey transparent", // Firefox scrollbar color
+        }}
+      >
+
         {messages.map((message) => (
           <div key={message.message_id} className="mb-4 hover:bg-[#2e3035] rounded p-2 -mx-2">
             <div className="flex items-start gap-4">
@@ -168,44 +177,45 @@ export default function ServerChat({ channel }) {
       </div>
 
       {/* Message Input */}
-      <div >
-        <div className="bg-[#383a40] rounded-lg">
-          <div className="flex items-center p-2">
+      <div className="absolute bottom-0 left-0 right-0 bg-[#383a40] rounded-lg p-2">
+        <div className="flex items-center">
+          <button className="p-2 hover:bg-[#404249] rounded-lg">
+            <Plus size={20} className="text-gray-200" />
+          </button>
+          <textarea
+            ref={inputRef}
+            value={messageInput}
+            onChange={(e) => setMessageInput(e.target.value)}
+            onInput={(e) => {
+              e.target.style.height = "auto"; // Reset height to auto first
+              e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`; // Limit max height
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+            placeholder={`Message #${channel.name}`}
+            className="flex-1 bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none overflow-y-auto"
+            style={{
+              minHeight: "40px", // Default height
+              maxHeight: "160px", // 4x the default height
+            }}
+          />
+          <div className="flex items-center gap-2">
             <button className="p-2 hover:bg-[#404249] rounded-lg">
-              <Plus size={20} className="text-gray-200" />
+              <Gift size={20} className="text-gray-200" />
             </button>
-            <textarea
-              ref={inputRef}
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onInput={(e) => {
-                e.target.style.height = "auto"
-                e.target.style.height = `${e.target.scrollHeight}px`
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSendMessage()
-                }
-              }}
-              placeholder={`Message #${channel.name}`}
-              className="flex-1 bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none overflow-hidden min-h-[40px] max-h-[120px]"
-              rows={1}
-            />
-            <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-[#404249] rounded-lg">
-                <Gift size={20} className="text-gray-200" />
-              </button>
-              <button className="p-2 hover:bg-[#404249] rounded-lg">
-                <ImageIcon size={20} className="text-gray-200" />
-              </button>
-              <button className="p-2 hover:bg-[#404249] rounded-lg">
-                <Sticker size={20} className="text-gray-200" />
-              </button>
-              <button className="p-2 hover:bg-[#404249] rounded-lg" onClick={handleSendMessage}>
-                <SmilePlus size={20} className="text-gray-200" />
-              </button>
-            </div>
+            <button className="p-2 hover:bg-[#404249] rounded-lg">
+              <ImageIcon size={20} className="text-gray-200" />
+            </button>
+            <button className="p-2 hover:bg-[#404249] rounded-lg">
+              <Sticker size={20} className="text-gray-200" />
+            </button>
+            <button className="p-2 hover:bg-[#404249] rounded-lg" onClick={handleSendMessage}>
+              <SmilePlus size={20} className="text-gray-200" />
+            </button>
           </div>
         </div>
       </div>
