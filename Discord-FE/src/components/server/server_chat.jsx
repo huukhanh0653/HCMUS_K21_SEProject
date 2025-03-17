@@ -70,7 +70,7 @@ export default function ServerChat({ channel }) {
   }
 
   const handleDeleteMessage = (id) => {
-    socket.emit('deleteMessage', { message_id: id }); 
+    socket.emit('deleteMessage', { channel_id: "default-channel", message_id: id }); 
   }
 
   const handleEditMessage = (id, content) => {
@@ -79,14 +79,17 @@ export default function ServerChat({ channel }) {
   }
 
   const handleSaveEdit = (id) => {
+    if (!editedContent.trim()) return;
+
     socket.emit('editMessage', {
-      message_id: id,
-      content: editedContent,
-      attachments: []
+        channel_id: "default-channel",
+        message_id: id,
+        content: editedContent,
+        attachments: []
     });
-    setEditingMessageId(null)
-    setEditedContent("")
-  }
+    setEditingMessageId(null);
+    setEditedContent("");
+  };
 
   return (
     <div className="flex-1 flex flex-col relative ">

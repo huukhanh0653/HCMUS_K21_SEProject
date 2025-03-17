@@ -5,7 +5,7 @@ import { LanguageProvider } from "./components/LanguageProvider";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
+import ProtectedRoute from "./components/ProtectedRoute"; 
 // Authentication
 import Login from "./pages/Authentication/Login";
 import Signup from "./pages/Authentication/Signup";
@@ -84,25 +84,43 @@ function AppContent() {
 
       {/* Router */}
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<><Home onProfileClick={toggleProfile} />{showProfile && <UserProfile user={user} onClose={closeProfile} />}</>} />
-        
-        {/* Authentication Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<><Signup /><Footer /></>} />
-        <Route path="/forgot-password" element={<><ForgotPassword /><Footer /></>} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        
-        {/* Admin Routes */}
-        <Route path="/admin" element={<Admin />}>
-          <Route path="dashboard" element={<AdminPanel />} />
-          <Route path="member" element={<Member />} />
-          <Route path="server" element={<ServerManagement />} />
-          <Route path="setting" element={<AdminSettings />} />
-          <Route path="account/profile" element={<AccountProfile />} />
-          <Route path="account/settings" element={<AdminAccountSettings />} />
-        </Route>
-      </Routes>
+  {/* Public Routes */}
+  <Route path="/login" element={<Login />} />
+  <Route path="/signup" element={<><Signup /><Footer /></>} />
+  <Route path="/forgot-password" element={<><ForgotPassword /><Footer /></>} />
+  <Route path="/admin/login" element={<AdminLogin />} />
+
+  {/* Protected User Routes */}
+  <Route 
+    path="/" 
+    element={
+      <ProtectedRoute>
+        <>
+          <Home user={user} onProfileClick={toggleProfile} />
+          {showProfile && <UserProfile user={user} onClose={closeProfile} />}
+        </>
+      </ProtectedRoute>
+    } 
+  />
+
+  {/* Protected Admin Routes */}
+  <Route 
+    path="/admin" 
+    element={
+      <ProtectedRoute>
+        <Admin />
+      </ProtectedRoute>
+    }
+  >
+    <Route path="dashboard" element={<AdminPanel />} />
+    <Route path="member" element={<Member />} />
+    <Route path="server" element={<ServerManagement />} />
+    <Route path="setting" element={<AdminSettings />} />
+    <Route path="account/profile" element={<AccountProfile />} />
+    <Route path="account/settings" element={<AdminAccountSettings />} />
+  </Route>
+</Routes>
+
     </div>
   );
 }
