@@ -5,8 +5,9 @@ import { X, LogOut, Camera, User, Lock, Moon, Sun } from "lucide-react"
 import { useNavigate } from "react-router-dom";
 import { useTheme } from '../../components/ThemeProvider';
 import SampleAvt from "../../assets/sample_avatar.svg"
+import { getAuth, signOut } from "firebase/auth";
 
-export default function UserProfile({ onClose }) {
+export default function UserProfile({user, onClose }) {
   // Ligh & Dark mode toggle
   const { isDarkMode, toggleTheme } = useTheme()
 
@@ -16,7 +17,7 @@ export default function UserProfile({ onClose }) {
   const [showChangePassword, setShowChangePassword] = useState(false)
 
   // Form states
-  const [username, setUsername] = useState("Gengar_B")
+  const [username, setUsername] = useState(user.name)
   const [avatar, setAvatar] = useState(SampleAvt)
   const [wallpaper, setWallpaper] = useState("")
 
@@ -24,11 +25,16 @@ export default function UserProfile({ onClose }) {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
 
-  const handleLogout = () => {
-    console.log("Logging out...")
-    navigate("/login");
-  }
-
+  const handleLogout = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      console.log("User logged out");
+      navigate("/login"); // Redirect to login page
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
+  };
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && onClose) {
@@ -113,7 +119,7 @@ export default function UserProfile({ onClose }) {
               }}
               className="w-8 h-8 rounded-full bg-[#2b2d31] flex items-center justify-center hover:bg-[#232428]"
             >
-              <span className="text-gray-400 text-sm">ESC</span>
+              <X size={20} />
             </button>
           </div>
         </div>

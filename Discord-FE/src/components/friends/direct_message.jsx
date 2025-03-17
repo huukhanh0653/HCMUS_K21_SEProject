@@ -9,6 +9,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editedContent, setEditedContent] = useState("");
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Scroll to bottom of messages when messages change
   const scrollToBottom = () => {
@@ -16,10 +17,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     });
   };
-
   
-  
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -61,10 +59,33 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
     setEditedContent("");
   };
 
+  const handleInputChange = (e) => {
+    setMessageInput(e.target.value);
+    // Auto-expand textarea but limit to 3 lines (max-height: 300px)
+    e.target.style.height = "auto";
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 300)}px`;
+  };
+  
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      handleSendMessage();
+      e.preventDefault();
+      // Reset textarea height after sending
+      if (inputRef.current) {
+        inputRef.current.style.height = "36px";
+      }
+    }
+  };
+
   return (
-    <div className="flex-1 flex flex-col h-screen">
+    <div className="flex flex-col h-full min-h-0">
       {/* Messages area with scrollbar */}
-      <div className="flex-1 overflow-y-auto max-h-[calc(100vh-80px)] p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+      <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+        style={{
+          scrollbarWidth: "thin", // Firefox
+          scrollbarColor: "grey transparent", // Firefox
+        }}
+      >
         {messages.length > 0 ? (
           <div>
             {messages.map((message) => (
@@ -146,35 +167,25 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
       </div>
 
       {/* Message input */}
-      <div>
-        <div className="bg-[#383a40] rounded-lg">
-          <div className="flex items-center p-2">
-            <button className="p-2 hover:bg-[#404249] rounded-lg">
-              <Plus size={20} className="text-gray-200" />
-            </button>
-            <input
-              type="text"
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-              placeholder={`Message @${friend.name}`}
-              className="flex-1 bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none"
-            />
-            <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-[#404249] rounded-lg">
-                <Gift size={20} className="text-gray-200" />
-              </button>
-              <button className="p-2 hover:bg-[#404249] rounded-lg">
-                <ImageIcon size={20} className="text-gray-200" />
-              </button>
-              <button className="p-2 hover:bg-[#404249] rounded-lg">
-                <Sticker size={20} className="text-gray-200" />
-              </button>
-              <button className="p-2 hover:bg-[#404249] rounded-lg">
-                <SmilePlus size={20} className="text-gray-200" />
-              </button>
-            </div>
-          </div>
+      <div className="bg-[#383a40] p-2 flex-shrink-0">
+        <div className="flex items-center p-2 rounded-lg bg-[#404249]">
+          <button className="p-2 hover:bg-[#404249] rounded-lg">
+            <Plus size={20} className="text-gray-200" />
+          </button>
+          <textarea
+            ref={inputRef}
+            value={messageInput}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder={`Message @${friend.name}`}
+            className="flex-1 bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none"
+            rows={1}
+            style={{ minHeight: "36px", maxHeight: "300px", overflowY: "auto" }}
+          />
+
+          <button className="p-2 hover:bg-[#404249] rounded-lg">
+            <SmilePlus size={20} className="text-gray-200" />
+          </button>
         </div>
       </div>
     </div>

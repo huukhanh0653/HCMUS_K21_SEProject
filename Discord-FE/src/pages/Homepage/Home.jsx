@@ -31,7 +31,7 @@ import SampleAvt from "../../assets/sample_avatar.svg"
 import { useTheme } from '../../components/ThemeProvider';
 import UserPanel from "../../components/user_panel"
 
-export default function Home({ onProfileClick }) {
+export default function Home({user, onProfileClick }) {
   // Dark mode & Light mode toggle
   const { isDarkMode } = useTheme();
 
@@ -302,14 +302,14 @@ export default function Home({ onProfileClick }) {
           </div>
 
           {/* User panel */}
-          <UserPanel onProfileClick={onProfileClick} />
+          <UserPanel user={user} onProfileClick={onProfileClick} />
         </div>
       )}
 
       {/* Main content area */}
       <div className="flex-1 h-full flex flex-col bg-[#313338]">
         {/* Header */}
-        <div className="h-12 border-b border-[#232428] flex items-center px-4">
+        <div className="h-12 min-h-[3rem] flex-shrink-0 border-b border-[#232428] flex items-center px-4">
           {selectedServer && selectedChannel ? (
             <>
               {selectedChannel.type === "text" ? (

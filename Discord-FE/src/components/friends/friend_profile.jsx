@@ -54,7 +54,6 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#2b2d31] flex items-center justify-center hover:bg-[#232428]"
           >
             <X size={20} />
-            <span className="text-gray-400 text-sm">ESC</span>
           </button>
 
           {/* Avatar */}
