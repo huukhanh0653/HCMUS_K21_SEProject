@@ -3,7 +3,9 @@ import {
   IsNotEmpty,
   IsString,
   MaxLength,
-  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsArray,
 } from 'class-validator';
 
 export class UserDto {
@@ -22,7 +24,12 @@ export class UserDto {
   @MaxLength(255)
   email: string;
 
-  @IsNotEmpty()
-  @IsNumber()
-  status: number;
+  @IsOptional()
+  @IsBoolean()
+  status?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  friends?: string[];
 }
