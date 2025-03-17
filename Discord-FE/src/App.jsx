@@ -85,7 +85,7 @@ function AppContent() {
       {/* Router */}
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<><Home onProfileClick={toggleProfile} />{showProfile && <UserProfile user={user} onClose={closeProfile} />}</>} />
+        <Route path="/" element={<><Home  user={user} onProfileClick={toggleProfile} />{showProfile && <UserProfile user={user} onClose={closeProfile} />}</>} />
         
         {/* Authentication Routes */}
         <Route path="/login" element={<Login />} />

@@ -31,7 +31,7 @@ import SampleAvt from "../../assets/sample_avatar.svg"
 import { useTheme } from '../../components/ThemeProvider';
 import UserPanel from "../../components/user_panel"
 
-export default function Home({ onProfileClick }) {
+export default function Home({user, onProfileClick }) {
   // Dark mode & Light mode toggle
   const { isDarkMode } = useTheme();
 
@@ -302,7 +302,7 @@ export default function Home({ onProfileClick }) {
           </div>
 
           {/* User panel */}
-          <UserPanel onProfileClick={onProfileClick} />
+          <UserPanel user={user} onProfileClick={onProfileClick} />
         </div>
       )}
 
