@@ -2,19 +2,23 @@ import { useEffect, useState, useRef } from "react";
 import { ChevronDown, Hash, Volume2 } from "lucide-react";
 import UserPanel from "../../components/user_panel";
 import MemberManagementModal from "../../components/server/MemberManagementModal";
+import ChannelManagementModal from "../../components/server/ChannelManagementModal";
+import InviteServer from "../../components/server/InviteServer";
 
 export default function ServerChannels({ server, onChannelSelect, onProfileClick, selectedChannelId }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const menuRef = useRef(null);
 
   // Mock channels data
-  const channels = [
+  const [channels, setChannels] = useState([
     { id: 1, name: "general", type: "text" },
     { id: 2, name: "announcements", type: "text" },
     { id: 3, name: "General", type: "voice" },
     { id: 4, name: "Gaming", type: "voice" },
-  ];
+  ]);
 
   // Mock member data
   const members = [
@@ -59,6 +63,23 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
     };
   }, []);
 
+
+  /* CHANNEL MANAGER FUNCTION */
+  const handleDeleteChannel = (channelId) => {
+    setChannels(channels.filter(channel => channel.id !== channelId));
+  };
+  
+  const handleRenameChannel = (channelId, newName) => {
+    setChannels(channels.map(channel =>
+      channel.id === channelId ? { ...channel, name: newName } : channel
+    ));
+  };
+  
+  const handleCreateChannel = (newName) => {
+    const newChannel = { id: Date.now(), name: newName, type: "text" };
+    setChannels([...channels, newChannel]);
+  };
+
   return (
     <div className="h-full w-60 bg-[#2b2d31] flex flex-col relative">
       {/* Server name header */}
@@ -76,9 +97,13 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
           {["Quản lý thành viên", "Quản lý kênh", "Mời vào server", "Xóa server"].map((option, index) => (
             <button
               key={index}
-              className="w-full text-left px-4 py-2 text-gray-400 hover:bg-[#35373c] hover:text-white"
+              className={`w-full text-left px-4 py-2 ${
+                option === "Xóa server" ? "text-red-500 hover:bg-red-500 hover:text-white" : "text-gray-400 hover:bg-[#35373c] hover:text-white"
+              }`}
               onClick={() => {
                 if (option === "Quản lý thành viên") setIsMemberModalOpen(true);
+                if (option === "Quản lý kênh") setIsChannelModalOpen(true);
+                if (option === "Mời vào server") setIsInviteModalOpen(true);
               }}
             >
               {option}
@@ -93,6 +118,24 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
         isOpen={isMemberModalOpen} 
         onClose={() => setIsMemberModalOpen(false)} 
       />
+
+      {/* Channel Management Modal */}
+      <ChannelManagementModal
+        channels={channels}
+        isOpen={isChannelModalOpen}
+        onClose={() => setIsChannelModalOpen(false)}
+        onDeleteChannel={handleDeleteChannel}
+        onRenameChannel={handleRenameChannel}
+        onCreateChannel={handleCreateChannel}
+      />
+
+      {/* Invite Server Modal*/}
+      <InviteServer
+        serverCode="ABC123XYZ" 
+        isOpen={isInviteModalOpen} 
+        onClose={() => setIsInviteModalOpen(false)} 
+      />
+
 
       {/* Channels list */}
       <div className="flex-1 overflow-y-auto pt-2">
