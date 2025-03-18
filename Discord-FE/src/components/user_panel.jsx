@@ -16,8 +16,8 @@ export default function UserPanel({ user, onProfileClick }) {
         />
       </div>
       <div className="flex-1">
-        <div className="text-sm font-semibold">{displayName}</div>
-        <div className="text-xs text-gray-400">Trực tuyến</div>
+        <div className="text-sm font-semibold text-left">{displayName}</div>
+        <div className="text-xs text-gray-400 text-left">Trực tuyến</div>
       </div>
       <div className="flex gap-1">
         <Mic size={20} className="text-gray-400 hover:text-gray-200 cursor-pointer" />

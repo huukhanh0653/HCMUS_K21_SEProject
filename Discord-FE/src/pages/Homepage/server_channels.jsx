@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown, Hash, Volume2, Search, UserX, ShieldOff } from "lucide-react";
+import { ChevronDown, Hash, Volume2 } from "lucide-react";
 import UserPanel from "../../components/user_panel";
+import MemberManagementModal from "../../components/server/MemberManagementModal";
 
 export default function ServerChannels({ server, onChannelSelect, onProfileClick, selectedChannelId }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const menuRef = useRef(null);
 
   // Mock channels data
@@ -18,9 +18,13 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
 
   // Mock member data
   const members = [
-    { id: 1, name: "Alice", avatar: "https://i.pravatar.cc/50?img=1" },
-    { id: 2, name: "Bob", avatar: "https://i.pravatar.cc/50?img=2" },
+    { id: 1, name: "Alice",   avatar: "https://i.pravatar.cc/50?img=1" },
+    { id: 2, name: "Bob",     avatar: "https://i.pravatar.cc/50?img=2" },
     { id: 3, name: "Charlie", avatar: "https://i.pravatar.cc/50?img=3" },
+    { id: 4, name: "Cò",      avatar: "https://i.pravatar.cc/50?img=4" },
+    { id: 5, name: "Giang",   avatar: "https://i.pravatar.cc/50?img=5"},
+    { id: 6, name: "Bảo",     avatar: "https://i.pravatar.cc/50?img=6" },
+    { id: 7, name: "Khánh",   avatar: "https://i.pravatar.cc/50?img=7"},
   ];
 
   // Initialize with the first text channel if none is selected
@@ -84,51 +88,11 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
       )}
 
       {/* Member Management Modal */}
-      {isMemberModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
-          <div className="bg-[#2b2d31] p-4 rounded-md w-96 shadow-lg">
-            <h2 className="text-white text-lg font-semibold mb-2">Quản lý thành viên</h2>
-            <div className="flex items-center bg-[#1e1f22] p-2 rounded-md mb-2">
-              <Search size={20} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm thành viên..."
-                className="bg-transparent text-white flex-1 ml-2 outline-none"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="max-h-60 overflow-y-auto">
-              {members
-                .filter((member) =>
-                  member.name.toLowerCase().includes(searchTerm.toLowerCase())
-                )
-                .map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-2 hover:bg-[#35373c] rounded-md">
-                    <div className="flex items-center gap-2">
-                      <img src={member.avatar} alt={member.name} className="w-8 h-8 rounded-full" />
-                      <span className="text-white">{member.name}</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <button className="text-red-500 hover:text-red-700">
-                        <UserX size={20} />
-                      </button>
-                      <button className="text-yellow-500 hover:text-yellow-700">
-                        <ShieldOff size={20} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
-            <button
-              onClick={() => setIsMemberModalOpen(false)}
-              className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
-            >
-              Đóng
-            </button>
-          </div>
-        </div>
-      )}
+      <MemberManagementModal 
+        members={members} 
+        isOpen={isMemberModalOpen} 
+        onClose={() => setIsMemberModalOpen(false)} 
+      />
 
       {/* Channels list */}
       <div className="flex-1 overflow-y-auto pt-2">

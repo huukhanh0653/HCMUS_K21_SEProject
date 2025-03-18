@@ -190,8 +190,8 @@ export default function ServerChat({ channel }) {
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
             onInput={(e) => {
-              e.target.style.height = "auto"; // Reset height to auto first
-              e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`; // Limit max height
+              e.target.style.height = "40px"; // Reset height về mặc định
+              e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`; // Không vượt quá 120px
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -202,8 +202,8 @@ export default function ServerChat({ channel }) {
             placeholder={`Message #${channel.name}`}
             className="flex-1 bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none overflow-y-auto"
             style={{
-              minHeight: "40px", // Default height
-              maxHeight: "160px", // 4x the default height
+              minHeight: "40px", // Chiều cao mặc định
+              maxHeight: "120px", // Giới hạn chiều cao tối đa
             }}
           />
           <div className="flex items-center gap-2">
