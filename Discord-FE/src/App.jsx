@@ -3,9 +3,10 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider, useTheme } from "./components/ThemeProvider";
 import { LanguageProvider } from "./components/LanguageProvider";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "./components/LanguageProvider";
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import ProtectedRoute from "./components/ProtectedRoute"; 
+import ProtectedRoute from "./components/ProtectedRoute";
 // Authentication
 import Login from "./pages/Authentication/Login";
 import Signup from "./pages/Authentication/Signup";
@@ -30,7 +31,9 @@ import AdminAccountSettings from "./components/admin/Account/AccountSettings";
 // Main application content component
 function AppContent() {
   const { isDarkMode, toggleTheme } = useTheme();
+  const { language, toggleLanguage } = useLanguage();
   const { t } = useTranslation();
+
   const [showProfile, setShowProfile] = useState(false);
   const location = useLocation();
   const [user, setUser] = useState(null);
@@ -39,7 +42,7 @@ function AppContent() {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       console.log("Firebase User:", firebaseUser); // Debugging
-  
+
       if (firebaseUser) {
         console.warn(" user is logged in.");
         console.log("User:", firebaseUser);
@@ -52,7 +55,7 @@ function AppContent() {
         setUser(null);
       }
     });
-  
+
     return () => unsubscribe();
   }, []);
 
@@ -68,11 +71,17 @@ function AppContent() {
   return (
     <div className={isDarkMode ? "dark" : "light"}>
       {/* User Panel */}
-      
-      
+
+
       {/* Theme toggle button */}
       {shouldShowThemeToggle && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-2 text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white p-2 rounded w-full"
+          >
+            {language === "en" ? "EN" : "VI"}
+          </button>
           <button
             onClick={toggleTheme}
             className="p-2 bg-primary text-primary-foreground rounded-md shadow-md transition"
@@ -84,42 +93,42 @@ function AppContent() {
 
       {/* Router */}
       <Routes>
-  {/* Public Routes */}
-  <Route path="/login" element={<Login />} />
-  <Route path="/signup" element={<><Signup /><Footer /></>} />
-  <Route path="/forgot-password" element={<><ForgotPassword /><Footer /></>} />
-  <Route path="/admin/login" element={<AdminLogin />} />
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<><Signup /><Footer /></>} />
+        <Route path="/forgot-password" element={<><ForgotPassword /><Footer /></>} />
+        <Route path="/admin/login" element={<AdminLogin />} />
 
-  {/* Protected User Routes */}
-  <Route 
-    path="/" 
-    element={
-      <ProtectedRoute>
-        <>
-          <Home user={user} onProfileClick={toggleProfile} />
-          {showProfile && <UserProfile user={user} onClose={closeProfile} />}
-        </>
-      </ProtectedRoute>
-    } 
-  />
+        {/* Protected User Routes */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <>
+                <Home user={user} onProfileClick={toggleProfile} />
+                {showProfile && <UserProfile user={user} onClose={closeProfile} />}
+              </>
+            </ProtectedRoute>
+          }
+        />
 
-  {/* Protected Admin Routes */}
-  <Route 
-    path="/admin" 
-    element={
-      <ProtectedRoute>
-        <Admin />
-      </ProtectedRoute>
-    }
-  >
-    <Route path="dashboard" element={<AdminPanel />} />
-    <Route path="member" element={<Member />} />
-    <Route path="server" element={<ServerManagement />} />
-    <Route path="setting" element={<AdminSettings />} />
-    <Route path="account/profile" element={<AccountProfile />} />
-    <Route path="account/settings" element={<AdminAccountSettings />} />
-  </Route>
-</Routes>
+        {/* Protected Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<AdminPanel />} />
+          <Route path="member" element={<Member />} />
+          <Route path="server" element={<ServerManagement />} />
+          <Route path="setting" element={<AdminSettings />} />
+          <Route path="account/profile" element={<AccountProfile />} />
+          <Route path="account/settings" element={<AdminAccountSettings />} />
+        </Route>
+      </Routes>
 
     </div>
   );
