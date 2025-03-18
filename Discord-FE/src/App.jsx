@@ -11,6 +11,7 @@ import Login from "./pages/Authentication/Login";
 import Signup from "./pages/Authentication/Signup";
 import ForgotPassword from "./pages/Authentication/ForgotPassword";
 import AdminLogin from "./pages/Authentication/AdminLogin";
+import UsedAccounts from "./pages/Authentication/UsedAccounts";
 
 // Pages
 import Home from "./pages/Homepage/Home";
@@ -26,6 +27,7 @@ import ServerManagement from "./components/admin/Servers/Servers";
 import AdminSettings from "./components/admin/AdminSettings/AdminSettings";
 import AccountProfile from "./components/admin/Account/AccountProfile";
 import AdminAccountSettings from "./components/admin/Account/AccountSettings";
+import { Rotate3D } from "lucide-react";
 
 // Main application content component
 function AppContent() {
@@ -59,7 +61,7 @@ function AppContent() {
   // Determine if the theme toggle should be shown
   const shouldShowThemeToggle =
     location.pathname.startsWith("/admin") ||
-    ["/login", "/signup", "/forgot-password", "/admin/login"].includes(location.pathname);
+    ["/login", "/signup", "/forgot-password", "/admin/login", "/used-accounts"].includes(location.pathname);
 
   // Toggle profile visibility
   const toggleProfile = () => setShowProfile(!showProfile);
@@ -84,42 +86,43 @@ function AppContent() {
 
       {/* Router */}
       <Routes>
-  {/* Public Routes */}
-  <Route path="/login" element={<Login />} />
-  <Route path="/signup" element={<><Signup /><Footer /></>} />
-  <Route path="/forgot-password" element={<><ForgotPassword /><Footer /></>} />
-  <Route path="/admin/login" element={<AdminLogin />} />
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/used-accounts" element={<UsedAccounts/>} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
 
-  {/* Protected User Routes */}
-  <Route 
-    path="/" 
-    element={
-      <ProtectedRoute>
-        <>
-          <Home user={user} onProfileClick={toggleProfile} />
-          {showProfile && <UserProfile user={user} onClose={closeProfile} />}
-        </>
-      </ProtectedRoute>
-    } 
-  />
+        {/* Protected User Routes */}
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <>
+                <Home user={user} onProfileClick={toggleProfile} />
+                {showProfile && <UserProfile user={user} onClose={closeProfile} />}
+              </>
+            </ProtectedRoute>
+          } 
+        />
 
-  {/* Protected Admin Routes */}
-  <Route 
-    path="/admin" 
-    element={
-      <ProtectedRoute>
-        <Admin />
-      </ProtectedRoute>
-    }
-  >
-    <Route path="dashboard" element={<AdminPanel />} />
-    <Route path="member" element={<Member />} />
-    <Route path="server" element={<ServerManagement />} />
-    <Route path="setting" element={<AdminSettings />} />
-    <Route path="account/profile" element={<AccountProfile />} />
-    <Route path="account/settings" element={<AdminAccountSettings />} />
-  </Route>
-</Routes>
+        {/* Protected Admin Routes */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<AdminPanel />} />
+          <Route path="member" element={<Member />} />
+          <Route path="server" element={<ServerManagement />} />
+          <Route path="setting" element={<AdminSettings />} />
+          <Route path="account/profile" element={<AccountProfile />} />
+          <Route path="account/settings" element={<AdminAccountSettings />} />
+        </Route>
+      </Routes>
 
     </div>
   );

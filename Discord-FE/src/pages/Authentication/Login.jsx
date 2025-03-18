@@ -6,6 +6,10 @@ import { useTheme } from "../../components/ThemeProvider";
 import Logo from "../../assets/echochat_logo.svg";
 import { signInWithEmail, signInWithGoogle, signInWithFacebook } from "../../firebase";
 
+//Background image
+import DarkBackground from "../../assets/darkmode_background.jpg";
+import LightBackground from "../../assets/whitemode_background.jpg";
+
 const Login = () => {
   const { isDarkMode } = useTheme();
 
@@ -63,9 +67,10 @@ const Login = () => {
     <div
       className="flex flex-col items-center min-h-screen w-full py-10"
       style={{
-        background: isDarkMode
-          ? "linear-gradient(135deg, #1e1e1e, #3a3a3a)"
-          : "linear-gradient(135deg, #e0e0e0, #ffffff)",
+        backgroundImage: `url(${isDarkMode ? DarkBackground : LightBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
     >
       <div className="flex items-center gap-2 mb-6">
@@ -74,10 +79,10 @@ const Login = () => {
           className="text-4xl font-bold bg-clip-text text-transparent"
           style={{
             backgroundImage: isDarkMode
-              ? "linear-gradient(90deg, #a0a0a0, #d0d0d0)"
-              : "linear-gradient(90deg, #606060, #404040)",
+              ? "linear-gradient(90deg, #F5925EFF, #7FFF10FF)"
+              : "linear-gradient(90deg, #FF0000FF, #ECECECFF)",
           }}
-        >
+        > 
           EchoChat
         </h1>
       </div>
