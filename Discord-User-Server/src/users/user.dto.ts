@@ -5,7 +5,6 @@ import {
   MaxLength,
   IsBoolean,
   IsOptional,
-  IsArray,
 } from 'class-validator';
 
 export class UserDto {
@@ -29,7 +28,7 @@ export class UserDto {
   status?: boolean;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  friends?: string[];
+  @IsString()
+  @MaxLength(255)
+  avatar?: string;
 }
