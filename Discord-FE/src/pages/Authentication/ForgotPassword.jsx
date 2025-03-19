@@ -1,19 +1,22 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import { useTheme } from '../../components/ThemeProvider';
-import './Authentication.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { useTheme } from "../../components/ThemeProvider";
+import Logo from "../../assets/echochat_logo.svg";
+
+//Background image
+import DarkBackground from "../../assets/darkmode_background.jpg";
+import LightBackground from "../../assets/whitemode_background.jpg";
 
 const ForgotPassword = () => {
   const { isDarkMode } = useTheme();
-
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState(Array(9).fill('')); // Initialize with 9 empty fields
-  const [message, setMessage] = useState('');
-  const [step, setStep] = useState('email'); // Step can be 'email', 'code', or 'password'
-  const [countdown, setCountdown] = useState(60); // Countdown in seconds
-  const [isCountdownActive, setIsCountdownActive] = useState(false); // To track if countdown is active
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState(Array(9).fill(""));
+  const [message, setMessage] = useState("");
+  const [step, setStep] = useState("email");
+  const [countdown, setCountdown] = useState(60);
+  const [isCountdownActive, setIsCountdownActive] = useState(false);
 
   const navigate = useNavigate();
 
@@ -23,38 +26,34 @@ const ForgotPassword = () => {
       timer = setInterval(() => {
         setCountdown((prev) => prev - 1);
       }, 1000);
-    } else if (countdown === 0) {
+    }
+    if (countdown === 0) {
       clearInterval(timer);
     }
-
     return () => {
-      if (timer) clearInterval(timer); // Clear the interval when the component is unmounted
+      if (timer) clearInterval(timer);
     };
   }, [isCountdownActive, countdown]);
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     try {
+      /* set this one later
       const response = await axios.post(`http://localhost:4000/user/forgot-password`, { email });
-      setMessage(response.data.message);
-      /*if (response.status === 200) {
-        setStep('code');
-        setIsCountdownActive(true); // Start countdown
-        setCountdown(60); // Reset countdown
-      }*/
+      setMessage(response.data.message); */
+      setStep("code");
+      setIsCountdownActive(true);
+      setCountdown(60);
     } catch (error) {
-      setStep('code');
-      //setMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
+      setMessage(error.response?.data?.message || "Something went wrong. Please try again.");
     }
   };
 
   const handleCodeChange = (e, index) => {
     const newCode = [...code];
-    newCode[index] = e.target.value.slice(0, 1); // Limit to one character
+    newCode[index] = e.target.value.slice(0, 1);
     setCode(newCode);
-
-    // Automatically focus on the next input field after entering a number
-    if (e.target.value !== '' && index < 8) {
+    if (e.target.value !== "" && index < 8) {
       const nextInput = document.getElementById(`code-input-${index + 1}`);
       if (nextInput) {
         nextInput.focus();
@@ -64,187 +63,140 @@ const ForgotPassword = () => {
 
   const handleCodeSubmit = async (e) => {
     e.preventDefault();
-    const codeInput = code.join('');
+    const codeInput = code.join("");
     try {
+      /*set it later when api set up
       const response = await axios.post(`http://localhost:4000/user/verify-code`, { email, code: codeInput });
-      setMessage(response.data.message);
-      setStep('password');
-      /*if (response.status === 200) {
-        setStep('password'); // Move to password input step
-      }*/
+      setMessage(response.data.message); */
+      setStep("password");
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
-    }
-  };
-
-  const handleClearCode = () => {
-    setCode(Array(9).fill(''));
-  };
-
-  const handleRetry = async () => {
-    // Reset countdown and initiate a new email send request
-    setCountdown(60);
-    setIsCountdownActive(true);
-    try {
-      const response = await axios.post(`http://localhost:4000/user/forgot-password`, { email });
-      setMessage(response.data.message);
-    } catch (error) {
-      setMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
+      setMessage(error.response?.data?.message || "Something went wrong. Please try again.");
     }
   };
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    const newPassword = e.target[0].value; // Get new password from input
-    const confirmPassword = e.target[1].value; // Get confirm password from input
+    const newPassword = e.target[0].value;
+    const confirmPassword = e.target[1].value;
 
     if (newPassword !== confirmPassword) {
-      setMessage('Passwords do not match.');
+      setMessage("Passwords do not match.");
       return;
     }
 
     try {
-      // Send API request to reset password
-      const response = await axios.post(`http://localhost:4000/user/reset-password`, {
-        email,
-        newPassword,
-      });
-
+      const response = await axios.post(`http://localhost:4000/user/reset-password`, { email, newPassword });
       setMessage(response.data.message);
-
       if (response.status === 200) {
         Swal.fire({
-          icon: 'success',
-          title: 'Update Password Successful!',
-          text: 'You can log in now!',
+          icon: "success",
+          title: "Update Password Successful!",
+          text: "You can log in now!",
           timer: 2000,
           showConfirmButton: false,
         });
-        navigate("/auth");
+        navigate("/login");
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
+      setMessage(error.response?.data?.message || "Something went wrong. Please try again.");
     }
   };
 
-
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-6">
-      <div className={`max-w-2xl w-full p-8 rounded-xl shadow-xl ${isDarkMode 
-        ? "bg-gray-500" 
-        : "bg-white "
-      }`}>
-        <h1 className={`h2 text-xl font-bold   bg-clip-text text-transparent bg-gradient-to-r ${isDarkMode 
-            ? "from-red-800 via-gray-200 to-yellow-800" 
-            : "from-indigo-800 via-indigo-700 to-indigo-600"}
-          `}>
-          Forgot Password
+    <div
+      className="flex flex-col items-center min-h-screen w-full py-10"
+      style={{
+        backgroundImage: `url(${isDarkMode ? DarkBackground : LightBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Logo + Title */}
+      <div className="flex items-center gap-2 mb-6">
+        <img src={Logo} alt="EchoChat Logo" className="h-10" />
+        <h1
+          className="text-4xl font-bold bg-clip-text text-transparent"
+          style={{
+            backgroundImage: isDarkMode
+            ? "linear-gradient(90deg, #F5925EFF, #7FFF10FF)"
+            : "linear-gradient(90deg, #FF0000FF, #ECECECFF)",
+          }}
+        >
+          Quên mật khẩu
         </h1>
-        {step === 'email' ? (
-          <form onSubmit={handleEmailSubmit}>
-            <div className="mb-6">
+      </div>
+
+      <div className="flex w-[800px] bg-[#2F3136] p-6 rounded-lg shadow-lg text-white mx-auto">
+        <div className="w-1/3 flex flex-col justify-center items-center border-r border-gray-700 p-6">
+          <h2 className="text-xl font-bold text-center mb-4">Reset lại mật khẩu</h2>
+          <p className="text-gray-400 text-center">
+            Làm theo các bước sau để reset lại tài khoản của bạn.
+          </p>
+        </div>
+
+        <div className="w-2/3 p-6">
+          {step === "email" ? (
+            <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Nhập email"
+                className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full text-black p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
               />
-            </div>
-            <button
-              type="submit"
-              className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300"
-            >
-              Send Reset Code
-            </button>
-          </form>
-        ) : step === 'code' ? (
-          <form onSubmit={handleCodeSubmit}>
-            <div className="mb-2 flex justify-between space-x-2">
-              {code.map((digit, index) => (
-                <input
-                  key={index}
-                  id={`code-input-${index}`}
-                  type="text"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleCodeChange(e, index)}
-                  className="w-12 h-12 text-center text-black text-xl font-semibold border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 focus:border-indigo-500"
-                />
-              ))}
-            </div>
-
-            {/* Clear All Button */}
-            <div className="text-right mb-6">
-              <button
-                type="button"
-                onClick={handleClearCode}
-                className="py-2 text-sm rounded-lg transition duration-300 focus:outline-none bg-indigo-600 text-white hover:bg-indigo-100"
-              >
-                Clear All
-              </button>
-            </div>
-
-            {/* Verify Code Button */}
-            <div className="flex justify-between mb-4">
               <button
                 type="submit"
-                className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300"
+                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition"
               >
-                Verify Code
+                Xác nhận
               </button>
-            </div>
-          </form>
-        ) : step === 'password' ? (
-          <form onSubmit={handlePasswordSubmit}>
-            <div className="mb-6">
+            </form>
+          ) : step === "code" ? (
+            <form onSubmit={handleCodeSubmit} className="flex flex-col items-center gap-4">
+              <div className="grid grid-cols-9 gap-2 mb-4">
+                {code.map((digit, index) => (
+                  <input
+                    key={index}
+                    id={`code-input-${index}`}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleCodeChange(e, index)}
+                    className="w-12 h-12 text-center text-black text-xl font-semibold border border-gray-700 rounded-lg focus:outline-none focus:border-gray-400 transition"
+                  />
+                ))}
+              </div>
+              <button
+                type="submit"
+                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition w-full"
+              >
+                Xác nhận mã
+              </button>
+            </form>
+          ) : step === "password" ? (
+            <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
               <input
                 type="password"
                 placeholder="Enter new password"
-                className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
+                className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
               />
-            </div>
-            <div className="mb-6">
               <input
                 type="password"
                 placeholder="Confirm new password"
-                className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
+                className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
               />
-            </div>
-            <button
-              type="submit"
-              className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300"
-            >
-              Reset Password
-            </button>
-          </form>
-        ) : null}
+              <button
+                type="submit"
+                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition"
+              >
+                Xác nhận thay đổi mật khẩu
+              </button>
+            </form>
+          ) : null}
 
-        {/* Message and Countdown */}
-        {message && (
-          <p className={`mt-4 text-center ${message.includes('Error') ? 'text-red-500' : 'text-green-500'} font-medium`}>
-            {message}
-          </p>
-        )}
-
-        {/* Countdown and Retry Button */}
-        {isCountdownActive && countdown > 0 && step !== 'password' && (
-          <p className="mt-4 text-center text-indigo-600 font-medium">
-            Time remaining: {countdown}s
-          </p>
-        )}
-
-        {countdown === 0 && step !== 'password' && (
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={handleRetry}
-              className="py-2 px-6 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300"
-            >
-              Retry
-            </button>
-          </div>
-        )}
+          <p className="text-red-500 text-xs text-center mt-2 min-h-[16px]">{message || "\u00A0"}</p>
+        </div>
       </div>
     </div>
   );

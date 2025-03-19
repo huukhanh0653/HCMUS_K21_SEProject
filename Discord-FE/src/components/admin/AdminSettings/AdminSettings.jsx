@@ -29,40 +29,48 @@ export default function AdminSettings() {
 
   return (
     <div className="flex justify-center items-center min-h-screen px-4">
-      <Card className="w-full max-w-md sm:max-w-xl md:max-w-2xl shadow-lg rounded-lg p-6 bg-white">
+      <Card className="w-full max-w-md sm:max-w-xl md:max-w-2xl shadow-lg rounded-lg p-6 bg-white dark:bg-gray-800">
         <CardContent>
-          <h2 className="text-2xl font-bold text-center mb-6">Cài đặt hệ thống</h2>
+          <h2 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Cài đặt hệ thống</h2>
 
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="systemName" className="block text-sm font-medium text-gray-700">Tên hệ thống</Label>
+            {/* Tên hệ thống */}
+            <div className="flex items-center gap-4">
+              <Label htmlFor="systemName" className="w-1/3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Tên hệ thống
+              </Label>
               <Input
                 id="systemName"
                 name="systemName"
                 value={settings.systemName}
                 onChange={handleChange}
-                className="w-full mt-1 border-gray-300 rounded-md"
+                className="w-2/3 mt-1 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md"
               />
             </div>
 
-            <div>
-              <Label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700">Email liên hệ</Label>
+            {/* Email liên hệ */}
+            <div className="flex items-center gap-4">
+              <Label htmlFor="contactEmail" className="w-1/3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Email liên hệ
+              </Label>
               <Input
                 id="contactEmail"
                 name="contactEmail"
                 type="email"
                 value={settings.contactEmail}
                 onChange={handleChange}
-                className="w-full mt-1 border-gray-300 rounded-md"
+                className="w-2/3 mt-1 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md"
               />
             </div>
 
+            {/* Kích hoạt tính năng X */}
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-gray-700">Kích hoạt tính năng X</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kích hoạt tính năng X</Label>
               <Switch checked={settings.enableFeatureX} onCheckedChange={handleToggle} />
             </div>
 
-            <Button className="w-full bg-black text-white py-2 rounded-lg mt-4" onClick={handleSave}>
+            {/* Nút Lưu */}
+            <Button className="w-full bg-black dark:bg-blue-600 text-white py-2 rounded-lg mt-4" onClick={handleSave}>
               Lưu cài đặt
             </Button>
           </div>

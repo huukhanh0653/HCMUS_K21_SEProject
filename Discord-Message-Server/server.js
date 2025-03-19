@@ -5,6 +5,24 @@ const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const { createClient } = require('redis');
+
+// Initialize Redis client with provided configuration
+const redis = createClient({
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD,
+    socket: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT
+    }
+});
+
+redis.on('error', (err) => console.log('Redis Client Error', err));
+
+(async () => {
+    await redis.connect();
+    console.log('Connected to Redis');
+})();
 
 // Initialize Express app
 const app = express();
@@ -38,9 +56,24 @@ const Message = mongoose.model('Message', MessageSchema);
 const io = new Server(server, {
     cors: {
         origin: '*', // Change this to your frontend URL in production
-        methods: ['GET', 'POST']
+        methods: ['GET', 'POST'] 
     }
 });
+
+// Helper function to push Redis messages to MongoDB
+const flushRedisToMongo = async () => {
+    const keys = await redis.keys('channel:*');
+    for (const key of keys) {
+        const messages = await redis.lrange(key, 0, -1);
+        const parsedMessages = messages.map((msg) => JSON.parse(msg));
+        await Message.insertMany(parsedMessages);
+        await redis.del(key);
+    }
+    console.log('Flushed Redis messages to MongoDB');
+};
+
+// Schedule Redis flush every 15 minutes
+setInterval(flushRedisToMongo, 15 * 60 * 1000);
 
 // Handle WebSocket connections
 io.on('connection', (socket) => {
@@ -50,19 +83,34 @@ io.on('connection', (socket) => {
     socket.on('joinChannel', async (channelId) => {
         // Join the socket room for this channel
         socket.join(channelId);
-        
-        // Send previous messages from this channel to the user
-        const messages = await Message.find({ 
+
+        // Get messages from Redis
+        const redisMessages = await redis.sendCommand(['LRANGE', `channel:${channelId}`, '0', '-1']);
+        const parsedRedisMessages = redisMessages.map((msg) => JSON.parse(msg));
+
+        // Get messages from MongoDB
+        const mongoMessages = await Message.find({ 
             channel_id: channelId,
             deleted: false 
         }).sort({ timestamp: 1 });
-        
-        socket.emit('previousMessages', messages);
+
+        // Combine and sort messages
+        const allMessages = [...parsedRedisMessages, ...mongoMessages].sort(
+            (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+        );
+
+        // Send previous messages from this channel to the user
+        socket.emit('previousMessages', allMessages);
     });
 
     // Listen for new messages
     socket.on('sendMessage', async (data) => {
-        const newMessage = new Message({
+        if (!data || !data.channel_id || !data.sender_id || !data.content) {
+            console.log('Invalid message data:', data);
+            return;
+        }
+
+        const newMessage = {
             message_id: uuidv4(),
             channel_id: data.channel_id,
             sender_id: data.sender_id,
@@ -71,24 +119,55 @@ io.on('connection', (socket) => {
             timestamp: new Date(),
             edited: false,
             deleted: false
-        });
-        
-        await newMessage.save();
+        };
+
+        // Push message to Redis
+        await redis.sendCommand(['RPUSH', `channel:${data.channel_id}`, JSON.stringify(newMessage)]);
+
         // Emit the message only to users in this channel
         io.to(data.channel_id).emit('receiveMessage', newMessage);
     });
 
     // Handle message editing
     socket.on('editMessage', async (data) => {
-        const updatedMessage = await Message.findOneAndUpdate(
-            { message_id: data.message_id },
-            { 
-                content: data.content,
-                edited: true,
-                attachments: data.attachments || []
-            },
-            { new: true }
-        );
+        if (!data || !data.message_id || !data.content) {
+            console.log('Invalid edit data:', data);
+            return;
+        }
+        console.log('Editing message:', data);
+
+        const redisKey = `channel:${data.channel_id}`;
+        let updatedMessage = null;
+
+        // Check if the message exists in Redis
+        const redisMessages = await redis.sendCommand(['LRANGE', redisKey, '0', '-1']);
+        for (let i = 0; i < redisMessages.length; i++) {
+            const msg = JSON.parse(redisMessages[i]);
+            if (msg.message_id === data.message_id) {
+                console.log("Found message in Redis");
+                msg.content = data.content;
+                msg.edited = true;
+                msg.attachments = data.attachments || [];
+                await redis.sendCommand(['LSET', redisKey, i.toString(), JSON.stringify(msg)]);
+                updatedMessage = msg;
+                console.log(updatedMessage);
+                break;
+            }
+        }
+
+        // If not found in Redis, update in MongoDB
+        if (!updatedMessage) {
+            updatedMessage = await Message.findOneAndUpdate(
+                { message_id: data.message_id },
+                { 
+                    content: data.content,
+                    edited: true,
+                    attachments: data.attachments || []
+                },
+                { new: true }
+            );
+        }
+
         if (updatedMessage) {
             // Emit update only to users in this channel
             io.to(updatedMessage.channel_id).emit('messageUpdated', updatedMessage);
@@ -97,11 +176,35 @@ io.on('connection', (socket) => {
 
     // Handle message deletion
     socket.on('deleteMessage', async (data) => {
-        const deletedMessage = await Message.findOneAndUpdate(
-            { message_id: data.message_id },
-            { deleted: true },
-            { new: true }
-        );
+        if (!data || !data.message_id) {
+            console.log('Invalid delete data:', data);
+            return;
+        }
+
+        const redisKey = `channel:${data.channel_id}`;
+        let deletedMessage = null;
+
+        // Check if the message exists in Redis
+        const redisMessages = await redis.sendCommand(['LRANGE', redisKey, '0', '-1']);
+        for (let i = 0; i < redisMessages.length; i++) {
+            const msg = JSON.parse(redisMessages[i]);
+            if (msg.message_id === data.message_id) {
+                msg.deleted = true;
+                await redis.sendCommand(['LSET', redisKey, i.toString(), JSON.stringify(msg)]);
+                deletedMessage = msg;
+                break;
+            }
+        }
+
+        // If not found in Redis, update in MongoDB
+        if (!deletedMessage) {
+            deletedMessage = await Message.findOneAndUpdate(
+                { message_id: data.message_id },
+                { deleted: true },
+                { new: true }
+            );
+        }
+
         if (deletedMessage) {
             // Emit deletion only to users in this channel
             io.to(deletedMessage.channel_id).emit('messageDeleted', deletedMessage);
@@ -115,5 +218,5 @@ io.on('connection', (socket) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.SERVER_PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
