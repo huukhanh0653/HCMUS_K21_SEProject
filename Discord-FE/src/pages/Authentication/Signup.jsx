@@ -4,14 +4,14 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTheme } from "../../components/ThemeProvider";
 import Logo from "../../assets/echochat_logo.svg";
 import { auth, signUpWithEmail } from "../../firebase"; // Firebase auth
-
+import { useTranslation } from "react-i18next";
 //Background image
 import DarkBackground from "../../assets/darkmode_background.jpg";
 import LightBackground from "../../assets/whitemode_background.jpg";
 
 const Signup = () => {
   const { isDarkMode } = useTheme();
-
+  const {t} = useTranslation();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -87,15 +87,15 @@ const Signup = () => {
         <div className={`w-1/3 flex flex-col justify-center items-center p-6 border-r transition-all ${
           isDarkMode ? "border-gray-700" : "border-gray-300"
         }`}>
-          <h2 className="text-xl font-bold text-center mb-4">Tham gia ngay</h2>
+          <h2 className="text-xl font-bold text-center mb-4">{t('Join us now')}</h2>
           <p className={`text-center transition-all ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-            Đăng ký để kết nối với bạn bè và cộng đồng EchoChat.
+            {t('Register to connect with friends and EchoChat communities')}
           </p>
         </div>
 
         {/* Right Side: Signup Form */}
         <div className="w-2/3 p-6">
-          <h2 className="text-2xl font-bold text-center mb-4">Đăng ký</h2>
+          <h2 className="text-2xl font-bold text-center mb-4">{t('Signup')}</h2>
 
           <form onSubmit={handleSignup} className="flex flex-col gap-4">
             {/* Email Input */}
@@ -114,7 +114,7 @@ const Signup = () => {
             {/* Phone Input */}
             <input
               type="tel"
-              placeholder="Số điện thoại"
+              placeholder={t('Phone number')}
               className={`p-3 rounded-md border outline-none transition ${
                 isDarkMode
                   ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
@@ -128,7 +128,7 @@ const Signup = () => {
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Mật khẩu"
+                placeholder={t('Password')}
                 className={`p-3 w-full rounded-md border outline-none transition ${
                   isDarkMode
                     ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
@@ -143,7 +143,7 @@ const Signup = () => {
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Xác nhận mật khẩu"
+                placeholder={t('Confirm Password')}
                 className={`p-3 w-full rounded-md border outline-none transition ${
                   isDarkMode
                     ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
@@ -168,7 +168,7 @@ const Signup = () => {
                 isDarkMode ? "bg-gray-600 hover:bg-gray-700 text-white" : "bg-[#0D6EFD] hover:bg-[#0056D2] text-white"
               }`}
             >
-              Đăng ký
+              {t("Signup")}
             </button>
           </form>
 
@@ -186,8 +186,8 @@ const Signup = () => {
           <p className={`text-sm text-center mt-5 transition-all ${
             isDarkMode ? "text-gray-400" : "text-gray-600"
           }`}>
-            Đã có tài khoản?
-            <Link to="/login" className="text-[#0D6EFD] hover:underline transition"> Đăng nhập</Link>
+            {t('Have an account?')}
+            <Link to="/login" className="text-[#0D6EFD] hover:underline transition"> {t("Login")}</Link>
           </p>
         </div>
       </div>

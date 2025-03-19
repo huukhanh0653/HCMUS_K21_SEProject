@@ -155,14 +155,14 @@ const Login = () => {
             isDarkMode ? "text-gray-400" : "text-gray-600"
           }`}>
             <Link to="/forgot-password" className="hover:underline transition">
-              {t('Forgot passwork?')}
+              {t('Forgot password?')}
             </Link>
           </p>
           <p className={`text-sm text-center mt-5 ${
             isDarkMode ? "text-gray-400" : "text-gray-600"
           }`}>
             {t('Need an account?')}
-            <Link to="/signup" className="text-blue-500 hover:underline transition"> {t('Register')}</Link>
+            <Link to="/signup" className="text-blue-500 hover:underline transition"> {t('Signup')}</Link>
           </p>
         </div>
       </div>

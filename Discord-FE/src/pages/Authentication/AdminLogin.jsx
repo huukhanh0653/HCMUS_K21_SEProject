@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTheme } from "../../components/ThemeProvider";
 import Logo from "../../assets/echochat_logo.svg";
-
+import { useTranslation } from "react-i18next";
 const AdminLogin = () => {
   const { isDarkMode } = useTheme();
   const [email, setEmail] = useState("");
@@ -11,7 +11,7 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
+  const {t} = useTranslation();
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleAdminLogin = async (e) => {
@@ -70,7 +70,7 @@ const AdminLogin = () => {
               : "linear-gradient(90deg, #606060, #404040)",
           }}
         >
-          Đăng nhập Admin
+          {t('Admin Login')}
         </h1>
       </div>
 
@@ -94,10 +94,10 @@ const AdminLogin = () => {
             className="text-xl font-bold text-center mb-4"
             style={{ color: isDarkMode ? "white" : "#333333" }}
           >
-            Truy cập quản trị
+            {t('Administrative access')}
           </h2>
           <p className="text-center" style={{ color: isDarkMode ? "#B0B0B0" : "#666666" }}>
-            Đăng nhập để quản lý hệ thống EchoChat.
+            {t('Log in to manage the EchoChat system')}.
           </p>
         </div>
 
@@ -107,7 +107,7 @@ const AdminLogin = () => {
             className="text-2xl font-bold text-center mb-4"
             style={{ color: isDarkMode ? "white" : "#333333" }}
           >
-            Đăng nhập
+            {t('Login')}
           </h2>
 
           <form onSubmit={handleAdminLogin} className="flex flex-col gap-4">
@@ -130,7 +130,7 @@ const AdminLogin = () => {
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Mật khẩu"
+                placeholder={t("Password")}
                 className="p-3 w-full rounded-md border outline-none transition"
                 style={{
                   background: isDarkMode ? "#202225" : "#FFFFFF",
@@ -161,19 +161,19 @@ const AdminLogin = () => {
                 boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.2)",
               }}
             >
-              Đăng nhập
+              {t('Login')}
             </button>
           </form>
 
           <p className="text-sm text-center mt-5">
-            Không phải Admin?
+            {t("Not Admin?")}
             <Link
               to="/login"
               className="hover:underline transition"
               style={{ color: isDarkMode ? "#B0B0B0" : "#0D6EFD" }}
             >
               {" "}
-              Đăng nhập người dùng
+              {t('User login')}
             </Link>
           </p>
 

@@ -218,7 +218,7 @@ export default function UserProfile({ user, onClose }) {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t('Confirm New Password')}</label>
+                  <label className="block text-sm font-medium mb-2">{t('Confirm new Password')}</label>
                   <input
                     type="password"
                     value={confirmPassword}

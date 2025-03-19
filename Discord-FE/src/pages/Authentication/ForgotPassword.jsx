@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useTheme } from "../../components/ThemeProvider";
 import Logo from "../../assets/echochat_logo.svg";
-
+import { useTranslation } from "react-i18next";
 //Background image
 import DarkBackground from "../../assets/darkmode_background.jpg";
 import LightBackground from "../../assets/whitemode_background.jpg";
@@ -17,7 +17,7 @@ const ForgotPassword = () => {
   const [step, setStep] = useState("email");
   const [countdown, setCountdown] = useState(60);
   const [isCountdownActive, setIsCountdownActive] = useState(false);
-
+  const {t} = useTranslation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -123,7 +123,7 @@ const ForgotPassword = () => {
             : "linear-gradient(90deg, #007BFF, #00CFFF)",
           }}
         >
-          Quên mật khẩu
+          {t('Forgot password')}
         </h1>
       </div>
 
@@ -146,10 +146,10 @@ const ForgotPassword = () => {
             className="text-xl font-bold text-center mb-4"
             style={{ color: isDarkMode ? "white" : "#333333" }}
           >
-            Reset lại mật khẩu
+            {t("Reset password")}
           </h2>
           <p className="text-center" style={{ color: isDarkMode ? "#B0B0B0" : "#666666" }}>
-            Làm theo các bước sau để reset lại tài khoản của bạn.
+            {t('Do the following steps to reset your account.')}
           </p>
         </div>
 
@@ -159,7 +159,7 @@ const ForgotPassword = () => {
             <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
               <input
                 type="email"
-                placeholder="Nhập email"
+                placeholder={t("Enter email")}
                 className="p-3 rounded-md border outline-none transition"
                 style={{
                   background: isDarkMode ? "#202225" : "#FFFFFF",
@@ -179,7 +179,7 @@ const ForgotPassword = () => {
                   boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.2)",
                 }}
               >
-                Xác nhận
+                {t('Confirm')}
               </button>
             </form>
           ) : step === "code" ? (
@@ -211,14 +211,14 @@ const ForgotPassword = () => {
                   boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.2)",
                 }}
               >
-                Xác nhận mã
+                {t('Confirm code')}
               </button>
             </form>
           ) : step === "password" ? (
             <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
               <input
                 type="password"
-                placeholder="Nhập mật khẩu mới"
+                placeholder={t("Enter new password")}
                 className="p-3 rounded-md border outline-none transition"
                 style={{
                   background: isDarkMode ? "#202225" : "#FFFFFF",
@@ -229,7 +229,7 @@ const ForgotPassword = () => {
               />
               <input
                 type="password"
-                placeholder="Xác nhận mật khẩu mới"
+                placeholder={t('Confirm new password')}
                 className="p-3 rounded-md border outline-none transition"
                 style={{
                   background: isDarkMode ? "#202225" : "#FFFFFF",
@@ -247,7 +247,7 @@ const ForgotPassword = () => {
                   boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.2)",
                 }}
               >
-                Xác nhận thay đổi mật khẩu
+                {t('Confirm change password')}
               </button>
             </form>
           ) : null}
