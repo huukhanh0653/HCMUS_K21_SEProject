@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 export default function CreateServerModal({ onClose }) {
   const [modalType, setModalType] = useState("main");
   const [serverName, setServerName] = useState("");
   const [serverImage, setServerImage] = useState(null);
-
+  const {t} = useTranslation();
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -29,9 +29,9 @@ export default function CreateServerModal({ onClose }) {
           <>
             {/* Header */}
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Create Your Server</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('Create Your Server')}</h2>
               <p className="text-gray-400">
-                Your server is where you and your friends hang out. Make yours and start talking.
+                {t('Your server is where you and your friends hang out. Make yours and start talking.')}
               </p>
             </div>
 
@@ -43,7 +43,7 @@ export default function CreateServerModal({ onClose }) {
                 className="w-full bg-[#2b2d31] hover:bg-[#35373c] p-4 rounded-md flex items-center gap-4 transition-colors"
               >
                 <div className="text-left">
-                  <div className="text-white font-medium">Create My Own</div>
+                  <div className="text-white font-medium">{t('Create My Own')}</div>
                 </div>
                 <div className="ml-auto text-gray-400">
                   <svg width="24" height="24" viewBox="0 0 24 24">
@@ -54,12 +54,12 @@ export default function CreateServerModal({ onClose }) {
 
               {/* Join Server */}
               <div className="text-center">
-                <div className="text-xs text-gray-400 uppercase mb-2">Have an invite already?</div>
+                <div className="text-xs text-gray-400 uppercase mb-2">{t('Have an invite already?')}</div>
                 <button
                   onClick={() => setModalType("join")}
                   className="w-full bg-[#404249] hover:bg-[#35373c] text-white p-2 rounded-md transition-colors"
                 >
-                  Join a Server
+                  {t("Join a server")}
                 </button>
               </div>
             </div>
@@ -70,9 +70,9 @@ export default function CreateServerModal({ onClose }) {
           <>
             {/* Customize Your Server */}
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Customize Your Server</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('Customize Your Server')}</h2>
               <p className="text-gray-400">
-                Give your new server a personality with a name and an icon. You can always change it later.
+                {t('Give your new server a personality with a name and an icon. You can always change it later.')}
               </p>
             </div>
 
@@ -82,7 +82,7 @@ export default function CreateServerModal({ onClose }) {
                 {serverImage ? (
                   <img src={serverImage} alt="Server Icon" className="w-full h-full rounded-full object-cover" />
                 ) : (
-                  <span className="text-gray-400 text-sm">UPLOAD</span>
+                  <span className="text-gray-400 text-sm">{t('UPLOAD')}</span>
                 )}
                 <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                 <div className="absolute -bottom-2 right-0 bg-blue-500 w-6 h-6 rounded-full flex items-center justify-center text-white">
@@ -93,11 +93,11 @@ export default function CreateServerModal({ onClose }) {
 
             {/* Server Name Input */}
             <div className="mb-4">
-              <label className="block text-gray-400 text-sm mb-2">SERVER NAME</label>
+              <label className="block text-gray-400 text-sm mb-2">{t('SERVER NAME')}</label>
               <input
                 type="text"
                 className="w-full bg-[#1e1f22] text-white p-2 rounded-md outline-none"
-                placeholder="Enter server name"
+                placeholder={t("Enter server name")}
                 value={serverName}
                 onChange={(e) => setServerName(e.target.value)}
               />
@@ -109,9 +109,9 @@ export default function CreateServerModal({ onClose }) {
                 onClick={() => setModalType("main")}
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                Back
+                {t('Back')}
               </button>
-              <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md">Create</button>
+              <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md">{t('Create')}</button>
             </div>
           </>
         )}
@@ -120,13 +120,13 @@ export default function CreateServerModal({ onClose }) {
           <>
             {/* Join a Server */}
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Join a Server</h2>
-              <p className="text-gray-400">Enter an invite below to join an existing server</p>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('Join a server')}</h2>
+              <p className="text-gray-400">{t('Enter an invite below to join an existing server')}</p>
             </div>
 
             {/* Invite Link Input */}
             <div className="mb-4">
-              <label className="block text-gray-400 text-sm mb-2">INVITE LINK *</label>
+              <label className="block text-gray-400 text-sm mb-2">{t('INVITE LINK')} *</label>
               <input
                 type="text"
                 className="w-full bg-[#1e1f22] text-white p-2 rounded-md outline-none"
@@ -136,7 +136,7 @@ export default function CreateServerModal({ onClose }) {
 
             {/* Invite Example */}
             <div className="mb-4 text-gray-400 text-sm">
-              <p className="mb-1">INVITES SHOULD LOOK LIKE</p>
+              <p className="mb-1">{t('INVITES SHOULD LOOK LIKE')}</p>
               <ul className="list-none">
                 <li>hTKzmak</li>
                 <li>https://discord.gg/hTKzmak</li>
@@ -149,7 +149,7 @@ export default function CreateServerModal({ onClose }) {
               <div className="bg-green-500 w-6 h-6 rounded-full flex items-center justify-center text-white mr-2">
                 ✅
               </div>
-              <span className="text-gray-400 text-sm">Don't have an invite?</span>
+              <span className="text-gray-400 text-sm">{t(`Don't have an invite?`)}</span>
             </div>
 
             {/* Navigation Buttons */}
@@ -158,10 +158,10 @@ export default function CreateServerModal({ onClose }) {
                 onClick={() => setModalType("main")}
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                Back
+                {t('Back')}
               </button>
               <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md">
-                Join Server
+                {t('Join Server')}
               </button>
             </div>
           </>

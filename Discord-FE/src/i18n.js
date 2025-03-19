@@ -24,21 +24,4 @@ i18n.use(initReactI18next).init({
 });
 
 export default i18n;
-{/*
-  en: {
-    translation: {
-      welcome: "Welcome",
-      change_language: "Change Language",
-      servers: "Servers",
-      members: "Members"
-    }
-  },
-  vi: {
-    translation: {
-      welcome: "Chào mừng",
-      change_language: "Thay đổi ngôn ngữ",
-      servers: "Máy chủ",
-      members: "Thành viên"
-    }
-  }
-   */}
+

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { X, Copy } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 export default function InviteServerModal({ isOpen, onClose, serverCode }) {
   if (!isOpen) return null;
-
+  const {t} = useTranslation();
   const friendsNotInServer = [
     { id: 1, name: "Duy", avatar: "https://i.pravatar.cc/50?img=8" },
     { id: 2, name: "Linh", avatar: "https://i.pravatar.cc/50?img=9" },
@@ -26,7 +26,7 @@ export default function InviteServerModal({ isOpen, onClose, serverCode }) {
           <X size={20} />
         </button>
 
-        <h2 className="text-xl font-semibold text-white mb-4">Mời vào server</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">{t('Invite to server')}</h2>
 
         {/* Mã server */}
         <div className="w-full bg-[#1e1f22] p-2 rounded-md flex items-center justify-center mb-2 relative">
@@ -39,7 +39,7 @@ export default function InviteServerModal({ isOpen, onClose, serverCode }) {
             </button>
 
         </div>
-        {copied && <span className="text-green-400 transition-opacity duration-300 mb-4">Đã sao chép</span>}
+        {copied && <span className="text-green-400 transition-opacity duration-300 mb-4">{t('Copied')}</span>}
 
         {/* Danh sách bạn bè */}
         <div className="max-h-60 overflow-y-auto space-y-2">
@@ -50,7 +50,7 @@ export default function InviteServerModal({ isOpen, onClose, serverCode }) {
                 <span className="text-white">{friend.name}</span>
               </div>
               <button className="bg-green-500 text-white px-3 py-1 rounded-md text-sm hover:bg-green-600">
-                Mời
+                {t('Invite')}
               </button>
             </div>
           ))}
@@ -58,7 +58,7 @@ export default function InviteServerModal({ isOpen, onClose, serverCode }) {
 
         {/* Nút đóng */}
         <button onClick={onClose} className="mt-4 w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">
-          Đóng
+          {t('Close')}
         </button>
       </div>
     </div>

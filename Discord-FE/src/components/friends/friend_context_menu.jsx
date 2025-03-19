@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef } from "react"
 import { User, UserMinus, Ban } from "lucide-react"
-
+import { useTranslation } from "react-i18next";
 export default function FriendContextMenu({ children, friend, onAction }) {
   const [isOpen, setIsOpen] = useState(false)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const menuRef = useRef(null)
-
+  const { t } = useTranslation();
   const handleContextMenu = (e) => {
     e.preventDefault()
     setIsOpen(true)
@@ -72,7 +72,7 @@ export default function FriendContextMenu({ children, friend, onAction }) {
             onClick={() => handleAction("profile")}
           >
             <User size={16} />
-            <span>Profile</span>
+            <span>{t('Profile')}</span>
           </div>
 
           <div className="h-[1px] bg-[#1e1f22] mx-2"></div>
@@ -82,7 +82,7 @@ export default function FriendContextMenu({ children, friend, onAction }) {
             onClick={() => handleAction("unfriend")}
           >
             <UserMinus size={16} />
-            <span>Unfriend</span>
+            <span>{t('Unfriend')}</span>
           </div>
 
           <div
@@ -90,7 +90,7 @@ export default function FriendContextMenu({ children, friend, onAction }) {
             onClick={() => handleAction("block")}
           >
             <Ban size={16} />
-            <span>Block</span>
+            <span>{t('Block')}</span>
           </div>
         </div>
       )}

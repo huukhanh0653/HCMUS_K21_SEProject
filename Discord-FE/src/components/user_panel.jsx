@@ -1,8 +1,9 @@
 import { Mic, Headphones, Settings } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function UserPanel({ user, onProfileClick }) {
   console.log("🛠️ UserPanel received user:", user);
-
+  const {t} = useTranslation();
   const displayName = user?.name || "Unknown";
   const avatarSrc = user?.avatar || "https://via.placeholder.com/40"; // Default avatar placeholder
 
@@ -17,7 +18,7 @@ export default function UserPanel({ user, onProfileClick }) {
       </div>
       <div className="flex-1">
         <div className="text-sm font-semibold text-left">{displayName}</div>
-        <div className="text-xs text-gray-400 text-left">Trực tuyến</div>
+        <div className="text-xs text-gray-400 text-left">{t('Online')}</div>
       </div>
       <div className="flex gap-1">
         <Mic size={20} className="text-gray-400 hover:text-gray-200 cursor-pointer" />

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { io } from "socket.io-client"
 import { Plus, SmilePlus, Gift, Sticker, ImageIcon, Edit, Trash2 } from "lucide-react"
 import SampleAvt from "../../assets/sample_avatar.svg"
-
+import { useTranslation } from "react-i18next"
 const socket = io("http://localhost:5000") // Replace with your server URL
 
 export default function ServerChat({ channel }) {
@@ -13,7 +13,7 @@ export default function ServerChat({ channel }) {
   const [editingMessageId, setEditingMessageId] = useState(null)
   const [editedContent, setEditedContent] = useState("")
   const inputRef = useRef(null)
-
+  const {t} = useTranslation();
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -199,7 +199,7 @@ export default function ServerChat({ channel }) {
                 handleSendMessage();
               }
             }}
-            placeholder={`Message #${channel.name}`}
+            placeholder={`${t('Message #')}${channel.name}`}
             className="flex-1 bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none overflow-y-auto"
             style={{
               minHeight: "40px", // Chiều cao mặc định

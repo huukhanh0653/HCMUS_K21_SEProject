@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 export default function FriendsView() {
+  const {t} = useTranslation();
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
       {/* Vòng tròn chứa icon X */}
@@ -8,13 +9,12 @@ export default function FriendsView() {
         <X size={100} className="text-red-500" />
       </div>
 
-      <p className="text-gray-400 mt-4">Không có bạn bè nào trực tuyến vào lúc này. Hãy quay lại sau!</p>
+      <p className="text-gray-400 mt-4">{t(`There aren't any online friends now. Please come back later!`)}</p>
 
       <div className="mt-8 text-gray-300">
-        <h2 className="text-xl font-bold mb-2">Đang Hoạt Động</h2>
+        <h2 className="text-xl font-bold mb-2">{t('Active')}</h2>
         <p className="text-gray-400 max-w-md">
-          Hiện tại không có cập nhật mới nào cả... Nếu bạn bè của bạn có hoạt động mới, ví dụ như chơi game hoặc trò
-          chuyện thoại, chúng tôi sẽ hiển thị hoạt động đó ở đây!
+          {t(`There isn't any new activity... If your friend have new activities, like playing game or video calling, we will display those activities here!`)}
         </p>
       </div>
     </div>

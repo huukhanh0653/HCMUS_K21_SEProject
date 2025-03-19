@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react"
 import { X, MessageSquare, UserPlus, UserMinus, Ban } from "lucide-react"
-
+import { useTranslation } from "react-i18next";
 export default function FriendProfile({ friend, onClose, isFriend = true }) {
   const modalRef = useRef(null)
   const [activeTab, setActiveTab] = useState("about")
-
+  const {t} = useTranslation();
   const handleClickOutside = (event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
       onClose()
@@ -86,7 +86,7 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
               className="bg-[#5865f2] hover:bg-[#4752c4] text-white px-4 py-2 rounded-md flex items-center gap-2"
             >
               <MessageSquare size={20} />
-              Message
+              {t('Message')}
             </button>
             {isFriend ? (
               <button
@@ -94,7 +94,7 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
                 className="bg-[#2b2d31] hover:bg-[#ed4245] hover:text-white text-[#ed4245] px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <UserMinus size={20} />
-                Unfriend
+                {t('Unfriend')}
               </button>
             ) : (
               <button
@@ -102,7 +102,7 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
                 className="bg-[#248046] hover:bg-[#1a6334] text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <UserPlus size={20} />
-                Add Friend
+                {t('Add Friend')}
               </button>
             )}
             <button
@@ -110,7 +110,7 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
               className="bg-[#2b2d31] hover:bg-[#ed4245] hover:text-white text-[#ed4245] px-4 py-2 rounded-md flex items-center gap-2"
             >
               <Ban size={20} />
-              Block
+              {t('Block')}
             </button>
           </div>
         </div>
@@ -126,19 +126,19 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
                 className={`pb-2 ${activeTab === "about" ? "text-white border-b-2 border-white font-semibold" : "text-gray-400"}`}
                 onClick={() => setActiveTab("about")}
               >
-                About Me
+                {t('About Me')}
               </button>
               <button
                 className={`pb-2 ${activeTab === "mutual_friends" ? "text-white border-b-2 border-white font-semibold" : "text-gray-400"}`}
                 onClick={() => setActiveTab("mutual_friends")}
               >
-                Mutual Friends
+                {t('Mutual Friends')}
               </button>
               <button
                 className={`pb-2 ${activeTab === "mutual_servers" ? "text-white border-b-2 border-white font-semibold" : "text-gray-400"}`}
                 onClick={() => setActiveTab("mutual_servers")}
               >
-                Mutual Servers
+                {t('Mutual Servers')}
               </button>
             </div>
           </div>
@@ -148,25 +148,25 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
             {activeTab === "about" && (
               <>
                 <div className="flex items-center text-gray-200">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase w-32">Member Since:</h3>
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase w-32">{t('Member Since')}:</h3>
                   <p>Jul 2, 2017</p>
                 </div>
                 {friend.email && (
                   <div className="flex items-center text-gray-200">
-                    <h3 className="text-xs font-semibold text-gray-400 uppercase w-32">Email:</h3>
+                    <h3 className="text-xs font-semibold text-gray-400 uppercase w-32">{t('Email')}:</h3>
                     <p>{friend.email}</p>
                   </div>
                 )}
                 {friend.phone && (
                   <div className="flex items-center text-gray-200">
-                    <h3 className="text-xs font-semibold text-gray-400 uppercase w-32">Phone:</h3>
+                    <h3 className="text-xs font-semibold text-gray-400 uppercase w-32">{t('Phone')}:</h3>
                     <p>{friend.phone}</p>
                   </div>
                 )}
               </>
             )}
-            {activeTab === "mutual_friends" && <p className="text-gray-400">No mutual friends</p>}
-            {activeTab === "mutual_servers" && <p className="text-gray-400">No mutual servers</p>}
+            {activeTab === "mutual_friends" && <p className="text-gray-400">{t('No mutual friends')}</p>}
+            {activeTab === "mutual_servers" && <p className="text-gray-400">{t('No mutual servers')}</p>}
           </div>
         </div>
       </div>

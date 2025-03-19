@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Plus, SmilePlus, Gift, Sticker, ImageIcon, Edit, Trash2 } from "lucide-react";
 import SampleAvt from "../../assets/sample_avatar.svg";
-
+import { useTranslation } from "react-i18next";
 
 export default function DirectMessage({ friend, messages: initialMessages = [] }) {
   const [messageInput, setMessageInput] = useState("");
@@ -10,7 +10,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
   const [editedContent, setEditedContent] = useState("");
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-
+  const { t } = useTranslation();
   // Scroll to bottom of messages when messages change
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
@@ -33,7 +33,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
       id: Date.now(),
       sender: "You",
       content: messageInput,
-      timestamp: `Today at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+      timestamp: `${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
     };
 
     setMessages([...messages, newMessage]);
@@ -105,7 +105,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{message.sender}</span>
-                        <span className="text-xs text-gray-400">{message.timestamp}</span>
+                        <span className="text-xs text-gray-400">{t('Today at')} {message.timestamp}</span>
                       </div>
 
                       {/* Edit & Delete Buttons (Only for 'You') */}
@@ -159,7 +159,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
             </div>
             <h3 className="text-xl font-bold mb-2">{friend.name}</h3>
             <p className="text-gray-400 max-w-md">
-              This is the beginning of your direct message history with{" "}
+              {t('This is the beginning of your direct message history with')}{" "}
               <span className="font-semibold">{friend.name}</span>.
             </p>
           </div>
@@ -177,7 +177,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
             value={messageInput}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={`Message @${friend.name}`}
+            placeholder={`${t('Message @')}${friend.name}`}
             className="flex-1 bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none"
             rows={1}
             style={{ minHeight: "36px", maxHeight: "300px", overflowY: "auto" }}

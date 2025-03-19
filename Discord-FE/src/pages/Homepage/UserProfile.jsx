@@ -3,14 +3,17 @@
 import { useState, useEffect, useRef } from "react"
 import { X, LogOut, Camera, User, Lock, Moon, Sun } from "lucide-react"
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "../../components/LanguageProvider";
 import { useTheme } from '../../components/ThemeProvider';
 import SampleAvt from "../../assets/sample_avatar.svg"
 import { getAuth, signOut } from "firebase/auth";
 
-export default function UserProfile({user, onClose }) {
+export default function UserProfile({ user, onClose }) {
   // Ligh & Dark mode toggle
   const { isDarkMode, toggleTheme } = useTheme()
-
+  const { language, toggleLanguage } = useLanguage();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const modalRef = useRef(null)
   const [showEditProfile, setShowEditProfile] = useState(false)
@@ -97,14 +100,22 @@ export default function UserProfile({user, onClose }) {
       reader.readAsDataURL(file)
     }
   }
-
+  const getTitle = () => {
+    if (showEditProfile) {
+      return "Edit Profile";
+    } else if (showChangePassword) {
+      return "Change Password";
+    } else {
+      return "My Account";
+    }
+  };
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={handleClickOutside}>
       <div ref={modalRef} className="w-full max-w-2xl bg-[#313338] text-gray-100 rounded-md overflow-hidden">
         {/* Header with close button */}
         <div className="flex justify-between items-center p-4 border-b border-[#232428]">
           <h1 className="text-xl font-bold">
-            {showEditProfile ? "Edit Profile" : showChangePassword ? "Change Password" : "My Account"}
+            {t(getTitle())}
           </h1>
           <div className="flex items-center gap-2">
             <button
@@ -158,7 +169,7 @@ export default function UserProfile({user, onClose }) {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Username</label>
+                  <label className="block text-sm font-medium mb-2">{t('Username')}</label>
                   <input
                     type="text"
                     value={username}
@@ -174,10 +185,10 @@ export default function UserProfile({user, onClose }) {
                   onClick={() => setShowEditProfile(false)}
                   className="px-4 py-2 rounded-md bg-[#2b2d31] hover:bg-[#35373c]"
                 >
-                  Cancel
+                  {t('Cancel')}
                 </button>
                 <button type="submit" className="px-4 py-2 rounded-md bg-[#5865f2] hover:bg-[#4752c4]">
-                  Save Changes
+                  {t('Save Changes')}
                 </button>
               </div>
             </form>
@@ -187,7 +198,7 @@ export default function UserProfile({user, onClose }) {
             <form onSubmit={handleChangePassword}>
               <div className="mb-6">
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Current Password</label>
+                  <label className="block text-sm font-medium mb-2">{t('Current Password')}</label>
                   <input
                     type="password"
                     value={currentPassword}
@@ -197,7 +208,7 @@ export default function UserProfile({user, onClose }) {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">New Password</label>
+                  <label className="block text-sm font-medium mb-2">{t('New Password')}</label>
                   <input
                     type="password"
                     value={newPassword}
@@ -207,7 +218,7 @@ export default function UserProfile({user, onClose }) {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+                  <label className="block text-sm font-medium mb-2">{t('Confirm New Password')}</label>
                   <input
                     type="password"
                     value={confirmPassword}
@@ -223,10 +234,10 @@ export default function UserProfile({user, onClose }) {
                   onClick={() => setShowChangePassword(false)}
                   className="px-4 py-2 rounded-md bg-[#2b2d31] hover:bg-[#35373c]"
                 >
-                  Cancel
+                  {t('Cancel')}
                 </button>
                 <button type="submit" className="px-4 py-2 rounded-md bg-[#5865f2] hover:bg-[#4752c4]">
-                  Change Password
+                  {t('Change Password')}
                 </button>
               </div>
             </form>
@@ -235,23 +246,29 @@ export default function UserProfile({user, onClose }) {
           <div className="flex">
             <div className="w-60 bg-[#2b2d31] p-4">
               <div className="mb-8">
-                <div className="text-xs font-semibold text-gray-400 mb-2">USER SETTINGS</div>
+                <div className="text-xs font-semibold text-gray-400 mb-2">{t('USER SETTINGS')}</div>
               </div>
               <div className="mt-auto">
-              <button
-                onClick={toggleTheme}
-                className="flex items-center gap-2 text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white p-2 rounded w-full"
-              >
-                {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-                <span>{isDarkMode ? "Change Light Mode" : "Change Dark Mode"}</span>
-              </button>
+                <button
+                  onClick={toggleLanguage}
+                  className="flex items-center gap-2 text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white p-2 rounded w-full"
+                >
+                  {language === "en" ? "Switch to Vietnamese" : "Chuyển sang Tiếng Anh"}
+                </button>
+                <button
+                  onClick={toggleTheme}
+                  className="flex items-center gap-2 text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white p-2 rounded w-full"
+                >
+                  {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+                  {isDarkMode ? <span>{t('Change Light Mode')}</span> : <span>{t('Change Dark Mode')}</span>}
+                </button>
 
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 text-[#ed4245] hover:bg-[#ed4245] hover:text-white p-2 rounded w-full"
                 >
                   <LogOut size={16} />
-                  <span>Logout</span>
+                  <span>{t('Logout')}</span>
                 </button>
               </div>
             </div>
@@ -279,16 +296,16 @@ export default function UserProfile({user, onClose }) {
                 onClick={() => setShowEditProfile(true)}
               >
                 <User size={14} />
-                Edit User Profile
+                {t('Edit User Profile')}
               </button>
 
               <div className="mt-8 text-center">
-                <h3 className="text-lg font-semibold mb-4">Password and Authentication</h3>
-                <button 
-                  className="bg-[#5865f2] text-white px-3 py-2 rounded text-sm flex items-center gap-1 mx-auto" 
+                <h3 className="text-lg font-semibold mb-4">{t('Password and Authentication')}</h3>
+                <button
+                  className="bg-[#5865f2] text-white px-3 py-2 rounded text-sm flex items-center gap-1 mx-auto"
                   onClick={() => setShowChangePassword(true)}
                 >
-                  <Lock size={14} /> Change Password
+                  <Lock size={14} /> {t('Change Password')}
                 </button>
               </div>
             </div>

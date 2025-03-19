@@ -25,7 +25,7 @@ import ServerChannels from "./server_channels"
 import ServerChat from "../../components/server/server_chat"
 import ServerMembers from "../../components/server/server_members"
 import CreateServerModal from "../../components/server/create_server_modal"
-
+import { useTranslation } from "react-i18next";
 import SampleAvt from "../../assets/sample_avatar.svg"
 
 import { useTheme } from '../../components/ThemeProvider';
@@ -34,7 +34,7 @@ import UserPanel from "../../components/user_panel"
 export default function Home({user, onProfileClick }) {
   // Dark mode & Light mode toggle
   const { isDarkMode } = useTheme();
-
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("friends")
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [showProfile, setShowProfile] = useState(false)
@@ -200,7 +200,7 @@ export default function Home({user, onProfileClick }) {
             <div className="bg-[#1e1f22] rounded-md flex items-center px-2">
               <input
                 type="text"
-                placeholder="Tìm hoặc bắt đầu cuộc trò chuyện"
+                placeholder={t('Find or start a conversation')}
                 className="bg-transparent border-none text-sm py-1 w-full focus:outline-none text-gray-300"
               />
             </div>
@@ -223,7 +223,7 @@ export default function Home({user, onProfileClick }) {
                   setSelectedFriend(null);
                 }}
               >
-                Bạn bè
+                {t('Friends')}
               </button>
 
               <button
@@ -238,7 +238,7 @@ export default function Home({user, onProfileClick }) {
                 }`}
                 onClick={() => setActiveTab("online")}
               >
-                Trực tuyến
+                {t('Online')}
               </button>
 
               <button
@@ -253,7 +253,7 @@ export default function Home({user, onProfileClick }) {
                 }`}
                 onClick={() => setActiveTab("all")}
               >
-                Tất cả
+                {t('All')}
               </button>
 
               <button
@@ -261,13 +261,13 @@ export default function Home({user, onProfileClick }) {
                   isDarkMode ? "bg-green-600 text-white" : "bg-green-500 text-black"
                 }`}
               >
-                <UserPlus size={16} /> Thêm Bạn
+                <UserPlus size={16} /> {t('Add friend')}
               </button>
             </div>
           </div>
 
           <div className="px-2 text-xs text-gray-400 font-semibold flex items-center justify-between">
-            <span>TIN NHẮN TRỰC TIẾP</span>
+            <span>{t('Direct Messages')}</span>
             <Plus size={16} className="cursor-pointer" />
           </div>
 
@@ -333,7 +333,7 @@ export default function Home({user, onProfileClick }) {
           ) : (
             <>
               <Users size={20} className="text-gray-400 mr-2" />
-              <span className="font-semibold">Bạn bè</span>
+              <span className="font-semibold">{t('Friend')}</span>
             </>
           )}
         </div>

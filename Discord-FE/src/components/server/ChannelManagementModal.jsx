@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { X, Edit, Trash2, Plus, Check } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 export default function ChannelManagementModal({ isOpen, onClose, channels, onDeleteChannel, onRenameChannel, onCreateChannel }) {
   const [editingChannelId, setEditingChannelId] = useState(null);
+  const {t} = useTranslation();
   const [editedName, setEditedName] = useState("");
   const [newChannelName, setNewChannelName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -17,7 +18,7 @@ export default function ChannelManagementModal({ isOpen, onClose, channels, onDe
           <X size={20} />
         </button>
 
-        <h2 className="text-xl font-semibold text-white mb-4">Quản lý kênh</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">{t('Manage Channels')}</h2>
 
         {/* Danh sách kênh */}
         <div className="max-h-60 overflow-y-auto space-y-2">
@@ -70,7 +71,7 @@ export default function ChannelManagementModal({ isOpen, onClose, channels, onDe
           <div className="mt-4 flex items-center gap-2">
             <input
               type="text"
-              placeholder="Nhập tên kênh mới..."
+              placeholder={t("Enter channel name")}
               value={newChannelName}
               onChange={(e) => setNewChannelName(e.target.value)}
               className="flex-1 bg-[#3b3e45] text-white px-2 py-1 rounded-md focus:outline-none"
@@ -85,7 +86,7 @@ export default function ChannelManagementModal({ isOpen, onClose, channels, onDe
                 }
               }}
             >
-              Lưu
+              {t('Save')}
             </button>
           </div>
         ) : (
@@ -93,7 +94,7 @@ export default function ChannelManagementModal({ isOpen, onClose, channels, onDe
             className="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg flex items-center justify-center gap-2"
             onClick={() => setIsAdding(true)}
           >
-            <Plus size={16} /> Tạo thêm kênh
+            <Plus size={16} /> {t('Create new channel')}
           </button>
         )}
       </div>

@@ -4,14 +4,14 @@ import UserPanel from "../../components/user_panel";
 import MemberManagementModal from "../../components/server/MemberManagementModal";
 import ChannelManagementModal from "../../components/server/ChannelManagementModal";
 import InviteServer from "../../components/server/InviteServer";
-
+import { useTranslation } from "react-i18next";
 export default function ServerChannels({ server, onChannelSelect, onProfileClick, selectedChannelId }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const menuRef = useRef(null);
-
+  const {t} = useTranslation();
   // Mock channels data
   const [channels, setChannels] = useState([
     { id: 1, name: "general", type: "text" },
@@ -94,19 +94,19 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
       {/* Dropdown menu */}
       {isMenuOpen && (
         <div ref={menuRef} className="absolute top-12 left-0 w-full bg-[#2b2d31] border border-[#1e1f22] shadow-md rounded-md overflow-hidden z-10">
-          {["Quản lý thành viên", "Quản lý kênh", "Mời vào server", "Xóa server"].map((option, index) => (
+          {["Manage Members", "Manage Channels", "Invite to server", "Delete server"].map((option, index) => (
             <button
               key={index}
               className={`w-full text-left px-4 py-2 ${
-                option === "Xóa server" ? "text-red-500 hover:bg-red-500 hover:text-white" : "text-gray-400 hover:bg-[#35373c] hover:text-white"
+                option === "Delete server" ? "text-red-500 hover:bg-red-500 hover:text-white" : "text-gray-400 hover:bg-[#35373c] hover:text-white"
               }`}
               onClick={() => {
-                if (option === "Quản lý thành viên") setIsMemberModalOpen(true);
-                if (option === "Quản lý kênh") setIsChannelModalOpen(true);
-                if (option === "Mời vào server") setIsInviteModalOpen(true);
+                if (option === "Manage Members") setIsMemberModalOpen(true);
+                if (option === "Manage Channels") setIsChannelModalOpen(true);
+                if (option === "Invite to server") setIsInviteModalOpen(true);
               }}
             >
-              {option}
+              {t(`${option}`)}
             </button>
           ))}
         </div>
