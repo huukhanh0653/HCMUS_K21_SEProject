@@ -122,6 +122,7 @@ export default function ServerChat({ channel }) {
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">{message.sender_id}</span>
                     <span className="text-xs text-gray-400">
+                      
                       {new Date(message.timestamp).toLocaleString('vi-VN', {
                         year: 'numeric',
                         month: '2-digit',

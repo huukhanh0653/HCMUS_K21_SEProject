@@ -119,35 +119,65 @@ const ForgotPassword = () => {
           className="text-4xl font-bold bg-clip-text text-transparent"
           style={{
             backgroundImage: isDarkMode
-            ? "linear-gradient(90deg, #F5925EFF, #7FFF10FF)"
-            : "linear-gradient(90deg, #FF0000FF, #ECECECFF)",
+            ? "linear-gradient(90deg, #FF8C00, #FFD700)" 
+            : "linear-gradient(90deg, #007BFF, #00CFFF)",
           }}
         >
           Quên mật khẩu
         </h1>
       </div>
 
-      <div className="flex w-[800px] bg-[#2F3136] p-6 rounded-lg shadow-lg text-white mx-auto">
-        <div className="w-1/3 flex flex-col justify-center items-center border-r border-gray-700 p-6">
-          <h2 className="text-xl font-bold text-center mb-4">Reset lại mật khẩu</h2>
-          <p className="text-gray-400 text-center">
+      <div
+        className="flex w-[800px] p-6 rounded-lg shadow-lg mx-auto"
+        style={{
+          background: isDarkMode ? "#2F3136" : "#FFFFFF",
+          color: isDarkMode ? "white" : "#000000",
+          boxShadow: isDarkMode ? "none" : "0 4px 10px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        {/* Left Side: Info */}
+        <div
+          className="w-1/3 flex flex-col justify-center items-center border-r p-6"
+          style={{
+            borderColor: isDarkMode ? "#3a3a3a" : "#E0E0E0",
+          }}
+        >
+          <h2
+            className="text-xl font-bold text-center mb-4"
+            style={{ color: isDarkMode ? "white" : "#333333" }}
+          >
+            Reset lại mật khẩu
+          </h2>
+          <p className="text-center" style={{ color: isDarkMode ? "#B0B0B0" : "#666666" }}>
             Làm theo các bước sau để reset lại tài khoản của bạn.
           </p>
         </div>
 
+        {/* Right Side: Form Steps */}
         <div className="w-2/3 p-6">
           {step === "email" ? (
             <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
               <input
                 type="email"
                 placeholder="Nhập email"
-                className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+                className="p-3 rounded-md border outline-none transition"
+                style={{
+                  background: isDarkMode ? "#202225" : "#FFFFFF",
+                  borderColor: isDarkMode ? "#3a3a3a" : "#CCCCCC",
+                  color: isDarkMode ? "white" : "#000000",
+                  boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.1)",
+                }}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <button
                 type="submit"
-                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition"
+                className="font-bold py-2 rounded-md transition"
+                style={{
+                  background: isDarkMode ? "#444" : "#1877F2",
+                  color: "white",
+                  boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.2)",
+                }}
               >
                 Xác nhận
               </button>
@@ -158,18 +188,28 @@ const ForgotPassword = () => {
                 {code.map((digit, index) => (
                   <input
                     key={index}
-                    id={`code-input-${index}`}
                     type="text"
                     maxLength={1}
                     value={digit}
                     onChange={(e) => handleCodeChange(e, index)}
-                    className="w-12 h-12 text-center text-black text-xl font-semibold border border-gray-700 rounded-lg focus:outline-none focus:border-gray-400 transition"
+                    className="w-12 h-12 text-center text-xl font-semibold border rounded-lg focus:outline-none transition"
+                    style={{
+                      background: isDarkMode ? "#202225" : "#FFFFFF",
+                      borderColor: isDarkMode ? "#3a3a3a" : "#CCCCCC",
+                      color: isDarkMode ? "white" : "#000000",
+                      boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.1)",
+                    }}
                   />
                 ))}
               </div>
               <button
                 type="submit"
-                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition w-full"
+                className="font-bold py-2 rounded-md transition w-full"
+                style={{
+                  background: isDarkMode ? "#444" : "#1877F2",
+                  color: "white",
+                  boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.2)",
+                }}
               >
                 Xác nhận mã
               </button>
@@ -178,26 +218,47 @@ const ForgotPassword = () => {
             <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
               <input
                 type="password"
-                placeholder="Enter new password"
-                className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+                placeholder="Nhập mật khẩu mới"
+                className="p-3 rounded-md border outline-none transition"
+                style={{
+                  background: isDarkMode ? "#202225" : "#FFFFFF",
+                  borderColor: isDarkMode ? "#3a3a3a" : "#CCCCCC",
+                  color: isDarkMode ? "white" : "#000000",
+                  boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.1)",
+                }}
               />
               <input
                 type="password"
-                placeholder="Confirm new password"
-                className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+                placeholder="Xác nhận mật khẩu mới"
+                className="p-3 rounded-md border outline-none transition"
+                style={{
+                  background: isDarkMode ? "#202225" : "#FFFFFF",
+                  borderColor: isDarkMode ? "#3a3a3a" : "#CCCCCC",
+                  color: isDarkMode ? "white" : "#000000",
+                  boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.1)",
+                }}
               />
               <button
                 type="submit"
-                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition"
+                className="font-bold py-2 rounded-md transition"
+                style={{
+                  background: isDarkMode ? "#444" : "#1877F2",
+                  color: "white",
+                  boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.2)",
+                }}
               >
                 Xác nhận thay đổi mật khẩu
               </button>
             </form>
           ) : null}
 
-          <p className="text-red-500 text-xs text-center mt-2 min-h-[16px]">{message || "\u00A0"}</p>
+          {/* Message */}
+          <p className="text-xs text-center mt-2 min-h-[16px]" style={{ color: "red" }}>
+            {message || "\u00A0"}
+          </p>
         </div>
       </div>
+
     </div>
   );
 };

@@ -71,19 +71,24 @@ const Signup = () => {
           className="text-4xl font-bold bg-clip-text text-transparent"
           style={{
             backgroundImage: isDarkMode
-            ? "linear-gradient(90deg, #F5925EFF, #7FFF10FF)"
-            : "linear-gradient(90deg, #FF0000FF, #ECECECFF)",
+            ? "linear-gradient(90deg, #FF8C00, #FFD700)" 
+            : "linear-gradient(90deg, #007BFF, #00CFFF)",
           }}
         >
           EchoChat
         </h1>
       </div>
 
-      <div className="flex w-[800px] bg-[#2F3136] p-6 rounded-lg shadow-lg text-white mx-auto">
+      {/* Mục Signup  */}
+      <div className={`flex w-[800px] p-6 rounded-lg shadow-lg mx-auto transition-all ${
+        isDarkMode ? "bg-[#2F3136] text-white" : "bg-white text-black border border-gray-300"
+      }`}>
         {/* Left Side: Signup Info */}
-        <div className="w-1/3 flex flex-col justify-center items-center border-r border-gray-700 p-6">
+        <div className={`w-1/3 flex flex-col justify-center items-center p-6 border-r transition-all ${
+          isDarkMode ? "border-gray-700" : "border-gray-300"
+        }`}>
           <h2 className="text-xl font-bold text-center mb-4">Tham gia ngay</h2>
-          <p className="text-gray-400 text-center">
+          <p className={`text-center transition-all ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
             Đăng ký để kết nối với bạn bè và cộng đồng EchoChat.
           </p>
         </div>
@@ -97,7 +102,11 @@ const Signup = () => {
             <input
               type="email"
               placeholder="Email"
-              className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+              className={`p-3 rounded-md border outline-none transition ${
+                isDarkMode
+                  ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
+                  : "bg-white text-black border-gray-300 focus:border-gray-500"
+              }`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -106,7 +115,11 @@ const Signup = () => {
             <input
               type="tel"
               placeholder="Số điện thoại"
-              className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+              className={`p-3 rounded-md border outline-none transition ${
+                isDarkMode
+                  ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
+                  : "bg-white text-black border-gray-300 focus:border-gray-500"
+              }`}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -116,7 +129,11 @@ const Signup = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Mật khẩu"
-                className="bg-[#202225] text-white p-3 w-full rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+                className={`p-3 w-full rounded-md border outline-none transition ${
+                  isDarkMode
+                    ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
+                    : "bg-white text-black border-gray-300 focus:border-gray-500"
+                }`}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -127,7 +144,11 @@ const Signup = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Xác nhận mật khẩu"
-                className="bg-[#202225] text-white p-3 w-full rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+                className={`p-3 w-full rounded-md border outline-none transition ${
+                  isDarkMode
+                    ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
+                    : "bg-white text-black border-gray-300 focus:border-gray-500"
+                }`}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
@@ -143,7 +164,9 @@ const Signup = () => {
             {/* Signup Button */}
             <button
               type="submit"
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition"
+              className={`font-bold py-2 rounded-md transition ${
+                isDarkMode ? "bg-gray-600 hover:bg-gray-700 text-white" : "bg-[#0D6EFD] hover:bg-[#0056D2] text-white"
+              }`}
             >
               Đăng ký
             </button>
@@ -160,9 +183,11 @@ const Signup = () => {
           </p>
 
           {/* Already have an account? */}
-          <p className="text-gray-400 text-sm text-center mt-5">
+          <p className={`text-sm text-center mt-5 transition-all ${
+            isDarkMode ? "text-gray-400" : "text-gray-600"
+          }`}>
             Đã có tài khoản?
-            <Link to="/login" className="text-gray-300 hover:underline transition"> Đăng nhập</Link>
+            <Link to="/login" className="text-[#0D6EFD] hover:underline transition"> Đăng nhập</Link>
           </p>
         </div>
       </div>

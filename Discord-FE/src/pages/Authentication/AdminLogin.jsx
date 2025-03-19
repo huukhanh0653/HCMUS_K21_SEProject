@@ -74,25 +74,54 @@ const AdminLogin = () => {
         </h1>
       </div>
 
-      <div className="flex w-[800px] bg-[#2F3136] p-6 rounded-lg shadow-lg text-white mx-auto">
+      {/* Mục admin login */}
+      <div
+        className="flex w-[800px] p-6 rounded-lg shadow-lg mx-auto"
+        style={{
+          background: isDarkMode ? "#2F3136" : "#FFFFFF", // Light mode: trắng
+          color: isDarkMode ? "white" : "#000000", // Văn bản màu đen trong light mode
+          boxShadow: isDarkMode ? "none" : "0 4px 10px rgba(0, 0, 0, 0.1)", // Hiệu ứng nổi
+        }}
+      >
         {/* Left Side: Admin Info */}
-        <div className="w-1/2 flex flex-col justify-center items-center border-r border-gray-700 p-6">
-          <h2 className="text-xl font-bold text-center mb-4">Truy cập quản trị</h2>
-          <p className="text-gray-400 text-center">
+        <div
+          className="w-1/2 flex flex-col justify-center items-center border-r p-6"
+          style={{
+            borderColor: isDarkMode ? "#3a3a3a" : "#E0E0E0", // Viền nhạt hơn trong Light Mode
+          }}
+        >
+          <h2
+            className="text-xl font-bold text-center mb-4"
+            style={{ color: isDarkMode ? "white" : "#333333" }}
+          >
+            Truy cập quản trị
+          </h2>
+          <p className="text-center" style={{ color: isDarkMode ? "#B0B0B0" : "#666666" }}>
             Đăng nhập để quản lý hệ thống EchoChat.
           </p>
         </div>
 
         {/* Right Side: Admin Login Form */}
         <div className="w-1/2 p-6">
-          <h2 className="text-2xl font-bold text-center mb-4">Đăng nhập</h2>
+          <h2
+            className="text-2xl font-bold text-center mb-4"
+            style={{ color: isDarkMode ? "white" : "#333333" }}
+          >
+            Đăng nhập
+          </h2>
 
           <form onSubmit={handleAdminLogin} className="flex flex-col gap-4">
             {/* Email Input */}
             <input
               type="text"
               placeholder="Email"
-              className="bg-[#202225] text-white p-3 rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+              className="p-3 rounded-md border outline-none transition"
+              style={{
+                background: isDarkMode ? "#202225" : "#FFFFFF",
+                borderColor: isDarkMode ? "#3a3a3a" : "#CCCCCC",
+                color: isDarkMode ? "white" : "#000000",
+                boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.1)",
+              }}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -102,13 +131,20 @@ const AdminLogin = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Mật khẩu"
-                className="bg-[#202225] text-white p-3 w-full rounded-md border border-gray-700 focus:border-gray-400 outline-none transition"
+                className="p-3 w-full rounded-md border outline-none transition"
+                style={{
+                  background: isDarkMode ? "#202225" : "#FFFFFF",
+                  borderColor: isDarkMode ? "#3a3a3a" : "#CCCCCC",
+                  color: isDarkMode ? "white" : "#000000",
+                  boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.1)",
+                }}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                style={{ color: isDarkMode ? "#B0B0B0" : "#666666" }}
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <FaEye /> : <FaEyeSlash />}
@@ -118,30 +154,31 @@ const AdminLogin = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition"
+              className="font-bold py-2 rounded-md transition shadow-md"
+              style={{
+                background: isDarkMode ? "#444" : "#1877F2",
+                color: "white",
+                boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.2)",
+              }}
             >
               Đăng nhập
             </button>
           </form>
 
-          {/* Forgot Password & Back to Login */}
-          <p className="text-gray-400 text-sm text-center mt-5">
-            <Link to="/forgot-password" className="text-gray-300 hover:underline transition">
-              Quên mật khẩu?
+          <p className="text-sm text-center mt-5">
+            Không phải Admin?
+            <Link
+              to="/login"
+              className="hover:underline transition"
+              style={{ color: isDarkMode ? "#B0B0B0" : "#0D6EFD" }}
+            >
+              {" "}
+              Đăng nhập người dùng
             </Link>
           </p>
 
-          <p className="text-gray-400 text-sm text-center mt-5">
-            Không phải Admin?
-            <Link to="/login" className="text-gray-300 hover:underline transition"> Đăng nhập người dùng</Link>
-          </p>
-
-          
-
-          {/* Error Message */}
+          {/* Error & Success Messages */}
           <p className="text-red-500 text-xs text-center mt-2 min-h-[8px]">{errorMessage || "\u00A0"}</p>
-
-          {/* Success Message */}
           <p className="text-green-500 text-xs text-center mt-2 min-h-[8px]">{successMessage || "\u00A0"}</p>
         </div>
       </div>
