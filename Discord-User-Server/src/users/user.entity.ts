@@ -17,6 +17,6 @@ export class User {
   @Column({ default: true })
   status: boolean;
 
-  @Column('text', { array: true, default: () => "'{}'" })
-  friends: string[];
+  @Column({ default: 'assets/discord-logo.png' })
+  avatar: string;
 }

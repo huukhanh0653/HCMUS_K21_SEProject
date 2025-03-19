@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import { Friend } from '../friends/friend.entity';
 import * as bcrypt from 'bcryptjs';
 import { Client } from '@elastic/elasticsearch';
 import { UserDto } from './user.dto';
@@ -11,6 +12,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Friend)
+    private friendRepository: Repository<Friend>,
   ) {
     this.esClient = new Client({
       node: process.env.ELASTIC_NODE,
@@ -20,8 +23,22 @@ export class UserService {
 
   private readonly esClient: Client;
 
+  async getUsers() {
+    const result = await this.esClient.search({
+      index: 'users',
+      body: {
+        query: {
+          match_all: {},
+        },
+      },
+    });
+
+    const users = result.hits.hits.map((hit: any) => hit._source);
+    return users;
+  }
+
   async createUser(data: UserDto) {
-    const { username, password, email } = data;
+    const { username, password, email, avatar } = data;
 
     const existingUser = await this.userRepository.findOne({
       where: [{ username }, { email }],
@@ -36,6 +53,7 @@ export class UserService {
       username,
       password: hashPassword,
       email,
+      avatar: avatar || 'assets/discord-logo.png',
     });
 
     await this.userRepository.save(newUser);
@@ -45,9 +63,10 @@ export class UserService {
       id: newUser.id,
       body: {
         username: newUser.username,
+        password: newUser.password,
         email: newUser.email,
         status: newUser.status,
-        friends: newUser.friends,
+        avatar: newUser.avatar,
       },
     });
 
@@ -106,7 +125,7 @@ export class UserService {
           username: data.username,
           email: data.email,
           status: data.status,
-          friends: data.friends,
+          avatar: data.avatar,
         },
       },
     });
@@ -120,78 +139,43 @@ export class UserService {
       throw new Error('User not found');
     }
 
+    const friendshipsAsUser = await this.friendRepository.find({
+      where: { user_id: user.id },
+    });
+    const friendshipsAsFriend = await this.friendRepository.find({
+      where: { friend_id: user.id },
+    });
+
+    const friendshipIds = [
+      ...friendshipsAsUser.map((f) => f.id),
+      ...friendshipsAsFriend.map((f) => f.id),
+    ];
+
+    if (friendshipIds.length > 0) {
+      await this.friendRepository.delete(friendshipIds);
+      await Promise.all(
+        friendshipIds.map((id) =>
+          this.esClient
+            .delete({
+              index: 'friends',
+              id,
+            })
+            .catch((err) =>
+              console.error(
+                `Failed to delete friend ${id} from Elasticsearch: ${err}`,
+              ),
+            ),
+        ),
+      );
+    }
+
     await this.userRepository.delete({ username });
+
     await this.esClient.delete({
       index: 'users',
       id: user.id,
     });
 
     return { message: 'User deleted successfully' };
-  }
-
-  async addFriend(username: string, friendUsername: string) {
-    const user = await this.userRepository.findOne({ where: { username } });
-    const friend = await this.userRepository.findOne({
-      where: { username: friendUsername },
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    if (!friend) {
-      throw new Error('Friend not found');
-    }
-
-    if (user.id === friend.id) {
-      throw new Error('Cannot add self as a friend');
-    }
-
-    if (user.friends.includes(friendUsername)) {
-      throw new Error('Already friends');
-    }
-
-    user.friends.push(friendUsername);
-    await this.userRepository.save(user);
-
-    await this.esClient.update({
-      index: 'users',
-      id: user.id,
-      body: {
-        doc: {
-          friends: user.friends,
-        },
-      },
-    });
-
-    return { message: `Added ${friendUsername} to ${username}'s friends list` };
-  }
-
-  async removeFriend(username: string, friendUsername: string) {
-    const user = await this.userRepository.findOne({ where: { username } });
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    if (!user.friends.includes(friendUsername)) {
-      throw new Error('Friend not found in your list');
-    }
-
-    user.friends = user.friends.filter((friend) => friend !== friendUsername);
-    await this.userRepository.save(user);
-
-    await this.esClient.update({
-      index: 'users',
-      id: user.id,
-      body: {
-        doc: {
-          friends: user.friends,
-        },
-      },
-    });
-
-    return {
-      message: `Removed ${friendUsername} from ${username}'s friends list`,
-    };
   }
 }

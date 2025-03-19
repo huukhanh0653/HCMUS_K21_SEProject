@@ -18,6 +18,16 @@ import { UserDto } from './user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get()
+  async getUsers(@Res() res: Response) {
+    try {
+      const users = await this.userService.getUsers();
+      return res.status(HttpStatus.OK).json(users);
+    } catch (err) {
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
+    }
+  }
+
   @Post()
   async create(@Body() body: UserDto, @Res() res: Response) {
     try {
@@ -28,7 +38,7 @@ export class UserController {
     }
   }
 
-  @Get()
+  @Get('search')
   async search(@Query('query') query: string, @Res() res: Response) {
     if (!query || query.trim() === '') {
       return res
@@ -65,37 +75,6 @@ export class UserController {
       return res.status(HttpStatus.OK).json(result);
     } catch (err) {
       return res.status(HttpStatus.NOT_FOUND).json({ message: err.message });
-    }
-  }
-
-  @Post('friends/:username')
-  async addFriend(
-    @Param('username') username: string,
-    @Body('friendUsername') friendUsername: string,
-    @Res() res: Response,
-  ) {
-    try {
-      const result = await this.userService.addFriend(username, friendUsername);
-      return res.status(HttpStatus.OK).json(result);
-    } catch (err) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
-    }
-  }
-
-  @Delete('friends/:username')
-  async removeFriend(
-    @Param('username') username: string,
-    @Body('friendUsername') friendUsername: string,
-    @Res() res: Response,
-  ) {
-    try {
-      const result = await this.userService.removeFriend(
-        username,
-        friendUsername,
-      );
-      return res.status(HttpStatus.OK).json(result);
-    } catch (err) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
     }
   }
 }
