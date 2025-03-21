@@ -1,5 +1,6 @@
-package com.DiscordClone.GCSService;
+package com.DiscordClone.GCSService.controller;
 
+import com.DiscordClone.GCSService.service.StorageService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
