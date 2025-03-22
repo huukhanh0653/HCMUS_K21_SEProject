@@ -54,10 +54,27 @@ export default function Home({user, onProfileClick }) {
   // Mock messages data
   const mockMessages = {
     Levii: [
-      { id: 1, sender: "Levii", content: "Hey there!", timestamp: "Today at 1:09 PM" },
-      { id: 2, sender: "You", content: "Hi Levii!", timestamp: "Today at 1:10 PM" },
+      {
+        id: 1,
+        sender: "Levii",
+        content: "Hey there!",
+        timestamp: new Date("2025-03-22T08:09:00").getTime()
+      },
+      {
+        id: 2,
+        sender: "You",
+        content: "Hi Levii!",
+        timestamp: new Date("2025-03-22T08:09:00").getTime()
+      }
     ],
-    Dolphin: [{ id: 1, sender: "Dolphin", content: "How's it going?", timestamp: "Today at 2:30 PM" }],
+    Dolphin: [
+      {
+        id: 1,
+        sender: "Dolphin",
+        content: "How's it going?",
+        timestamp: new Date("2025-03-22T14:30:00").getTime()
+      }
+    ]    
     // Add more mock messages for other friends
   }
 

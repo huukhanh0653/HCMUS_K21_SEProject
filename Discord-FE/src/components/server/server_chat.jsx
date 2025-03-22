@@ -13,7 +13,7 @@ export default function ServerChat({ channel }) {
   const [editingMessageId, setEditingMessageId] = useState(null)
   const [editedContent, setEditedContent] = useState("")
   const inputRef = useRef(null)
-  const {t} = useTranslation();
+  const {t, i18n} = useTranslation();
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -50,6 +50,7 @@ export default function ServerChat({ channel }) {
     scrollToBottom()
   }, [messages])
 
+  const [pretime_stamp, SetPretime_stamp] = useState();
   const handleSendMessage = () => {
     if (!messageInput.trim()) return
 
@@ -57,6 +58,7 @@ export default function ServerChat({ channel }) {
       channel_id: "default-channel",
       sender_id: "currentUserId", // Replace with the actual user ID
       content: messageInput,
+      timestamp: Date.now(), // Lưu timestamp để so sánh
       attachments: [],
     }
 
@@ -103,40 +105,93 @@ export default function ServerChat({ channel }) {
           scrollbarColor: "grey transparent", // Firefox scrollbar color
         }}
       >
+        {messages.map((message, index) => {
+          const previous = messages[index - 1];
 
-        {messages.map((message) => (
-          <div key={message.message_id} className="mb-4 hover:bg-[#2e3035] rounded p-2 -mx-2">
-            <div className="flex items-start gap-4">
-              {/* Avatar */}
-              <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden flex-shrink-0">
-                <img
-                  src={message.sender_avatar || SampleAvt}
-                  alt={message.sender_name || "User"}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+          const currentDate = new Date(message.timestamp);
+          const currentDay = currentDate.toDateString(); // so sánh theo ngày
+          const previousDay = previous ? new Date(previous.timestamp).toDateString() : null;
 
-              {/* Message Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{message.sender_id}</span>
-                    <span className="text-xs text-gray-400">
-                      
-                      {new Date(message.timestamp).toLocaleString('vi-VN', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </span>
+          const showDateDivider = currentDay !== previousDay;
+
+          const currentTime = currentDate.getTime();
+          const previousTime = previous ? new Date(previous.timestamp).getTime() : null;
+
+          const isGrouped =
+            previous &&
+            previous.sender_id === message.sender_id &&
+            previousDay === currentDay &&
+            previousTime &&
+            currentTime - previousTime <= 60000;
+
+          const formattedDate = currentDate.toLocaleDateString(i18n.language || "vi-VN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+
+
+          const formattedTime = currentDate.toLocaleTimeString(i18n.language || "vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          });
+
+          return (
+            <div key={message.message_id} className={`mb-2 ${!isGrouped ? "pt-4" : ""}`}>
+              {/* Divider ngày */}
+              {showDateDivider && (
+                <div className="flex justify-center items-center my-6">
+                  <div className="border-t border-gray-600 flex-1" />
+                  <span className="px-4 text-sm text-gray-400">{formattedDate}</span>
+                  <div className="border-t border-gray-600 flex-1" />
+                </div>
+              )}
+
+              <div className="relative group hover:bg-[#2e3035] rounded px-2 py-1 transition-colors duration-150">
+                {!isGrouped && (
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden flex-shrink-0">
+                      <img
+                        src={message.sender_avatar || SampleAvt}
+                        alt={message.sender_name || "User"}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">{message.sender_id}</span>
+                          <span className="text-xs text-gray-400">{formattedTime}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                )}
 
-                  {/* Edit & Delete Icons (Only for 'You') */}
+                <div className={`${isGrouped ? "pl-14" : "pl-14 mt-1"} relative`}>
+                  {editingMessageId === message.message_id ? (
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full bg-[#404249] text-gray-100 p-2 mt-1 rounded-md focus:outline-none resize-none break-words whitespace-pre-wrap pr-14"
+                      rows={2}
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSaveEdit(message.message_id);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <p className="text-gray-100 break-words whitespace-pre-wrap break-all text-left mt-1 pr-14">
+                      {message.content}
+                    </p>
+                  )}
+
                   {message.sender_id === "currentUserId" && (
-                    <div className="flex items-center gap-2">
+                    <div className="absolute top-0 right-0 hidden group-hover:flex items-center gap-2">
                       <button
                         className="p-1 text-gray-400 hover:text-gray-200"
                         onClick={() => handleEditMessage(message.message_id, message.content)}
@@ -152,31 +207,12 @@ export default function ServerChat({ channel }) {
                     </div>
                   )}
                 </div>
-
-                {/* Edit Mode */}
-                {editingMessageId === message.message_id ? (
-                  <textarea
-                    value={editedContent}
-                    onChange={(e) => setEditedContent(e.target.value)}
-                    className="w-full bg-[#404249] text-gray-100 p-2 mt-1 rounded-md focus:outline-none resize-none break-words whitespace-pre-wrap"
-                    rows={2}
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSaveEdit(message.message_id);
-                      }
-                    }}
-                  />
-                ) : (
-                  <p className="text-gray-100 break-words whitespace-pre-wrap break-all text-left overflow-hidden">
-                    {message.content}
-                  </p>
-                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -204,6 +240,7 @@ export default function ServerChat({ channel }) {
             className="flex-1 bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none overflow-y-auto"
             style={{
               minHeight: "40px", // Chiều cao mặc định
+              height: "40px",
               maxHeight: "120px", // Giới hạn chiều cao tối đa
             }}
           />
