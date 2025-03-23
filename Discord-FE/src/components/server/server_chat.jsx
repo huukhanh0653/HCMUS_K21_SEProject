@@ -16,19 +16,64 @@ export default function ServerChat({ channel }) {
   const {t, i18n} = useTranslation();
   const messagesEndRef = useRef(null)
 
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loadMessages = (before = null) => {
+    setIsLoadingMore(true);
+    socket.emit("loadMessages", {
+      channel_id: channel.id || "default-channel",
+      limit: 20,
+      before, // timestamp
+    });
+  };
+  const messagesWrapperRef = useRef(null);
+  const beforeRef = useRef(null); // Timestamp của tin nhắn cũ nhất
+  useEffect(() => {
+    const container = messagesWrapperRef.current;
+    if (!container) return;
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [messages]);
+  
+
+  const handleScroll = () => {
+    const container = messagesWrapperRef.current;
+    if (!container || isLoadingMore || !hasMoreMessages) return;
+
+    if (container.scrollTop === 0) {
+      // Lấy timestamp cũ nhất
+      const oldest = messages[0];
+      if (oldest) {
+        beforeRef.current = oldest.timestamp;
+        loadMessages(oldest.timestamp);
+      }
+    }
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
   useEffect(() => {
-    console.log("default-channel")
-    // Join the channel room
-    socket.emit("joinChannel", "default-channel")
-
-    // Listen for previous messages
-    socket.on("previousMessages", (previousMessages) => {
-      setMessages(previousMessages)
-    })
+    if (!channel?.id) return;
+    socket.emit("joinChannel", channel.id);
+    loadMessages();
+    
+    socket.on("loadedMessages", (loaded) => {
+      if (loaded.length < 20) {
+        setHasMoreMessages(false); // Không còn thêm
+      }
+  
+      setMessages((prev) => {
+        const allMessages = beforeRef.current
+          ? [...loaded, ...prev] // prepend nếu scroll
+          : [...loaded]; // mới vào thì thay thế
+  
+        return allMessages;
+      });
+  
+      setIsLoadingMore(false);
+    });
 
     // Listen for new messages
     socket.on("receiveMessage", (newMessage) => {
@@ -44,7 +89,7 @@ export default function ServerChat({ channel }) {
     return () => {
       socket.off()
     }
-  }, ["default-channel"])
+  }, [channel.id]);
 
   useEffect(() => {
     scrollToBottom()
@@ -55,7 +100,7 @@ export default function ServerChat({ channel }) {
     if (!messageInput.trim()) return
 
     const newMessage = {
-      channel_id: "default-channel",
+      channel_id: channel.id,
       sender_id: "currentUserId", // Replace with the actual user ID
       content: messageInput,
       timestamp: Date.now(), // Lưu timestamp để so sánh
@@ -72,7 +117,7 @@ export default function ServerChat({ channel }) {
   }
 
   const handleDeleteMessage = (id) => {
-    socket.emit('deleteMessage', { channel_id: "default-channel", message_id: id }); 
+    socket.emit('deleteMessage', { channel_id: channel.id, message_id: id }); 
   }
 
   const handleEditMessage = (id, content) => {
@@ -84,7 +129,7 @@ export default function ServerChat({ channel }) {
     if (!editedContent.trim()) return;
 
     socket.emit('editMessage', {
-        channel_id: "default-channel",
+        channel_id: channel.id,
         message_id: id,
         content: editedContent,
         attachments: []
@@ -97,6 +142,7 @@ export default function ServerChat({ channel }) {
     <div className="flex-1 flex flex-col relative ">
       {/* Messages area with scrollbar */}
       <div 
+        ref={messagesWrapperRef}
         className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
         style={{
           minHeight: "200px",  // Ensures it doesn't collapse completely
@@ -151,6 +197,7 @@ export default function ServerChat({ channel }) {
               <div className="relative group hover:bg-[#2e3035] rounded px-2 py-1 transition-colors duration-150">
                 {!isGrouped && (
                   <div className="flex items-start gap-4">
+                    {/* Avatar */}
                     <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden flex-shrink-0">
                       <img
                         src={message.sender_avatar || SampleAvt}

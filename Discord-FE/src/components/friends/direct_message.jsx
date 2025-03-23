@@ -188,8 +188,8 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
       </div>
 
       {/* Message input */}
-      <div className="bg-[#383a40] p-2 flex-shrink-0">
-        <div className="flex items-center p-2 rounded-lg bg-[#404249]">
+      <div className="absolute bottom-0 left-0 right-0 bg-[#383a40] rounded-lg p-2">
+      <div className="flex items-center">
           <button className="p-2 hover:bg-[#404249] rounded-lg">
             <Plus size={20} className="text-gray-200" />
           </button>

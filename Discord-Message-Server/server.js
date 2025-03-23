@@ -100,7 +100,7 @@ io.on('connection', (socket) => {
         );
 
         // Send previous messages from this channel to the user
-        socket.emit('previousMessages', allMessages);
+        // socket.emit('previousMessages', allMessages);
     });
 
     // Listen for new messages
@@ -215,6 +215,53 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
     });
+
+    // Handle load more messages
+    socket.on("loadMessages", async ({ channel_id, limit = 30, before = null }) => {
+        console.log(`[loadMessages] channel_id: ${channel_id}, before: ${before}`);
+        if (!channel_id) return;
+    
+        // Fetch messages từ Redis
+        const redisKey = `channel:${channel_id}`;
+        const redisMessagesRaw = await redis.lRange(redisKey, 0, -1);
+        const redisMessages = redisMessagesRaw.map(msg => JSON.parse(msg)).filter(m => !m.deleted);
+    
+        // Tách logic: nếu có `before`, lọc các message cũ hơn
+        let redisFiltered = redisMessages;
+        if (before) {
+            const beforeDate = new Date(before);
+            redisFiltered = redisMessages.filter(m => new Date(m.timestamp) < beforeDate);
+        }
+    
+        // Sort giảm dần để lấy tin mới nhất trong số cũ hơn
+        redisFiltered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+        // Cắt ra theo limit
+        const selectedRedis = redisFiltered.slice(0, limit);
+    
+        // Nếu còn thiếu tin nhắn, thì load thêm từ MongoDB
+        let selectedMongo = [];
+        if (selectedRedis.length < limit) {
+            const mongoLimit = limit - selectedRedis.length;
+            const mongoQuery = {
+                channel_id,
+                deleted: false,
+                ...(before && { timestamp: { $lt: new Date(before) } })
+            };
+    
+            selectedMongo = await Message.find(mongoQuery)
+                .sort({ timestamp: -1 }) // lấy tin mới nhất (trong số cũ hơn)
+                .limit(mongoLimit)
+                .lean();
+        }
+    
+        const combined = [...selectedRedis, ...selectedMongo]
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Sắp lại theo tăng dần
+    
+        socket.emit("loadedMessages", combined);
+        console.log(`[loadedMessages] Sending ${combined.length} messages to client`);
+    });
+    
 });
 
 // Start the server

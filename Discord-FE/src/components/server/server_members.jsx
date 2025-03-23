@@ -2,19 +2,19 @@ export default function ServerMembers() {
   const members = [
     {
       section: "ONLINE — 1",
-      users: [{ name: "Gengar_B", status: "online", avatar: "/placeholder.svg?height=32&width=32" }],
+      users: [{ name: "Gengar_B", status: "online", avatar: "https://i.pravatar.cc/50?img=39" }],
     },
     {
       section: "OFFLINE — 8",
       users: [
-        { name: "Cò", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
-        { name: "Giang", status: "offline", avatar: "/placeholder.svg?height=32&width=32", role: "crown" },
-        { name: "Hữu Khánh", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
-        { name: "Nguyễn Hoàng Nhật Q...", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
-        { name: "Nguyễn Đỗ Nguyên P...", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
-        { name: "Nhat Quang", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
-        { name: "qduyisme", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
-        { name: "Shin4ko", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
+        { name: "Cò", status: "offline", avatar: "https://i.pravatar.cc/50?img=31" },
+        { name: "Giang", status: "offline", avatar: "https://i.pravatar.cc/50?img=32", role: "crown" },
+        { name: "Hữu Khánh", status: "offline", avatar: "https://i.pravatar.cc/50?img=33" },
+        { name: "Nguyễn Hoàng Nhật Q...", status: "offline", avatar: "https://i.pravatar.cc/50?img=34" },
+        { name: "Nguyễn Đỗ Nguyên P...", status: "offline", avatar: "https://i.pravatar.cc/50?img=35" },
+        { name: "Nhat Quang", status: "offline", avatar: "https://i.pravatar.cc/50?img=36" },
+        { name: "qduyisme", status: "offline", avatar: "https://i.pravatar.cc/50?img=37" },
+        { name: "Shin4ko", status: "offline", avatar: "https://i.pravatar.cc/50?img=38" },
       ],
     },
   ]
