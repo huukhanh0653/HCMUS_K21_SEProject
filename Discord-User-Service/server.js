@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load environment variables from .env file
+
 const express = require('express');
 const mongoose = require('mongoose');
 const swaggerJsDoc = require('swagger-jsdoc');
@@ -8,11 +10,17 @@ const friendshipRoutes = require('./src/routes/friendshipRoutes');
 const app = express();
 app.use(express.json());
 
-mongoose.connect('mongodb+srv://ltgiang21:hySGOZ65nKuLhboI@cluster0.xe3sy.mongodb.net/?retryWrites=true&w=majority&appName=cluster0', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+const mongoConnectionString = process.env.MONGO_STRING_CONNECTION; // Access the connection string from .env
+
+if (!mongoConnectionString) {
+  console.error('MONGO_STRING_CONNECTION is not defined in the .env file.');
+  process.exit(1); // Exit if the connection string is missing
+}
+
+mongoose.connect(mongoConnectionString, {
+
 }).then(() => console.log('MongoDB connected'))
-  .catch(err => console.error(err));
+  .catch(err => console.error('MongoDB connection error:', err));
 
 const swaggerOptions = {
   swaggerDefinition: {
