@@ -4,6 +4,7 @@ npm install dotenv
 npm install bcrypt
 npm install swagger-jsdoc swagger-ui-express
 npm install -g nodemon
+npm install cors
 
 nodemon server.js
 
