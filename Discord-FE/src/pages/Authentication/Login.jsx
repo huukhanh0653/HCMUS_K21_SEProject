@@ -10,6 +10,7 @@ import { signInWithEmail, signInWithGoogle } from "../../firebase";
 //Background image
 import DarkBackground from "../../assets/darkmode_background.jpg";
 import LightBackground from "../../assets/whitemode_background.jpg";
+import { AirVent } from "lucide-react";
 
 const Login = () => {
   const { isDarkMode } = useTheme();
@@ -37,6 +38,11 @@ const Login = () => {
     try {
       const user = await signInWithEmail(email, password);
       console.log("Logged in:", user);
+      const response = await fetch("http://localhost:5001/users/sync-firebase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid, email: user.email }),
+      });
       localStorage.setItem("email", email);
       window.location.replace("/");
     } catch (error) {
@@ -46,13 +52,45 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
+      console.log("Attempting Google Sign-In...");
+  
       const user = await signInWithGoogle();
-      console.log("Google Login:", user);
+      
+      if (!user) {
+        console.error("Google Login failed: No user returned");
+        setErrorMessage("Đăng nhập Google thất bại.");
+        return;
+      }
+  
+      console.log("Google Login Success:", user);
+  
+      console.log("Sending user data to backend:", {
+        uid: user.uid,
+        email: user.email,
+      });
+  
+      const response = await fetch("http://localhost:5001/users/sync-firebase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid, email: user.email }),
+      });
+  
+      const data = await response.json();
+      console.log("Backend Response:", data);
+  
+      localStorage.setItem("email", user.email);
+      console.log("User email stored in localStorage:", user.email);
+  
+      console.log("Redirecting to home page...");
       window.location.replace("/");
     } catch (error) {
+      console.error("Google login failed:", error);
       setErrorMessage("Đăng nhập Google thất bại: " + error.message);
     }
   };
+  
+  
+  
 
   return (
     <div

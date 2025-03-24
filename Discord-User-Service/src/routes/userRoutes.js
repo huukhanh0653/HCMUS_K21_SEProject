@@ -2,6 +2,45 @@ const express = require('express');
 const UserService = require('../services/UserService');
 const router = express.Router();
 
+
+/**
+ * @swagger
+ * /users/sync-firebase:
+ *   post:
+ *     summary: Sync Firebase users with MongoDB
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Firebase users synced successfully
+ */
+router.post('/sync-firebase', async (req, res) => {
+  try {
+    const result = await UserService.syncFirebaseUsers();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+/**
+ * @swagger
+ * /users/firebase:
+ *   get:
+ *     summary: Get all users from Firebase Authentication
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: A list of users from Firebase Authentication
+ */
+router.get('/firebase', async (req, res) => {
+  try {
+    const users = await UserService.getAllFirebaseUsers();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 /**
  * @swagger
  * tags:
@@ -45,6 +84,36 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /users/email/{email}:
+ *   get:
+ *     summary: Get a user by email
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user's email
+ *     responses:
+ *       200:
+ *         description: The user object
+ *       404:
+ *         description: User not found
+ */
+router.get('/email/:email', async (req, res) => {
+  try {
+    const user = await UserService.getUserByEmail(req.params.email);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 /**
  * @swagger

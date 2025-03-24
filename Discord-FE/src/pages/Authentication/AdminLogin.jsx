@@ -4,6 +4,9 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTheme } from "../../components/ThemeProvider";
 import Logo from "../../assets/echochat_logo.svg";
 import { useTranslation } from "react-i18next";
+import { signInWithEmail} from "../../firebase";
+import { getAuth, signOut } from "firebase/auth";
+
 const AdminLogin = () => {
   const { isDarkMode } = useTheme();
   const [email, setEmail] = useState("");
@@ -16,39 +19,65 @@ const AdminLogin = () => {
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-
+    setErrorMessage(""); // Clear previous errors
+  
     if (!email || !validateEmail(email)) {
       setErrorMessage("Email không hợp lệ");
       return;
     }
-
+  
     if (!password) {
       setErrorMessage("Mật khẩu không được để trống");
       return;
     }
-
+  
     try {
-      const response = await fetch("http://localhost:5000/AdminLogin", {
-        method: "POST",
+      // Authenticate user with Firebase
+      const user = await signInWithEmail(email, password);
+      console.log("Logged in:", user);
+  
+      // Fetch user details from MongoDB by email
+      const response = await fetch(`http://localhost:5001/users/email/${email}`, {
+        method: "GET",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
       });
-
-      const result = await response.json();
+  
       if (!response.ok) {
-        setErrorMessage(result.message || "Admin Login failed");
+        throw new Error("Người dùng không tồn tại hoặc không phải admin");
+        
+      }
+  
+      const userData = await response.json();
+  
+      // Check if user role is "admin"
+      if (userData.role !== "admin") {
+        setErrorMessage("Bạn không có quyền truy cập");
+        const auth = getAuth();
+        try {
+          await signOut(auth);
+          console.log("User logged out");
+          navigate("admin/login"); // Redirect to login page
+        } catch (error) {
+          console.error("Logout failed:", error.message);
+        }
         return;
       }
-
-      setSuccessMessage(result.message);
-      setErrorMessage("");
+  
+      // Sync Firebase user with MongoDB
+      await fetch("http://localhost:5001/users/sync-firebase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid, email: user.email }),
+      });
+  
+      // Store email in localStorage & redirect
       localStorage.setItem("email", email);
-      window.location.replace("/");
+      window.location.replace("/admin/dashboard");
     } catch (error) {
-      console.error(error);
-      setErrorMessage("Có lỗi xảy ra!");
+      setErrorMessage("Đăng nhập thất bại: " + error.message);
     }
   };
+  
 
   return (
     <div

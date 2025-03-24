@@ -6,7 +6,8 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "./components/LanguageProvider";
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { AdminRoute, UserRoute, RedirectIfAuthenticated } from "./components/routes/ProtectedRoute";
+
 // Authentication
 import Login from "./pages/Authentication/Login";
 import Signup from "./pages/Authentication/Signup";
@@ -17,10 +18,8 @@ import UsedAccounts from "./pages/Authentication/UsedAccounts";
 // Pages
 import Home from "./pages/Homepage/Home";
 import UserProfile from "./pages/Homepage/UserProfile";
-import UserPanel from "./components/user_panel";
-import Footer from "./components/Footer";
 
-// Admin Components
+// Admin Pages
 import Admin from "./components/admin/Admin";
 import AdminPanel from "./components/admin/AdminPanel";
 import Member from "./components/admin/Members/Member";
@@ -28,32 +27,25 @@ import ServerManagement from "./components/admin/Servers/Servers";
 import AdminSettings from "./components/admin/AdminSettings/AdminSettings";
 import AccountProfile from "./components/admin/Account/AccountProfile";
 import AdminAccountSettings from "./components/admin/Account/AccountSettings";
-import { Rotate3D } from "lucide-react";
 
-// Main application content component
+// App Content Component
 function AppContent() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
   const { t } = useTranslation();
-
-  const [showProfile, setShowProfile] = useState(false);
   const location = useLocation();
   const [user, setUser] = useState(null);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log("Firebase User:", firebaseUser); // Debugging
-
       if (firebaseUser) {
-        console.warn(" user is logged in.");
-        console.log("User:", firebaseUser);
         setUser({
           name: firebaseUser.email || "Người dùng",
           avatar: firebaseUser.photoURL || "https://via.placeholder.com/150",
         });
       } else {
-        console.warn("No user is logged in.");
         setUser(null);
       }
     });
@@ -61,21 +53,17 @@ function AppContent() {
     return () => unsubscribe();
   }, []);
 
-  // Determine if the theme toggle should be shown
+  // Show theme toggle only on specific pages
   const shouldShowThemeToggle =
     location.pathname.startsWith("/admin") ||
     ["/login", "/signup", "/forgot-password", "/admin/login", "/used-accounts"].includes(location.pathname);
-
   // Toggle profile visibility
   const toggleProfile = () => setShowProfile(!showProfile);
   const closeProfile = () => setShowProfile(false);
 
   return (
     <div className={isDarkMode ? "dark" : "light"}>
-      {/* User Panel */}
-
-
-      {/* Theme toggle button */}
+      {/* Theme Toggle */}
       {shouldShowThemeToggle && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
           <button
@@ -93,25 +81,44 @@ function AppContent() {
         </div>
       )}
 
-      {/* Router */}
+      {/* Routes */}
       <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/used-accounts" element={<UsedAccounts/>} />
+        {/* Public Routes (Prevent logged-in users from accessing) */}
+        <Route 
+          path="/login" 
+          element={
+            <RedirectIfAuthenticated>
+              <Login />
+            </RedirectIfAuthenticated>
+          } 
+        />
+        <Route 
+          path="/signup" 
+          element={
+            <RedirectIfAuthenticated>
+              <Signup />
+            </RedirectIfAuthenticated>
+          } 
+        />
+        <Route path="/used-accounts" element={<UsedAccounts />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/login"
+         element={
+          <RedirectIfAuthenticated>
+            <AdminLogin />
+          </RedirectIfAuthenticated>
+         } />
 
         {/* Protected User Routes */}
         <Route 
           path="/" 
           element={
-            <ProtectedRoute>
+            <UserRoute>
               <>
                 <Home user={user} onProfileClick={toggleProfile} />
                 {showProfile && <UserProfile user={user} onClose={closeProfile} />}
               </>
-            </ProtectedRoute>
+            </UserRoute>
           } 
         />
 
@@ -119,7 +126,9 @@ function AppContent() {
         <Route 
           path="/admin" 
           element={
+            <AdminRoute>
               <Admin />
+            </AdminRoute>
           }
         >
           <Route path="dashboard" element={<AdminPanel />} />
@@ -130,12 +139,11 @@ function AppContent() {
           <Route path="account/settings" element={<AdminAccountSettings />} />
         </Route>
       </Routes>
-
     </div>
   );
 }
 
-// Wrap the entire app with providers and router
+// Main App Component
 function App() {
   return (
     <BrowserRouter>

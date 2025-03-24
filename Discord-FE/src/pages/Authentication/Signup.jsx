@@ -8,7 +8,8 @@ import { useTranslation } from "react-i18next";
 //Background image
 import DarkBackground from "../../assets/darkmode_background.jpg";
 import LightBackground from "../../assets/whitemode_background.jpg";
-
+import { LogOut } from "lucide-react";
+import { getAuth, signOut } from "firebase/auth";
 const Signup = () => {
   const { isDarkMode } = useTheme();
   const {t} = useTranslation();
@@ -25,7 +26,8 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-
+  
+    // Basic validation
     if (!email || !validateEmail(email)) {
       setErrorMessage("Email không hợp lệ");
       return;
@@ -42,15 +44,45 @@ const Signup = () => {
       setErrorMessage("Mật khẩu xác nhận không khớp");
       return;
     }
-
+  
     try {
-      await signUpWithEmail(email, password);
-      setSuccessMessage("Đăng ký thành công!");
+      // Signup user
+      const user = await signUpWithEmail(email, password);
+      if (!user) {
+        throw new Error("User creation failed, no user data returned.");
+      }
+  
+      console.log("User UID:", user.uid);
+  
+      // Call the API to sync user
+      const response = await fetch("http://localhost:5001/users/sync-firebase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid, email: user.email, password: password, phone: phone }),
+      });
+  
+      const data = await response.json();
+      console.log("API Response:", data);
+  
+      // Sign out user immediately after signup
+      const auth = getAuth();
+      try {
+        await signOut(auth);
+        console.log("User logged out");
+        navigate("/login"); // Redirect to login page
+      } catch (error) {
+        console.error("Logout failed:", error.message);
+      }
+      console.log("User signed out after signup");
+      
+      setSuccessMessage("Đăng ký thành công! Bạn sẽ được chuyển hướng đến trang đăng nhập.");
       setTimeout(() => window.location.replace("/login"), 3000);
     } catch (error) {
+      console.error("Signup Error:", error);
       setErrorMessage(error.message || "Đăng ký thất bại!");
     }
   };
+
 
   return (
     <div
