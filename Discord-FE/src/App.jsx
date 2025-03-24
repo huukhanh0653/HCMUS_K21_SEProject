@@ -119,9 +119,7 @@ function AppContent() {
         <Route 
           path="/admin" 
           element={
-            <ProtectedRoute>
               <Admin />
-            </ProtectedRoute>
           }
         >
           <Route path="dashboard" element={<AdminPanel />} />
