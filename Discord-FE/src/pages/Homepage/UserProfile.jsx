@@ -21,7 +21,7 @@ export default function UserProfile({ user, onClose }) {
 
   // Form states
   const [username, setUsername] = useState(user.name)
-  const [avatar, setAvatar] = useState(SampleAvt)
+  const [avatar, setAvatar] = useState(user?.avatar || SampleAvt)
   const [wallpaper, setWallpaper] = useState("")
 
   const [currentPassword, setCurrentPassword] = useState("")

@@ -152,9 +152,6 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
           </button>
         ))}
       </div>
-
-      {/* User panel */}
-      <UserPanel onProfileClick={onProfileClick} />
     </div>
   );
 }

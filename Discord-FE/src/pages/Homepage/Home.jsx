@@ -101,6 +101,15 @@ export default function Home({user, onProfileClick }) {
     { icon: Rocket, color: "#e91e63", label: "Space Station" },
   ]
 
+  //Save user info to local
+  useEffect(() => {
+    if (user) {
+      console.log(user);
+      localStorage.setItem("user_info", JSON.stringify(user));
+    }
+  }, [user]);
+  
+
   // Auto-select the first channel when a server is selected
   useEffect(() => {
     if (selectedServer && !selectedChannel) {
@@ -205,12 +214,16 @@ export default function Home({user, onProfileClick }) {
 
       {/* Channel/DM sidebar */}
       {selectedServer ? (
-        <ServerChannels
-          server={selectedServer}
-          onChannelSelect={handleChannelSelect}
-          onProfileClick={onProfileClick}
-          selectedChannelId={selectedChannel?.id}
-        />
+        <div className="h-full w-60 bg-[#2b2d31] flex flex-col">
+          <ServerChannels
+            server={selectedServer}
+            onChannelSelect={handleChannelSelect}
+            onProfileClick={onProfileClick}
+            selectedChannelId={selectedChannel?.id}
+          />
+          {/* User panel */}
+          <UserPanel user={user} onProfileClick={onProfileClick} />
+        </div>      
       ) : (
         <div className="h-full w-60 bg-[#2b2d31] flex flex-col">
           <div className="p-3">

@@ -54,6 +54,22 @@ export default function ServerChat({ channel }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
+  //Get user info
+  const [storedUser, setStoredUser] = useState(null);
+  useEffect(() => {
+    const userData = localStorage.getItem("user_info");
+    if (userData) {
+      try {
+        setStoredUser(JSON.parse(userData));
+      } catch (error) {
+        console.error("Failed to parse user_info:", error);
+      }
+    }
+  }, []);
+  const username = storedUser?.name || "Unknown";
+  const avatarSrc = storedUser?.avatar || "https://via.placeholder.com/40";
+
+
   useEffect(() => {
     if (!channel?.id) return;
     socket.emit("joinChannel", channel.id);
@@ -101,7 +117,7 @@ export default function ServerChat({ channel }) {
 
     const newMessage = {
       channel_id: channel.id,
-      sender_id: "currentUserId", // Replace with the actual user ID
+      sender_id: username, // Replace with the actual user ID
       content: messageInput,
       timestamp: Date.now(), // Lưu timestamp để so sánh
       attachments: [],
@@ -237,7 +253,7 @@ export default function ServerChat({ channel }) {
                     </p>
                   )}
 
-                  {message.sender_id === "currentUserId" && (
+                  {message.sender_id === username && (
                     <div className="absolute top-0 right-0 hidden group-hover:flex items-center gap-2">
                       <button
                         className="p-1 text-gray-400 hover:text-gray-200"
