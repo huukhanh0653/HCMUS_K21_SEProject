@@ -1,14 +1,21 @@
-# Build stage
-FROM maven:3.8.6-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY pom.xml .
-RUN mvn dependency:go-offline
-COPY src ./src
-RUN mvn package -DskipTests
+# Use the official Maven image with Java 21
+FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
-# Run stage
-FROM eclipse-temurin:17-jre-alpine
+# Set the working directory
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8080
+
+# Copy the project files into the container
+COPY . .
+
+# Build the project and create the JAR file
+RUN mvn clean package -DskipTests
+
+# Use the official Java 21 runtime image
+FROM eclipse-temurin:21-jdk
+
+# Set the working directory
+WORKDIR /app
+COPY --from=builder /app/target/GCSService-0.0.1-SNAPSHOT.jar app.jar
+
+# Run app
 ENTRYPOINT ["java", "-jar", "app.jar"]

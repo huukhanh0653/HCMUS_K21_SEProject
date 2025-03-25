@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-chat-message-service
+  labels:
+    app: echo-chat-message-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: echo-chat-message-service
+  template:
+    metadata:
+      labels:
+        app: echo-chat-message-service
+    spec:
+      containers:
+      - name: echo-chat-message-service
+        image: huukhanh0653/message:v1.0
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-chat-message-service
+spec:
+  selector:
+    app: echo-chat-message-service
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP
