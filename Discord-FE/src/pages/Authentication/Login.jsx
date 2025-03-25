@@ -6,6 +6,7 @@ import { useTheme } from "../../components/ThemeProvider";
 import { useTranslation } from "react-i18next";
 import Logo from "../../assets/echochat_logo.svg";
 import { signInWithEmail, signInWithGoogle } from "../../firebase";
+import { useNavigate } from "react-router-dom"; 
 
 //Background image
 import DarkBackground from "../../assets/darkmode_background.jpg";
@@ -14,6 +15,7 @@ import { AirVent } from "lucide-react";
 
 const Login = () => {
   const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -83,15 +85,12 @@ const Login = () => {
       console.log("User email stored in localStorage:", user.email);
   
       console.log("Redirecting to home page...");
-      window.location.replace("/");
+      navigate("/choose-username"); // Redirect to choose username page
     } catch (error) {
       console.error("Google login failed:", error);
       setErrorMessage("Đăng nhập Google thất bại: " + error.message);
     }
   };
-  
-  
-  
 
   return (
     <div

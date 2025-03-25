@@ -13,6 +13,7 @@ import { getAuth, signOut } from "firebase/auth";
 const Signup = () => {
   const { isDarkMode } = useTheme();
   const {t} = useTranslation();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -130,6 +131,18 @@ const Signup = () => {
           <h2 className="text-2xl font-bold text-center mb-4">{t('Signup')}</h2>
 
           <form onSubmit={handleSignup} className="flex flex-col gap-4">
+            {/* Username Input */}
+            <input
+              type="text"
+              placeholder={t('Username')}
+              className={`p-3 rounded-md border outline-none transition ${
+                isDarkMode
+                  ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
+                  : "bg-white text-black border-gray-300 focus:border-gray-500"
+              }`}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
             {/* Email Input */}
             <input
               type="email"

@@ -62,8 +62,11 @@ export default function ServerChat({ channel }) {
 
   //Get user info
   const [storedUser, setStoredUser] = useState(null);
+  const [storedUsername, setStoredUsername] = useState(null);
   useEffect(() => {
     const userData = localStorage.getItem("user_info");
+    const usernameData = localStorage.getItem("username");
+
     if (userData) {
       try {
         setStoredUser(JSON.parse(userData));
@@ -71,8 +74,12 @@ export default function ServerChat({ channel }) {
         console.error("Failed to parse user_info:", error);
       }
     }
+
+    if (usernameData) {
+      setStoredUsername(usernameData);
+    }
   }, []);
-  const username = storedUser?.name || "Unknown";
+  const username = storedUsername || storedUser?.name || "User";
   const avatarSrc = storedUser?.avatar || "https://via.placeholder.com/40";
 
 

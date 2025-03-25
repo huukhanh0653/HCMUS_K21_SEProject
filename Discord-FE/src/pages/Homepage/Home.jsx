@@ -104,7 +104,7 @@ export default function Home({user, onProfileClick }) {
   //Save user info to local
   useEffect(() => {
     if (user) {
-      console.log(user);
+      //console.log(user);
       localStorage.setItem("user_info", JSON.stringify(user));
     }
   }, [user]);
