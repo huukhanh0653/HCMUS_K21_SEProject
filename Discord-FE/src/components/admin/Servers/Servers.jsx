@@ -76,9 +76,9 @@ export default function ServerManagement() {
       </div>
       {
         language == "en" ?
-        <DataTable columns={columns} data={paginatedServers} filterProps={{ column: "ServerName", placeholder: "Find Server by name..." }} />
+        <DataTable columns={columns()} data={paginatedServers} filterProps={{ column: "ServerName", placeholder: "Find Server by name..." }} />
         :
-        <DataTable columns={columns} data={paginatedServers} filterProps={{ column: "ServerName", placeholder: "Tìm Server bằng tên..." }} />
+        <DataTable columns={columns()} data={paginatedServers} filterProps={{ column: "ServerName", placeholder: "Tìm Server bằng tên..." }} />
       }
       
 
