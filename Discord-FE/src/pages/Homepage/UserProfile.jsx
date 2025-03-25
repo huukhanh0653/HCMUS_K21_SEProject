@@ -28,6 +28,16 @@ export default function UserProfile({ user, onClose }) {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
 
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    } else if (user?.name) {
+      setUsername(user.name);
+    }
+  }, [user]);
+  
+
   const handleLogout = async () => {
     const auth = getAuth();
     try {
@@ -64,10 +74,13 @@ export default function UserProfile({ user, onClose }) {
   }
 
   const handleSaveProfile = (e) => {
-    e.preventDefault()
-    console.log("Saving profile:", { username, avatar, wallpaper })
-    setShowEditProfile(false)
-  }
+    e.preventDefault();
+    console.log("Saving profile:", { username, avatar, wallpaper });
+  
+    localStorage.setItem("username", username.trim()); // Cập nhật localStorage
+    setShowEditProfile(false);
+  };
+  
 
   const handleChangePassword = (e) => {
     e.preventDefault()

@@ -14,6 +14,7 @@ import Signup from "./pages/Authentication/Signup";
 import ForgotPassword from "./pages/Authentication/ForgotPassword";
 import AdminLogin from "./pages/Authentication/AdminLogin";
 import UsedAccounts from "./pages/Authentication/UsedAccounts";
+import ChooseUsername from "./pages/Authentication/ChooseUsername";
 
 // Pages
 import Home from "./pages/Homepage/Home";
@@ -101,6 +102,7 @@ function AppContent() {
           } 
         />
         <Route path="/used-accounts" element={<UsedAccounts />} />
+        <Route path="/choose-username" element={<ChooseUsername />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/admin/login"
          element={

@@ -16,8 +16,12 @@ import {
 } from "../../ui/dropdown-menu"
 
 import { formattedDate } from "../../../lib/utils";
+import { useTranslation } from "react-i18next";
 
-export const columns = [
+
+export const columns = () => {
+  const {t} = useTranslation();
+  return [
     {
       accessorKey: "MaNV",
       header: ({ column }) => {
@@ -28,7 +32,7 @@ export const columns = [
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             
           >
-            <span className="pr-0 text-foreground">Mã người dùng</span>
+            <span className="pr-0 text-foreground">{t('User ID')}</span>
             <ArrowUpDown className="ml-2 h-4 w-4 text-foreground" />
           </Button>
         )
@@ -36,7 +40,7 @@ export const columns = [
     },
     {
       accessorKey: "HoTen",
-      header: "Họ Tên",
+      header: t('Full Name'),
     },
     {
       accessorKey: "NgaySinh",
@@ -47,7 +51,7 @@ export const columns = [
             className="flex items-center justify-start pl-0" // Loại bỏ padding trái và căn nội dung sang trái
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            <span className="pr-0 text-foreground">Ngày sinh</span>
+            <span className="pr-0 text-foreground">{t("Date of birth")}</span>
             <ArrowUpDown className="ml-2 h-4 w-4 text-foreground"/>
           </Button>
         )
@@ -65,7 +69,7 @@ export const columns = [
             className="flex items-center justify-start pl-0" // Loại bỏ padding trái và căn nội dung sang trái
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            <span className="pr-0 text-foreground">Ngày vào Discord</span>
+            <span className="pr-0 text-foreground">{t('EchoChat join date')}</span>
             <ArrowUpDown className="ml-2 h-4 w-4 text-foreground"/>
           </Button>
         )
@@ -74,7 +78,7 @@ export const columns = [
     },
     {
       accessorKey: "Username",
-      header: "Tên Đăng Nhập",
+      header: t('Username'),
     },
     {
       accessorKey: "MaBP",
@@ -85,7 +89,7 @@ export const columns = [
             className="flex items-center justify-start pl-0" // Loại bỏ padding trái và căn nội dung sang trái
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            <span className="pr-0 text-foreground">Roles</span>
+            <span className="pr-0 text-foreground">{t('Roles')}</span>
             <ArrowUpDown className="ml-2 h-4 w-4 text-foreground"/>
           </Button>
         )
@@ -105,7 +109,7 @@ export const columns = [
         <PopupModal
           open={editOpen}
           setOpen={setEditOpen}
-          props={{title:"Chỉnh sửa thông tin người dùng", description:"Nhập thông tin người dùng"}}
+          props={{title:t("Edit user info"), description:t("Enter user info")}}
           formComponent={EditMemberForm}
           Member = {row.original}
         >
@@ -113,7 +117,7 @@ export const columns = [
         <PopupModal
           open={workHistoryOpen}
           setOpen={setWorkHistoryOpen}
-          props={{title:"Lịch sử truy cập", description:"Chi tiết lịch sử truy cập của người dùng"}}
+          props={{title:t("Browsing history"), description:t("Details about user browsing history")}}
           formComponent={WorkHistoryDetail}
           MemberID = {row.original.MaNV}
           MemberDepartment = {row.original.MaBP}
@@ -124,29 +128,29 @@ export const columns = [
           open= {reviewOpen} 
           setOpen={setReviewOpen} 
           func={() => {}}
-          title={"Điểm của người dùng"} 
-          description={`Điểm người dùng này là: ${review}`} 
+          title={t('User score')} 
+          description={`${t("User's score is:")} ${review}`} 
           >
         </AlertDialogComponent>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
+              <span className="sr-only">{t('Open menu')}</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Chức năng</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("Feature")}</DropdownMenuLabel>
             <DropdownMenuItem onClick= {() => setWorkHistoryOpen(true)}>
-              Xem lịch sử truy cập
+              {t("View browsing history")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick= {() => setEditOpen(true)}>
-              Chỉnh sửa thông tin
+              {t("Edit infor")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick= {() => setReviewOpen(true)}>
-              Điểm đánh giá
+              {t("Rating score")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -154,3 +158,4 @@ export const columns = [
       )
     }},
   ];
+}

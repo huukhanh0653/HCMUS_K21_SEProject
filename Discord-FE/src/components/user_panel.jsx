@@ -1,10 +1,22 @@
+import { useEffect, useState } from "react";
 import { Mic, Headphones, Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export default function UserPanel({ user, onProfileClick }) {
   const { t } = useTranslation();
-  const displayName = user?.name || "Unknown";
-  const avatarSrc = user?.avatar || "https://via.placeholder.com/40"; // Default avatar
+
+  const [username, setUsername] = useState("Unknown");
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    } else if (user?.name) {
+      setUsername(user.name);
+    }
+  }, [user]);
+
+  const avatarSrc = user?.avatar || "https://via.placeholder.com/40";
 
   const truncateText = (text, maxLength) => {
     if (!text) return "";
@@ -26,9 +38,9 @@ export default function UserPanel({ user, onProfileClick }) {
       <div className="flex-1">
         <div
           className="text-sm font-semibold text-left"
-          title={displayName} // Hiển thị full khi hover
+          title={username} // Hiển thị full khi hover
         >
-          {truncateText(displayName, 10)}
+          {truncateText(username, 10)}
         </div>
         <div className="text-xs text-gray-400 text-left">{t("Online")}</div>
       </div>
