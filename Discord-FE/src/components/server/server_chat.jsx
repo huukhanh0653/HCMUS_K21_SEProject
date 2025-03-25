@@ -17,16 +17,15 @@ export default function ServerChat({ channel }) {
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
   const [isFetching, setIsFetching] = useState(true)
-  const [hasMoreMessages, setHasMoreMessages] = useState(true)
-
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const loadMessages = (before = null) => {
+  const limit = 20;
+  const loadMessages = (lastTimestamp = null) => {
     setIsLoadingMore(true);
-    socket.emit("loadMessages", {
-      channel_id: channel.id || "default-channel",
-      limit: 20,
-      before, // timestamp
+    socket.emit("fetchMoreMessages", {
+      channel_id: channel.id,
+      limit: limit,
+      lastTimestamp: new Date(lastTimestamp).getTime() || Date.now(), // Use current timestamp if lastTimestamp is null
     });
   };
   const messagesWrapperRef = useRef(null);
@@ -41,14 +40,16 @@ export default function ServerChat({ channel }) {
 
   const handleScroll = () => {
     const container = messagesWrapperRef.current;
+    console.log(container.scrollTop, container.scrollHeight, container.clientHeight)
+    console.log(isLoadingMore, hasMoreMessages)
     if (!container || isLoadingMore || !hasMoreMessages) return;
 
     if (container.scrollTop === 0) {
-      // Lấy timestamp cũ nhất
+      // Get the timestamp of the oldest message
       const oldest = messages[0];
       if (oldest) {
         beforeRef.current = oldest.timestamp;
-        loadMessages(oldest.timestamp);
+        loadMessages(oldest.timestamp); // Pass the timestamp to fetch more messages
       }
     }
   };
@@ -76,17 +77,18 @@ export default function ServerChat({ channel }) {
   useEffect(() => {
     if (!channel?.id) return;
     socket.emit("joinChannel", channel.id);
-    loadMessages();
+    loadMessages(); // Fetch initial messages
     
-    socket.on("loadedMessages", (loaded) => {
-      if (loaded.length < 20) {
-        setHasMoreMessages(false); // Không còn thêm
+    socket.on("moreMessages", (moreMessages) => {
+      console.log("Received more messages:", moreMessages.length);
+      if (moreMessages.length < limit) {
+        setHasMoreMessages(false); // No more messages to load
       }
   
       setMessages((prev) => {
         const allMessages = beforeRef.current
-          ? [...loaded, ...prev] // prepend nếu scroll
-          : [...loaded]; // mới vào thì thay thế
+          ? [...moreMessages, ...prev] // Prepend if scrolling
+          : [...moreMessages]; // Replace if loading initially
   
         return allMessages;
       });
@@ -114,7 +116,6 @@ export default function ServerChat({ channel }) {
     scrollToBottom()
   }, [messages])
 
-  const [pretime_stamp, SetPretime_stamp] = useState();
   const handleSendMessage = () => {
     if (!messageInput.trim()) return
 
@@ -156,26 +157,6 @@ export default function ServerChat({ channel }) {
     setEditingMessageId(null);
     setEditedContent("");
   };
-
-  const handleScrollBarScrollToTop = () => {
-    
-    if (
-        messagesContainerRef.current.scrollTop === 0 &&
-        !isFetching &&
-        hasMoreMessages
-    ) {
-        setIsFetching(true);
-        // Save the current scroll height before fetching more messages
-        const currentScrollHeight = messagesContainerRef.current.scrollHeight;
-
-        const lastTimestamp =
-            messages.length > 0 ? new Date(messages[0].timestamp).getTime() : Date.now();
-        socket.emit("fetchMoreMessages", { channel_id: 'default-channel', lastTimestamp, limit: 10 });
-
-        
-    }
-};
-
   return (
     <div className="flex-1 flex flex-col relative ">
       {/* Messages area with scrollbar */}
