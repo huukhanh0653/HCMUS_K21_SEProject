@@ -4,15 +4,14 @@ import {
   Get,
   Put,
   Delete,
-  Body,
   Param,
+  Body,
   Res,
   HttpStatus,
-  Query,
 } from '@nestjs/common';
 import { ServerService } from './server.service';
-import { Response } from 'express';
 import { ServerDto } from './server.dto';
+import { Response } from 'express';
 
 @Controller('servers/:username')
 export class ServerController {
@@ -20,22 +19,39 @@ export class ServerController {
 
   @Post()
   async createServer(
-    @Body() body: ServerDto,
     @Param('username') username: string,
+    @Body() body: ServerDto,
     @Res() res: Response,
   ) {
     try {
-      const server = await this.serverService.createServer(username, body);
+      const server = await this.serverService.createServer(body, username);
       return res.status(HttpStatus.CREATED).json(server);
     } catch (err) {
       return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
     }
   }
 
-  @Get()
-  async getServers(@Param('username') username: string, @Res() res: Response) {
+  @Get(':serverName')
+  async getServer(
+    @Param('serverName') serverName: string,
+    @Param('username') username: string,
+    @Res() res: Response,
+  ) {
     try {
-      const servers = await this.serverService.getServers(username);
+      const servers = await this.serverService.getServers(username, serverName);
+      return res.status(HttpStatus.OK).json(servers);
+    } catch (err) {
+      return res.status(HttpStatus.NOT_FOUND).json({ message: err.message });
+    }
+  }
+
+  @Get()
+  async getAllServers(
+    @Param('username') username: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const servers = await this.serverService.getAllServers(username);
       return res.status(HttpStatus.OK).json(servers);
     } catch (err) {
       return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
@@ -52,8 +68,8 @@ export class ServerController {
     try {
       const result = await this.serverService.updateServer(
         serverId,
-        username,
         body,
+        username,
       );
       return res.status(HttpStatus.OK).json(result);
     } catch (err) {
@@ -72,26 +88,6 @@ export class ServerController {
       return res.status(HttpStatus.OK).json(result);
     } catch (err) {
       return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
-    }
-  }
-
-  @Get('search')
-  async searchServer(
-    @Param() username: string,
-    @Query('query') query: string,
-    @Res() res: Response,
-  ) {
-    if (!query || query.trim() === '') {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .send('Query parameter is required');
-    }
-
-    try {
-      const servers = await this.serverService.searchServer(username, query);
-      return res.status(HttpStatus.OK).json(servers);
-    } catch (err) {
-      return res.status(HttpStatus.NOT_FOUND).json({ message: err.message });
     }
   }
 }

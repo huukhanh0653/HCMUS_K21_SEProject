@@ -7,8 +7,8 @@ import {
 } from 'typeorm';
 import { Server } from '../servers/server.entity';
 
-@Entity('channels')
-export class Channel {
+@Entity('roles')
+export class Role {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -19,13 +19,13 @@ export class Channel {
   name: string;
 
   @Column({ type: 'text', nullable: true })
-  type: string;
+  color: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
+  @Column({ type: 'int', nullable: true })
+  position: number;
 
-  @Column({ type: 'boolean', default: false })
-  is_private: boolean;
+  @Column({ type: 'boolean', nullable: true })
+  is_default: boolean;
 
   @ManyToOne(() => Server)
   @JoinColumn({ name: 'server_id' })

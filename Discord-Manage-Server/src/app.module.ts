@@ -3,6 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './users/user.module';
 import { FriendModule } from './friends/friend.module';
 import { ServerModule } from './servers/server.module';
+import { RoleModule } from './roles/role.module';
+import { ServerMemberModule } from './server_members/server_member.module';
+import { ChannelModule } from './channels/channel.module';
+import { ChannelMemberModule } from './channel_members/channel_member.module';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -11,17 +15,18 @@ dotenv.config();
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.POSTGRES_HOST,
-      port: parseInt(process.env.POSTGRES_PORT!) || 5432,
-      username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
+      url: process.env.POSTGRES_SINGAPORE_CONNECTION_STRING,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      ssl: { rejectUnauthorized: false },
     }),
     UserModule,
     FriendModule,
     ServerModule,
+    RoleModule,
+    ServerMemberModule,
+    ChannelModule,
+    ChannelMemberModule,
   ],
 })
 export class AppModule {}

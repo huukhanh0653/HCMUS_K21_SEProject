@@ -5,18 +5,31 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true, length: 255 })
+  @Column({ type: 'text', unique: true })
   username: string;
 
-  @Column({ length: 100 })
-  password: string;
-
-  @Column({ unique: true, length: 255 })
+  @Column({ type: 'text', unique: true })
   email: string;
 
-  @Column({ default: true })
-  status: boolean;
+  @Column({ type: 'text' })
+  password_hash: string;
 
-  @Column({ default: 'assets/discord-logo.png' })
-  avatar: string;
+  @Column({ type: 'text', nullable: true })
+  profile_pic: string;
+
+  @Column({ type: 'text', nullable: true })
+  status: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created_at: Date;
+
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updated_at: Date;
+
+  @Column({ type: 'boolean', default: false })
+  is_admin: boolean;
 }
