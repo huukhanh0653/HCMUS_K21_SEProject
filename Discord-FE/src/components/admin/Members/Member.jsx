@@ -77,9 +77,9 @@ export default function Member() {
       </div>
       {
         language == "en" ?
-        <DataTable columns={columns} data={paginatedMembers} filterProps={{ column: "HoTen", placeholder: "Find member by name" }} />
+        <DataTable columns={columns()} data={paginatedMembers} filterProps={{ column: "HoTen", placeholder: "Find member by name" }} />
         :
-        <DataTable columns={columns} data={paginatedMembers} filterProps={{ column: "HoTen", placeholder: "Tìm thành viên bằng tên..." }} />
+        <DataTable columns={columns()} data={paginatedMembers} filterProps={{ column: "HoTen", placeholder: "Tìm thành viên bằng tên..." }} />
       }
       
 
