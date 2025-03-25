@@ -8,7 +8,7 @@ import { Label } from "../../ui/label";
 import { cn } from "../../../lib/utils";
 import { PopupModal } from "../../ui/modal";
 import { DatePicker } from '../../ui/date-picker';
-import { useLanguage } from '../../LanguageProvider';
+import { useLanguage } from '../../layout/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { t } from 'i18next';
 

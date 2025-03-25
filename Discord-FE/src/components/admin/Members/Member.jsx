@@ -9,7 +9,7 @@ import { cn } from "../../../lib/utils";
 import { PopupModal } from "../../ui/modal";
 import { DatePicker } from '../../ui/date-picker';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from '../../LanguageProvider';
+import { useLanguage } from '../../layout/LanguageProvider';
 import { t } from 'i18next';
 export default function Member() {
   const [AddMemberOpen, setAddMemberOpen] = useState(false);

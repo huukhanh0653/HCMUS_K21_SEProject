@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { ChevronDown, Hash, Volume2 } from "lucide-react";
-import UserPanel from "../../components/user_panel";
+import UserPanel from "../../components/user/UserPanel";
 import MemberManagementModal from "../../components/server/MemberManagementModal";
 import ChannelManagementModal from "../../components/server/ChannelManagementModal";
 import InviteServer from "../../components/server/InviteServer";
 import { useTranslation } from "react-i18next";
+
 export default function ServerChannels({ server, onChannelSelect, onProfileClick, selectedChannelId }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);

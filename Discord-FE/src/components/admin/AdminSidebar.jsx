@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { DiscIcon, PowerIcon, ServerIcon, UsersIcon, PlayIcon, SettingsIcon, MenuIcon, XIcon, Languages } from "lucide-react";
 import { cn } from "../../lib/utils"; // Hàm tiện ích để nối classnames
 import { useTranslation } from "react-i18next";
-import { useLanguage } from "../LanguageProvider";
+import { useLanguage } from "../layout/LanguageProvider";
 
 export default function AdminSidebar({ isOpen, onClose }) {
   const { t } = useTranslation();
