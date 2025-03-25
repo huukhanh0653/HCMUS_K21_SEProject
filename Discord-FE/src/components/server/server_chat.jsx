@@ -15,6 +15,9 @@ export default function ServerChat({ channel }) {
   const inputRef = useRef(null)
   const {t, i18n} = useTranslation();
   const messagesEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
+  const [isFetching, setIsFetching] = useState(true)
+  const [hasMoreMessages, setHasMoreMessages] = useState(true)
 
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -153,6 +156,25 @@ export default function ServerChat({ channel }) {
     setEditingMessageId(null);
     setEditedContent("");
   };
+
+  const handleScrollBarScrollToTop = () => {
+    
+    if (
+        messagesContainerRef.current.scrollTop === 0 &&
+        !isFetching &&
+        hasMoreMessages
+    ) {
+        setIsFetching(true);
+        // Save the current scroll height before fetching more messages
+        const currentScrollHeight = messagesContainerRef.current.scrollHeight;
+
+        const lastTimestamp =
+            messages.length > 0 ? new Date(messages[0].timestamp).getTime() : Date.now();
+        socket.emit("fetchMoreMessages", { channel_id: 'default-channel', lastTimestamp, limit: 10 });
+
+        
+    }
+};
 
   return (
     <div className="flex-1 flex flex-col relative ">
