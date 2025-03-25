@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
-import { useState,useEffect } from "react";
-import { DiscIcon, PowerIcon, ServerIcon, UsersIcon, PlayIcon, SettingsIcon, MenuIcon, XIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { DiscIcon, PowerIcon, ServerIcon, UsersIcon, PlayIcon, SettingsIcon, MenuIcon, XIcon, Languages } from "lucide-react";
 import { cn } from "../../lib/utils"; // Hàm tiện ích để nối classnames
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "../LanguageProvider";
 
 export default function AdminSidebar({ isOpen, onClose }) {
+  const { t } = useTranslation();
+  const { language, toggleLanguage } = useLanguage();
   return (
     <>
       {/* Overlay để đóng Sidebar khi nhấn ra ngoài */}
@@ -40,10 +44,17 @@ export default function AdminSidebar({ isOpen, onClose }) {
         </div>
 
         <nav className="flex flex-1 flex-col gap-2 overflow-y-auto px-2 py-4">
-          <NavItem to="/admin/dashboard" icon={<ServerIcon className="h-6 w-6" />} label="Dashboard" />
-          <NavItem to="/admin/member" icon={<UsersIcon className="h-6 w-6" />} label="Members" />
-          <NavItem to="/admin/server" icon={<PlayIcon className="h-6 w-6" />} label="Servers" />
-          <NavItem to="/admin/setting" icon={<SettingsIcon className="h-6 w-6" />} label="Settings" />
+          <NavItem to="/admin/dashboard" icon={<ServerIcon className="h-6 w-6" />} label={t("Dashboard")} />
+          <NavItem to="/admin/member" icon={<UsersIcon className="h-6 w-6" />} label={t("Members")} />
+          <NavItem to="/admin/server" icon={<PlayIcon className="h-6 w-6" />} label={t("Servers")} />
+          <NavItem to="/admin/setting" icon={<SettingsIcon className="h-6 w-6" />} label={t("Settings")} />
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-2 p-2 rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <Languages/>
+            {language === "en" ? "EN" : "VI"}
+          </button>
         </nav>
       </aside>
     </>

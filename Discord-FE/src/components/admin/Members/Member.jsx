@@ -8,13 +8,16 @@ import { Label } from "../../ui/label";
 import { cn } from "../../../lib/utils";
 import { PopupModal } from "../../ui/modal";
 import { DatePicker } from '../../ui/date-picker';
-
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../LanguageProvider';
+import { t } from 'i18next';
 export default function Member() {
   const [AddMemberOpen, setAddMemberOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalSize, setTotalSize] = useState(0);
   const [members, setMembers] = useState([]); // State to store members
-
+  const { t } = useTranslation();
+  const { language, toggleLanguage } = useLanguage();
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
@@ -34,28 +37,51 @@ export default function Member() {
   const paginatedMembers = members.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
 
-
   return (
     <DefaultLayout>
       <div className="flex justify-between items-center mb-7 mt-0 pt-[10px]">
-        <h1 className="text-2xl font-normal p-4">Thành viên ({totalSize})</h1>
-        
-        <PopupModal 
-          open={AddMemberOpen} 
-          setOpen={setAddMemberOpen} 
-          formComponent={AddMemberForm} 
-          props={{
-            title: "Thêm thành viên mới",
-            description: "Nhập thông tin thành viên",
-            onAddMember: handleAddMember,  // Kiểm tra xem giá trị này có đúng không
-          }}
-        >
-          <Button className="px-6 py-0 text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 rounded-lg ml-6">
-            Thêm thành viên
-          </Button>
-        </PopupModal>
+        <h1 className="text-2xl font-normal p-4">{t('Members')} ({totalSize})</h1>
+        {
+          language == "en" ?
+            <PopupModal
+              open={AddMemberOpen}
+              setOpen={setAddMemberOpen}
+              formComponent={AddMemberForm}
+              props={{
+                title: "Add new member",
+                description: "Enter member information",
+                onAddMember: handleAddMember,  // Kiểm tra xem giá trị này có đúng không
+              }}
+            >
+              <Button className="px-6 py-0 text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 rounded-lg ml-6">
+                Add member
+              </Button>
+            </PopupModal>
+            :
+            <PopupModal
+              open={AddMemberOpen}
+              setOpen={setAddMemberOpen}
+              formComponent={AddMemberForm}
+              props={{
+                title: "Thêm thành viên mới",
+                description: "Nhập thông tin thành viên",
+                onAddMember: handleAddMember,  // Kiểm tra xem giá trị này có đúng không
+              }}
+            >
+              <Button className="px-6 py-0 text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 rounded-lg ml-6">
+                Thêm thành viên
+              </Button>
+            </PopupModal>
+        }
+
       </div>
-      <DataTable columns={columns} data={paginatedMembers} filterProps={{ column: "HoTen", placeholder: "Tìm thành viên bằng tên..." }}/>
+      {
+        language == "en" ?
+        <DataTable columns={columns} data={paginatedMembers} filterProps={{ column: "HoTen", placeholder: "Find member by name" }} />
+        :
+        <DataTable columns={columns} data={paginatedMembers} filterProps={{ column: "HoTen", placeholder: "Tìm thành viên bằng tên..." }} />
+      }
+      
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
@@ -64,7 +90,7 @@ export default function Member() {
           onClick={handlePrevPage}
           disabled={currentPage === 1}
         >
-          Previous
+          {t('Previous')}
         </Button>
         <Button
           variant="outline"
@@ -72,7 +98,7 @@ export default function Member() {
           onClick={handleNextPage}
           disabled={currentPage === totalPages}
         >
-          Next
+          {t('Next')}
         </Button>
       </div>
     </DefaultLayout>
@@ -110,11 +136,11 @@ function AddMemberForm({ className, setOpen, onAddMember }) {
   return (
     <form onSubmit={handleSubmit} className={cn("grid items-start gap-4", className)}>
       <div className="grid gap-2">
-        <Label htmlFor="full_name">Họ tên</Label>
+        <Label htmlFor="full_name">{t('Full Name')}</Label>
         <Input type="text" id="full_name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="dob">Ngày sinh</Label>
+        <Label htmlFor="dob">{t('Date of birth')}</Label>
         <DatePicker
           date={birthDate} /* Pass state value */
           onDateChange={setBirthDate} /* Pass state handlers */
@@ -122,23 +148,23 @@ function AddMemberForm({ className, setOpen, onAddMember }) {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="start_date">Ngày vào Discord</Label>
-        <DatePicker 
+        <Label htmlFor="start_date">{t('EchoChat join date')}</Label>
+        <DatePicker
           date={startDate} /* Pass state value */
           onDateChange={setStartDate} /* Pass state handlers */
           required
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="branch">Mã Server</Label>
+        <Label htmlFor="branch">{t('Server ID')}</Label>
         <Input id="branch" value={branch} onChange={(e) => setBranch(e.target.value)} required />
       </div>
       <div className="grid gap-2">
         <Label htmlFor="department">RoleID</Label>
         <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} required />
       </div>
-      <Button type="submit">Thêm</Button>
-      <Button onClick={handleClose} variant="outline">Hủy</Button>
+      <Button type="submit">{t('Add')}</Button>
+      <Button onClick={handleClose} variant="outline">{t('Cancel')}</Button>
     </form>
   );
 }
@@ -168,7 +194,7 @@ export function EditMemberForm({ className, setOpen, Member, onEditMember }) {
   return (
     <form onSubmit={handleSubmit} className={cn("grid items-start gap-4", className)}>
       <div className="grid gap-2">
-        <Label htmlFor="name">Họ tên</Label>
+        <Label htmlFor="name">{t('Full Name')}</Label>
         <Input
           type="text"
           id="HoTen"
@@ -177,14 +203,14 @@ export function EditMemberForm({ className, setOpen, Member, onEditMember }) {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="dob">Ngày sinh</Label>
+        <Label htmlFor="dob">{t('Date of birth')}</Label>
         <DatePicker
           date={editedMember.NgaySinh}
           onDateChange={(date) => setEditedMember((prev) => ({ ...prev, NgaySinh: date }))}
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="start_date">Ngày vào Discord</Label>
+        <Label htmlFor="start_date">{t('EchoChat join date')}</Label>
         <DatePicker
           date={editedMember.NgayVaoLam}
           onDateChange={(date) => setEditedMember((prev) => ({ ...prev, NgayVaoLam: date }))}
@@ -198,8 +224,8 @@ export function EditMemberForm({ className, setOpen, Member, onEditMember }) {
           onChange={handleChange}
         />
       </div>
-      <Button className="bg-blue-500 text-white" type="submit">Sửa</Button>
-      <Button onClick={handleClose} variant="outline">Hủy</Button>
+      <Button className="bg-blue-500 text-white" type="submit">{t('Edit')}</Button>
+      <Button onClick={handleClose} variant="outline">{t('Cancel')}</Button>
     </form>
   );
 }
@@ -215,12 +241,12 @@ export function TerminateMemberForm({ className, setOpen }) {
     e.preventDefault();
     console.log("Selected Date:", endDate);
   };
-  
+
   return (
     <form onSubmit={handleSubmit} className={cn("grid items-start gap-4", className)}>
       <div className="grid gap-2">
         <Label htmlFor="end_date">Ngày xóa</Label>
-        <DatePicker 
+        <DatePicker
           date={endDate} /* Pass state value */
           onDateChange={setEndDate} /* Pass state handlers */
         />
@@ -241,26 +267,26 @@ export function WorkHistoryDetail({ className, MemberID, MemberDepartment }) {
 
   return (
     <>
-      <Table className= "rounded-lg border border-gray-100">
+      <Table className="rounded-lg border border-gray-100">
         <TableHeader>
           <TableRow>
             <TableHead className="w-[100px]">Server</TableHead>
-            <TableHead >Ngày bắt đầu</TableHead>
-            <TableHead >Ngày kết thúc</TableHead>
+            <TableHead >{t('Start date')}</TableHead>
+            <TableHead >{t('End date')}</TableHead>
             <TableHead>Role</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody >
           {data.slice(startIndex, endIndex).map((item) => {
             return (
-            <React.Fragment key={`${item.MaCN}-${item.NgayBatDau}-${item.NgayKetThuc}`}>
-              <TableRow >
-                <TableCell >{item.MaCN}</TableCell>
-                <TableCell>{item.NgayBatDau}</TableCell>
-                <TableCell>{item.NgayKetThuc}</TableCell>
-                <TableCell>{MemberDepartment}</TableCell>
-              </TableRow>
-            </React.Fragment>
+              <React.Fragment key={`${item.MaCN}-${item.NgayBatDau}-${item.NgayKetThuc}`}>
+                <TableRow >
+                  <TableCell >{item.MaCN}</TableCell>
+                  <TableCell>{item.NgayBatDau}</TableCell>
+                  <TableCell>{item.NgayKetThuc}</TableCell>
+                  <TableCell>{MemberDepartment}</TableCell>
+                </TableRow>
+              </React.Fragment>
             )
           })}
 
@@ -270,7 +296,7 @@ export function WorkHistoryDetail({ className, MemberID, MemberDepartment }) {
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
-              className={ 
+              className={
                 startIndex === 0 ? "pointer-events-none opacity-50 " : "cursor-pointer hover:bg-gray-200 active:bg-gray-300"
               }
               onClick={() => {
