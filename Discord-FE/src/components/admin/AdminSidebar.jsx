@@ -29,7 +29,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
         <div className="flex h-16 items-center justify-between border-b px-4">
           <Link to="/admin" className="flex items-center gap-2">
             <DiscIcon className="h-8 w-8 text-primary" />
-            <span className="hidden text-lg font-bold text-primary sm:block">Discord</span>
+            <span className="hidden text-lg font-bold text-primary sm:block">EchoChat</span>
           </Link>
 
           {/* Nút đóng Sidebar */}
