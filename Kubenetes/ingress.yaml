@@ -4,35 +4,36 @@ metadata:
   name: discord-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/proxy-set-headers: |
+      Upgrade: $http_upgrade
+      Connection: $connection_upgrade
 spec:
+  ingressClassName: nginx
   rules:
   - host: localhost
     http:
       paths:
-      - path: /
+      - path: /message-server
         pathType: Prefix
         backend:
           service:
             name: echo-chat-message-service
             port:
               number: 5000
-  - host: localhost
-    http:
-      paths:
-      - path: /
+      - path: /front-end
         pathType: Prefix
         backend:
           service:
             name: echo-chat-front-end-service
             port:
-              number: 8080
-  - host: notification-service.example.com
-    http:
-      paths:
-      - path: /
+              number: 5173
+      - path: /user-service
         pathType: Prefix
         backend:
           service:
-            name: discord-notification-service
+            name: echo-chat-user-service
             port:
-              number: 8080
+              number: 5001

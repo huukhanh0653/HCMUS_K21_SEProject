@@ -21,6 +21,7 @@ redis.on('error', (err) => console.log('Redis Client Error', err));
 
 (async () => {
     await redis.connect();
+    console.log(redis.username, redis.password, redis.options);
     console.log('Connected to Redis');
 })();
 
