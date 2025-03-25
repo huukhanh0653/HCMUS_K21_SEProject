@@ -5,8 +5,9 @@ import { Input } from "../../ui/input";
 import { Switch } from "../../ui/switch";
 import { Label } from "../../ui/label";
 import { toast } from "react-toastify";
-
+import { useTranslation } from "react-i18next";
 export default function AdminSettings() {
+  const {t} = useTranslation();
   const [settings, setSettings] = useState({
     systemName: "My App",
     contactEmail: "admin@example.com",
@@ -31,13 +32,13 @@ export default function AdminSettings() {
     <div className="flex justify-center items-center min-h-screen px-4">
       <Card className="w-full max-w-md sm:max-w-xl md:max-w-2xl shadow-lg rounded-lg p-6 bg-white dark:bg-gray-800">
         <CardContent>
-          <h2 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Cài đặt hệ thống</h2>
+          <h2 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">{t("System Settings")}</h2>
 
           <div className="space-y-4">
             {/* Tên hệ thống */}
             <div className="flex items-center gap-4">
               <Label htmlFor="systemName" className="w-1/3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Tên hệ thống
+                {t('System Name')}
               </Label>
               <Input
                 id="systemName"
@@ -51,7 +52,7 @@ export default function AdminSettings() {
             {/* Email liên hệ */}
             <div className="flex items-center gap-4">
               <Label htmlFor="contactEmail" className="w-1/3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email liên hệ
+                {t('Contact Email')}
               </Label>
               <Input
                 id="contactEmail"
@@ -65,13 +66,13 @@ export default function AdminSettings() {
 
             {/* Kích hoạt tính năng X */}
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kích hoạt tính năng X</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("Active X feature")}</Label>
               <Switch checked={settings.enableFeatureX} onCheckedChange={handleToggle} />
             </div>
 
             {/* Nút Lưu */}
             <Button className="w-full bg-black dark:bg-blue-600 text-white py-2 rounded-lg mt-4" onClick={handleSave}>
-              Lưu cài đặt
+              {t('Save settings')}
             </Button>
           </div>
         </CardContent>

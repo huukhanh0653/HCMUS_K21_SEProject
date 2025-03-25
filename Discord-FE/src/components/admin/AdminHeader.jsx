@@ -13,11 +13,11 @@ import { useNavigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import { useState } from "react";
 import { getAuth, signOut } from "firebase/auth"; // Firebase auth
-
+import { useTranslation } from "react-i18next";
 export default function AdminHeader() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
-
+  const {t} = useTranslation();
   // Handle Logout
   const handleLogout = async () => {
       const auth = getAuth();
@@ -70,10 +70,10 @@ export default function AdminHeader() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>John Doe</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/admin/account/profile")}>Profile</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/admin/account/settings")}>Settings</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/admin/account/profile")}>{t('Profile')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/admin/account/settings")}>{t('Settings')}</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>{t('Logout')}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

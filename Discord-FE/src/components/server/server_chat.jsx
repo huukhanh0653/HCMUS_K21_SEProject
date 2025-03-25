@@ -15,15 +15,19 @@ export default function ServerChat({ channel }) {
   const inputRef = useRef(null)
   const {t, i18n} = useTranslation();
   const messagesEndRef = useRef(null)
-
+  const messagesContainerRef = useRef(null)
+  const [isFetching, setIsFetching] = useState(true)
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const loadMessages = (before = null) => {
+  const [isPrepending, setIsPrepending] = useState(false);
+  const limit = 20;
+  const loadMessages = (lastTimestamp = null) => {
     setIsLoadingMore(true);
-    socket.emit("loadMessages", {
-      channel_id: channel.id || "default-channel",
-      limit: 20,
-      before, // timestamp
+    setIsPrepending(true); // <-- đánh dấu đang prepend
+    socket.emit("fetchMoreMessages", {
+      channel_id: channel.id,
+      limit: limit,
+      lastTimestamp: new Date(lastTimestamp).getTime() || Date.now(), // Use current timestamp if lastTimestamp is null
     });
   };
   const messagesWrapperRef = useRef(null);
@@ -38,14 +42,16 @@ export default function ServerChat({ channel }) {
 
   const handleScroll = () => {
     const container = messagesWrapperRef.current;
+    console.log(container.scrollTop, container.scrollHeight, container.clientHeight)
+    console.log(isLoadingMore, hasMoreMessages)
     if (!container || isLoadingMore || !hasMoreMessages) return;
 
     if (container.scrollTop === 0) {
-      // Lấy timestamp cũ nhất
+      // Get the timestamp of the oldest message
       const oldest = messages[0];
       if (oldest) {
         beforeRef.current = oldest.timestamp;
-        loadMessages(oldest.timestamp);
+        loadMessages(oldest.timestamp); // Pass the timestamp to fetch more messages
       }
     }
   };
@@ -54,31 +60,69 @@ export default function ServerChat({ channel }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
+  //Get user info
+  const [storedUser, setStoredUser] = useState(null);
+  useEffect(() => {
+    const userData = localStorage.getItem("user_info");
+    if (userData) {
+      try {
+        setStoredUser(JSON.parse(userData));
+      } catch (error) {
+        console.error("Failed to parse user_info:", error);
+      }
+    }
+  }, []);
+  const username = storedUser?.name || "Unknown";
+  const avatarSrc = storedUser?.avatar || "https://via.placeholder.com/40";
+
+
   useEffect(() => {
     if (!channel?.id) return;
     socket.emit("joinChannel", channel.id);
-    loadMessages();
+    loadMessages(); // Fetch initial messages
     
-    socket.on("loadedMessages", (loaded) => {
-      if (loaded.length < 20) {
-        setHasMoreMessages(false); // Không còn thêm
+    socket.on("moreMessages", (moreMessages) => {
+      const container = messagesWrapperRef.current;
+      if (!container) return;
+    
+      const previousScrollHeight = container.scrollHeight;
+      const previousScrollTop = container.scrollTop;
+    
+      if (moreMessages.length < limit) {
+        setHasMoreMessages(false);
       }
-  
+    
       setMessages((prev) => {
         const allMessages = beforeRef.current
-          ? [...loaded, ...prev] // prepend nếu scroll
-          : [...loaded]; // mới vào thì thay thế
-  
+          ? [...moreMessages, ...prev]
+          : [...moreMessages];
         return allMessages;
       });
-  
+    
+      setTimeout(() => {
+        const newScrollHeight = container.scrollHeight;
+        container.scrollTop = newScrollHeight - (previousScrollHeight - previousScrollTop);
+        setIsPrepending(false); // <-- load xong, reset lại flag
+      }, 0);
+    
       setIsLoadingMore(false);
     });
+    
 
     // Listen for new messages
     socket.on("receiveMessage", (newMessage) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage])
+      const container = messagesWrapperRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    
+      if (isNearBottom) {
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 0);
+      }
     })
+
     socket.on('messageUpdated', (data) => {
       setMessages((prev) => prev.map((msg) => (msg.message_id === data.message_id ? data : msg)));
     });
@@ -92,16 +136,18 @@ export default function ServerChat({ channel }) {
   }, [channel.id]);
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    if (!isPrepending) {
+      scrollToBottom();
+    }
+  }, [messages]);
+  
 
-  const [pretime_stamp, SetPretime_stamp] = useState();
   const handleSendMessage = () => {
     if (!messageInput.trim()) return
 
     const newMessage = {
       channel_id: channel.id,
-      sender_id: "currentUserId", // Replace with the actual user ID
+      sender_id: username, // Replace with the actual user ID
       content: messageInput,
       timestamp: Date.now(), // Lưu timestamp để so sánh
       attachments: [],
@@ -137,7 +183,6 @@ export default function ServerChat({ channel }) {
     setEditingMessageId(null);
     setEditedContent("");
   };
-
   return (
     <div className="flex-1 flex flex-col relative ">
       {/* Messages area with scrollbar */}
@@ -184,7 +229,7 @@ export default function ServerChat({ channel }) {
           });
 
           return (
-            <div key={message.message_id} className={`mb-2 ${!isGrouped ? "pt-4" : ""}`}>
+            <div key={message.message_id} className={`${!isGrouped ? "pt-4" : ""}`}>
               {/* Divider ngày */}
               {showDateDivider && (
                 <div className="flex justify-center items-center my-6">
@@ -216,7 +261,7 @@ export default function ServerChat({ channel }) {
                   </div>
                 )}
 
-                <div className={`${isGrouped ? "pl-14" : "pl-14 mt-1"} relative`}>
+                <div className={`${isGrouped ? "pl-14" : "pl-14"} relative`}>
                   {editingMessageId === message.message_id ? (
                     <textarea
                       value={editedContent}
@@ -232,12 +277,12 @@ export default function ServerChat({ channel }) {
                       }}
                     />
                   ) : (
-                    <p className="text-gray-100 break-words whitespace-pre-wrap break-all text-left mt-1 pr-14">
+                    <p className="text-gray-100 break-words whitespace-pre-wrap break-all text-left pr-14">
                       {message.content}
                     </p>
                   )}
 
-                  {message.sender_id === "currentUserId" && (
+                  {message.sender_id === username && (
                     <div className="absolute top-0 right-0 hidden group-hover:flex items-center gap-2">
                       <button
                         className="p-1 text-gray-400 hover:text-gray-200"

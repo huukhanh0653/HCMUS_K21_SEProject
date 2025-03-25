@@ -11,7 +11,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui
 import { Badge } from "../ui/badge"
 import { useNavigate } from "react-router-dom";
 import { LineChart, Cell, Line, BarChart, Bar, PieChart, Pie, Tooltip, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import { useTranslation } from "react-i18next";
 export default function AdminPanel() {
+  const {t} = useTranslation();
   const navigate = useNavigate();
   const newMembersData = [
     { day: "Day 1", Servers: 5 },
@@ -56,8 +58,8 @@ export default function AdminPanel() {
             {/* Server Analytics */}
             <Card className="p-6 lg:p-8">
               <CardHeader>
-                <CardTitle className="text-lg lg:text-xl">Server Analytics</CardTitle>
-                <CardDescription className="text-foreground">Overview of your server's performance and activity.</CardDescription>
+                <CardTitle className="text-lg lg:text-xl">{t('Server Analytics')}</CardTitle>
+                <CardDescription className="text-foreground">{t(`Overview of your server's performance and activity.`)}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -76,8 +78,8 @@ export default function AdminPanel() {
             {/* Member Activity */}
             <Card className="p-6 lg:p-8">
               <CardHeader>
-                <CardTitle className="text-lg lg:text-xl">Member Activity</CardTitle>
-                <CardDescription className="text-foreground">Recent activity and engagement from your members.</CardDescription>
+                <CardTitle className="text-lg lg:text-xl">{t('Member Activity')}</CardTitle>
+                <CardDescription className="text-foreground">{t('Recent activity and engagement from your members.')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -96,8 +98,8 @@ export default function AdminPanel() {
             {/* Moderation Tools */}
             <Card className="p-6 lg:p-8">
               <CardHeader>
-                <CardTitle className="text-lg lg:text-xl">Moderation Tools</CardTitle>
-                <CardDescription className="text-foreground">Manage and monitor your server's moderation activities.</CardDescription>
+                <CardTitle className="text-lg lg:text-xl">{t('Moderation Tools')}</CardTitle>
+                <CardDescription className="text-foreground">{t(`Manage and monitor your server's moderation activities.`)}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -124,8 +126,8 @@ export default function AdminPanel() {
             {/* Roles Management */}
             <Card className="p-6 lg:p-8">
               <CardHeader>
-                <CardTitle className="text-lg lg:text-xl">Roles Management</CardTitle>
-                <CardDescription className="text-foreground">Create, edit, and manage roles for your server members.</CardDescription>
+                <CardTitle className="text-lg lg:text-xl">{t('Roles Management')}</CardTitle>
+                <CardDescription className="text-foreground">{t('Create, edit, and manage roles for your server members.')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>

@@ -44,6 +44,7 @@ const Login = () => {
         body: JSON.stringify({ uid: user.uid, email: user.email }),
       });
       localStorage.setItem("email", email);
+      localStorage.setItem("user", user);
       window.location.replace("/");
     } catch (error) {
       setErrorMessage("Đăng nhập thất bại: " + error.message);

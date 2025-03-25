@@ -7,7 +7,7 @@ const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const { createClient } = require('redis');
 
-// Initialize Redis client with provided configuration
+// Initialize Redis client
 const redis = createClient({
     username: process.env.REDIS_USERNAME,
     password: process.env.REDIS_PASSWORD,
@@ -60,20 +60,46 @@ const io = new Server(server, {
     }
 });
 
-// Helper function to push Redis messages to MongoDB
-const flushRedisToMongo = async () => {
-    const keys = await redis.keys('channel:*');
-    for (const key of keys) {
-        const messages = await redis.lrange(key, 0, -1);
-        const parsedMessages = messages.map((msg) => JSON.parse(msg));
-        await Message.insertMany(parsedMessages);
-        await redis.del(key);
-    }
-    console.log('Flushed Redis messages to MongoDB');
+// Helper function to cache a message in Redis
+const cacheMessageInRedis = async (message) => {
+    const redisKey = `channel:${message.channel_id}:message:${message.message_id}`;
+    await redis.set(redisKey, JSON.stringify(message), { EX: 60 * 60 * 24 * 15 }); // Cache for 15 days
 };
 
-// Schedule Redis flush every 15 minutes
-setInterval(flushRedisToMongo, 15 * 60 * 1000);
+// Updated fetchPaginatedMessages to handle dynamic limit
+const fetchPaginatedMessages = async (channelId, lastTimestamp, limit) => {
+    const redisKeys = await redis.sendCommand(['KEYS', `channel:${channelId}:message:*`]); // Get all message keys for the channel
+    const redisMessages = [];
+
+    for (const redisKey of redisKeys) {
+        const message = JSON.parse(await redis.get(redisKey));
+        if (message && !message.deleted && new Date(message.timestamp).getTime() < lastTimestamp) {
+            redisMessages.push(message);
+        }
+    }
+    redisMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort in ascending order by timestamp
+    let paginatedRedisMessages = redisMessages.slice(0, limit);
+    paginatedRedisMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Sort in ascending order by timestamp
+    console.log('Fetched from Redis:', paginatedRedisMessages.length);
+
+    if (paginatedRedisMessages.length < limit) {
+        console.log('Fetching from MongoDB');
+        const remainingLimit = limit - paginatedRedisMessages.length;
+        const lastRedisTimestamp = paginatedRedisMessages.length > 0
+            ? new Date(paginatedRedisMessages[0].timestamp).getTime()
+            : lastTimestamp;
+
+        const mongoMessages = await Message.find({
+            channel_id: channelId,
+            deleted: false,
+            timestamp: { $lt: new Date(lastRedisTimestamp) }
+        }).sort({ timestamp: -1 }).limit(remainingLimit); // Fetch from MongoDB in ascending order
+        mongoMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Sort in ascending order by timestamp
+        return [...mongoMessages, ...paginatedRedisMessages];
+    }
+
+    return paginatedRedisMessages;
+};
 
 // Handle WebSocket connections
 io.on('connection', (socket) => {
@@ -84,23 +110,20 @@ io.on('connection', (socket) => {
         // Join the socket room for this channel
         socket.join(channelId);
 
-        // Get messages from Redis
-        const redisMessages = await redis.sendCommand(['LRANGE', `channel:${channelId}`, '0', '-1']);
-        const parsedRedisMessages = redisMessages.map((msg) => JSON.parse(msg));
-
-        // Get messages from MongoDB
-        const mongoMessages = await Message.find({ 
-            channel_id: channelId,
-            deleted: false 
-        }).sort({ timestamp: 1 });
-
-        // Combine and sort messages
-        const allMessages = [...parsedRedisMessages, ...mongoMessages].sort(
-            (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-        );
+        // Fetch the first page of messages
+        const messages = await fetchPaginatedMessages(channelId, Date.now(), 10);
 
         // Send previous messages from this channel to the user
-        // socket.emit('previousMessages', allMessages);
+        socket.emit('previousMessages', messages);
+    });
+
+    // Listen for fetchMoreMessages to load more messages
+    socket.on('fetchMoreMessages', async ({ channel_id, lastTimestamp, limit }) => {
+        console.log('Fetching more messages:', channel_id, lastTimestamp, limit);
+        const messages = await fetchPaginatedMessages(channel_id, lastTimestamp, limit);
+
+        // Send the additional messages to the user
+        socket.emit('moreMessages', messages);
     });
 
     // Listen for new messages
@@ -121,8 +144,11 @@ io.on('connection', (socket) => {
             deleted: false
         };
 
-        // Push message to Redis
-        await redis.sendCommand(['RPUSH', `channel:${data.channel_id}`, JSON.stringify(newMessage)]);
+        // Save message to MongoDB
+        await Message.create(newMessage);
+
+        // Cache the message in Redis
+        await cacheMessageInRedis(newMessage);
 
         // Emit the message only to users in this channel
         io.to(data.channel_id).emit('receiveMessage', newMessage);
@@ -134,43 +160,32 @@ io.on('connection', (socket) => {
             console.log('Invalid edit data:', data);
             return;
         }
-        console.log('Editing message:', data);
 
-        const redisKey = `channel:${data.channel_id}`;
-        let updatedMessage = null;
+        const redisKey = `channel:${data.channel_id}:message:${data.message_id}`;
+        let message = await redis.get(redisKey);
 
-        // Check if the message exists in Redis
-        const redisMessages = await redis.sendCommand(['LRANGE', redisKey, '0', '-1']);
-        for (let i = 0; i < redisMessages.length; i++) {
-            const msg = JSON.parse(redisMessages[i]);
-            if (msg.message_id === data.message_id) {
-                console.log("Found message in Redis");
-                msg.content = data.content;
-                msg.edited = true;
-                msg.attachments = data.attachments || [];
-                await redis.sendCommand(['LSET', redisKey, i.toString(), JSON.stringify(msg)]);
-                updatedMessage = msg;
-                console.log(updatedMessage);
-                break;
-            }
-        }
+        if (message) {
+            // Update in Redis
+            message = JSON.parse(message);
+            message.content = data.content;
+            message.edited = true;
+            await redis.set(redisKey, JSON.stringify(message), { EX: 60 * 60 * 24 * 15 }); // Refresh expiration
 
-        // If not found in Redis, update in MongoDB
-        if (!updatedMessage) {
-            updatedMessage = await Message.findOneAndUpdate(
+            // Emit update only to users in this channel
+            io.to(message.channel_id).emit('messageUpdated', message);
+        } else {
+            // Update in MongoDB
+            message = await Message.findOneAndUpdate(
                 { message_id: data.message_id },
-                { 
-                    content: data.content,
-                    edited: true,
-                    attachments: data.attachments || []
-                },
+                { content: data.content, edited: true },
                 { new: true }
             );
-        }
 
-        if (updatedMessage) {
-            // Emit update only to users in this channel
-            io.to(updatedMessage.channel_id).emit('messageUpdated', updatedMessage);
+            if (message) {
+
+                // Emit update only to users in this channel
+                io.to(message.channel_id).emit('messageUpdated', message);
+            }
         }
     });
 
@@ -181,33 +196,30 @@ io.on('connection', (socket) => {
             return;
         }
 
-        const redisKey = `channel:${data.channel_id}`;
-        let deletedMessage = null;
+        const redisKey = `channel:${data.channel_id}:message:${data.message_id}`;
+        let message = await redis.get(redisKey);
 
-        // Check if the message exists in Redis
-        const redisMessages = await redis.sendCommand(['LRANGE', redisKey, '0', '-1']);
-        for (let i = 0; i < redisMessages.length; i++) {
-            const msg = JSON.parse(redisMessages[i]);
-            if (msg.message_id === data.message_id) {
-                msg.deleted = true;
-                await redis.sendCommand(['LSET', redisKey, i.toString(), JSON.stringify(msg)]);
-                deletedMessage = msg;
-                break;
-            }
-        }
+        if (message) {
+            // Update in Redis
+            message = JSON.parse(message);
+            message.deleted = true;
+            await redis.set(redisKey, JSON.stringify(message), { EX: 60 * 60 * 24 * 15 }); // Refresh expiration
 
-        // If not found in Redis, update in MongoDB
-        if (!deletedMessage) {
-            deletedMessage = await Message.findOneAndUpdate(
+            // Emit deletion only to users in this channel
+            io.to(message.channel_id).emit('messageDeleted', message);
+        } else {
+            // Update in MongoDB
+            message = await Message.findOneAndUpdate(
                 { message_id: data.message_id },
                 { deleted: true },
                 { new: true }
             );
-        }
 
-        if (deletedMessage) {
-            // Emit deletion only to users in this channel
-            io.to(deletedMessage.channel_id).emit('messageDeleted', deletedMessage);
+            if (message) {
+
+                // Emit deletion only to users in this channel
+                io.to(message.channel_id).emit('messageDeleted', message);
+            }
         }
     });
 
@@ -215,53 +227,6 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
     });
-
-    // Handle load more messages
-    socket.on("loadMessages", async ({ channel_id, limit = 30, before = null }) => {
-        console.log(`[loadMessages] channel_id: ${channel_id}, before: ${before}`);
-        if (!channel_id) return;
-    
-        // Fetch messages từ Redis
-        const redisKey = `channel:${channel_id}`;
-        const redisMessagesRaw = await redis.lRange(redisKey, 0, -1);
-        const redisMessages = redisMessagesRaw.map(msg => JSON.parse(msg)).filter(m => !m.deleted);
-    
-        // Tách logic: nếu có `before`, lọc các message cũ hơn
-        let redisFiltered = redisMessages;
-        if (before) {
-            const beforeDate = new Date(before);
-            redisFiltered = redisMessages.filter(m => new Date(m.timestamp) < beforeDate);
-        }
-    
-        // Sort giảm dần để lấy tin mới nhất trong số cũ hơn
-        redisFiltered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
-        // Cắt ra theo limit
-        const selectedRedis = redisFiltered.slice(0, limit);
-    
-        // Nếu còn thiếu tin nhắn, thì load thêm từ MongoDB
-        let selectedMongo = [];
-        if (selectedRedis.length < limit) {
-            const mongoLimit = limit - selectedRedis.length;
-            const mongoQuery = {
-                channel_id,
-                deleted: false,
-                ...(before && { timestamp: { $lt: new Date(before) } })
-            };
-    
-            selectedMongo = await Message.find(mongoQuery)
-                .sort({ timestamp: -1 }) // lấy tin mới nhất (trong số cũ hơn)
-                .limit(mongoLimit)
-                .lean();
-        }
-    
-        const combined = [...selectedRedis, ...selectedMongo]
-            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Sắp lại theo tăng dần
-    
-        socket.emit("loadedMessages", combined);
-        console.log(`[loadedMessages] Sending ${combined.length} messages to client`);
-    });
-    
 });
 
 // Start the server
