@@ -4,20 +4,20 @@ import {
   Get,
   Put,
   Delete,
+  Param,
   Body,
   Res,
   HttpStatus,
-  Param,
 } from '@nestjs/common';
 import { ChannelService } from './channel.service';
-import { Response } from 'express';
 import { ChannelDto } from './channel.dto';
+import { Response } from 'express';
 
-@Controller('channels/:username')
+@Controller('servers/:serverId/channels/:username')
 export class ChannelController {
   constructor(private readonly channelService: ChannelService) {}
 
-  @Post(':serverId')
+  @Post()
   async createChannel(
     @Param('serverId') serverId: string,
     @Param('username') username: string,
@@ -27,8 +27,8 @@ export class ChannelController {
     try {
       const channel = await this.channelService.createChannel(
         serverId,
-        username,
         body,
+        username,
       );
       return res.status(HttpStatus.CREATED).json(channel);
     } catch (err) {
@@ -36,10 +36,36 @@ export class ChannelController {
     }
   }
 
-  @Get(':serverId')
-  async getChannels(@Param('serverId') serverId: string, @Res() res: Response) {
+  @Get(':channelName')
+  async getChannels(
+    @Param('serverId') serverId: string,
+    @Param('channelName') channelName: string,
+    @Param('username') username: string,
+    @Res() res: Response,
+  ) {
     try {
-      const channels = await this.channelService.getChannels(serverId);
+      const channel = await this.channelService.getChannels(
+        username,
+        serverId,
+        channelName,
+      );
+      return res.status(HttpStatus.OK).json(channel);
+    } catch (err) {
+      return res.status(HttpStatus.NOT_FOUND).json({ message: err.message });
+    }
+  }
+
+  @Get()
+  async getChannelsByServer(
+    @Param('serverId') serverId: string,
+    @Param('username') username: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const channels = await this.channelService.getChannelsByServer(
+        serverId,
+        username,
+      );
       return res.status(HttpStatus.OK).json(channels);
     } catch (err) {
       return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
@@ -56,8 +82,8 @@ export class ChannelController {
     try {
       const result = await this.channelService.updateChannel(
         channelId,
-        username,
         body,
+        username,
       );
       return res.status(HttpStatus.OK).json(result);
     } catch (err) {

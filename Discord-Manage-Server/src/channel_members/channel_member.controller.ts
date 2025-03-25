@@ -2,7 +2,6 @@ import {
   Controller,
   Post,
   Delete,
-  Put,
   Get,
   Param,
   Body,
@@ -10,24 +9,24 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { ServerMemberService } from './server_member.service';
-import { ServerMemberDto } from './server_member.dto';
+import { ChannelMemberService } from './channel_member.service';
+import { ChannelMemberDto } from './channel_member.dto';
 import { Response } from 'express';
 
-@Controller('servers/:serverId/members')
-export class ServerMemberController {
-  constructor(private readonly serverMemberService: ServerMemberService) {}
+@Controller('channels/:channelId/members')
+export class ChannelMemberController {
+  constructor(private readonly channelMemberService: ChannelMemberService) {}
 
   @Post(':username')
   async addMember(
-    @Param('serverId') serverId: string,
+    @Param('channelId') channelId: string,
     @Param('username') username: string,
-    @Body() body: ServerMemberDto,
+    @Body() body: ChannelMemberDto,
     @Res() res: Response,
   ) {
     try {
-      const result = await this.serverMemberService.addMember(
-        serverId,
+      const result = await this.channelMemberService.addMember(
+        channelId,
         username,
         body,
       );
@@ -37,16 +36,18 @@ export class ServerMemberController {
     }
   }
 
-  @Delete(':username')
+  @Delete(':username/:memberUsername')
   async removeMember(
-    @Param('serverId') serverId: string,
+    @Param('channelId') channelId: string,
     @Param('username') username: string,
+    @Param('memberUsername') memberUsername: string, // Đổi từ userId thành memberUsername
     @Res() res: Response,
   ) {
     try {
-      const result = await this.serverMemberService.removeMember(
-        serverId,
+      const result = await this.channelMemberService.removeMember(
+        channelId,
         username,
+        memberUsername,
       );
       return res.status(HttpStatus.OK).json(result);
     } catch (err) {
@@ -54,34 +55,15 @@ export class ServerMemberController {
     }
   }
 
-  @Put(':username')
-  async updateMemberRole(
-    @Param('serverId') serverId: string,
-    @Param('username') username: string,
-    @Body() body: ServerMemberDto,
-    @Res() res: Response,
-  ) {
-    try {
-      const result = await this.serverMemberService.updateMemberRole(
-        serverId,
-        username,
-        body,
-      );
-      return res.status(HttpStatus.OK).json(result);
-    } catch (err) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
-    }
-  }
-
-  @Get()
+  @Get(':username')
   async getMembers(
-    @Param('serverId') serverId: string,
+    @Param('channelId') channelId: string,
     @Param('username') username: string,
     @Res() res: Response,
   ) {
     try {
-      const members = await this.serverMemberService.getMembers(
-        serverId,
+      const members = await this.channelMemberService.getMembers(
+        channelId,
         username,
       );
       return res.status(HttpStatus.OK).json(members);
@@ -90,9 +72,9 @@ export class ServerMemberController {
     }
   }
 
-  @Get('search')
+  @Get('search/:username')
   async searchMember(
-    @Param('serverId') serverId: string,
+    @Param('channelId') channelId: string,
     @Param('username') username: string,
     @Query('query') query: string,
     @Res() res: Response,
@@ -104,8 +86,8 @@ export class ServerMemberController {
     }
 
     try {
-      const members = await this.serverMemberService.searchMember(
-        serverId,
+      const members = await this.channelMemberService.searchMember(
+        channelId,
         query,
         username,
       );
