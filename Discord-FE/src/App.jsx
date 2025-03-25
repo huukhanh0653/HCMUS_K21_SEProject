@@ -1,16 +1,16 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { ThemeProvider, useTheme } from "./components/ThemeProvider";
-import { LanguageProvider } from "./components/LanguageProvider";
+import { ThemeProvider, useTheme } from "./components/layout/ThemeProvider";
+import { LanguageProvider } from "./components/layout/LanguageProvider";
 import { useTranslation } from "react-i18next";
-import { useLanguage } from "./components/LanguageProvider";
+import { useLanguage } from "./components/layout/LanguageProvider";
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { AdminRoute, UserRoute, RedirectIfAuthenticated } from "./components/routes/ProtectedRoute";
 
 // Authentication
 import Login from "./pages/Authentication/Login";
-import Signup from "./pages/Authentication/Signup";
+import Signup from "./pages/Authentication/SignUp";
 import ForgotPassword from "./pages/Authentication/ForgotPassword";
 import AdminLogin from "./pages/Authentication/AdminLogin";
 import UsedAccounts from "./pages/Authentication/UsedAccounts";
@@ -18,7 +18,7 @@ import ChooseUsername from "./pages/Authentication/ChooseUsername";
 
 // Pages
 import Home from "./pages/Homepage/Home";
-import UserProfile from "./pages/Homepage/UserProfile";
+import UserProfile from "./components/user/UserProfile";
 
 // Admin Pages
 import Admin from "./components/admin/Admin";
@@ -57,7 +57,7 @@ function AppContent() {
   // Show theme toggle only on specific pages
   const shouldShowThemeToggle =
     location.pathname.startsWith("/admin") ||
-    ["/login", "/signup", "/forgot-password", "/admin/login", "/used-accounts"].includes(location.pathname);
+    ["/login", "/signup", "/forgot-password", "/admin/login", "/used-accounts", "/choose-username"].includes(location.pathname);
   // Toggle profile visibility
   const toggleProfile = () => setShowProfile(!showProfile);
   const closeProfile = () => setShowProfile(false);

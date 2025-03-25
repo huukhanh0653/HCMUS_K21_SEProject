@@ -1,215 +1,94 @@
-import { useState} from "react";
-import { Link } from "react-router-dom";
-import { FcGoogle } from "react-icons/fc";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useTheme } from "../../components/ThemeProvider";
-import { useTranslation } from "react-i18next";
-import Logo from "../../assets/echochat_logo.svg";
-import { signInWithEmail, signInWithGoogle } from "../../firebase";
-import { useNavigate } from "react-router-dom"; 
+  // pages/Authentication/Login.jsx
+  import { useState } from "react";
+  import { Link, useNavigate } from "react-router-dom";
+  import Logo from "../../assets/echochat_logo.svg";
+  import DarkBackground from "../../assets/darkmode_background.jpg";
+  import LightBackground from "../../assets/whitemode_background.jpg";
+  import { useTheme } from "../../components/layout/ThemeProvider";
+  import { useTranslation } from "react-i18next";
 
-//Background image
-import DarkBackground from "../../assets/darkmode_background.jpg";
-import LightBackground from "../../assets/whitemode_background.jpg";
-import { AirVent } from "lucide-react";
+  import LoginForm from "../../components/auth/LoginForm";
+  import SocialLogin from "../../components/auth/SocialLogin";
 
-const Login = () => {
-  const { isDarkMode } = useTheme();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const Login = () => {
+    const { isDarkMode } = useTheme();
+    const navigate = useNavigate();
+    const { t } = useTranslation();
+    const [errorMessage, setErrorMessage] = useState("");
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+    const handleSuccess = () => window.location.replace("/");
+    const handleError = (message) => setErrorMessage(message);
 
-    if (!email || !validateEmail(email)) {
-      setErrorMessage("Email không hợp lệ");
-      return;
-    }
-
-    if (!password) {
-      setErrorMessage("Mật khẩu không được để trống");
-      return;
-    }
-
-    try {
-      const user = await signInWithEmail(email, password);
-      console.log("Logged in:", user);
-      const response = await fetch("http://localhost:5001/users/sync-firebase", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, email: user.email }),
-      });
-      localStorage.setItem("email", email);
-      localStorage.setItem("user", user);
-      window.location.replace("/");
-    } catch (error) {
-      setErrorMessage("Đăng nhập thất bại: " + error.message);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      console.log("Attempting Google Sign-In...");
-  
-      const user = await signInWithGoogle();
-      
-      if (!user) {
-        console.error("Google Login failed: No user returned");
-        setErrorMessage("Đăng nhập Google thất bại.");
-        return;
-      }
-  
-      console.log("Google Login Success:", user);
-  
-      console.log("Sending user data to backend:", {
-        uid: user.uid,
-        email: user.email,
-      });
-  
-      const response = await fetch("http://localhost:5001/users/sync-firebase", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, email: user.email }),
-      });
-  
-      const data = await response.json();
-      console.log("Backend Response:", data);
-  
-      localStorage.setItem("email", user.email);
-      console.log("User email stored in localStorage:", user.email);
-  
-      console.log("Redirecting to home page...");
-      navigate("/choose-username"); // Redirect to choose username page
-    } catch (error) {
-      console.error("Google login failed:", error);
-      setErrorMessage("Đăng nhập Google thất bại: " + error.message);
-    }
-  };
-
-  return (
-    <div
-      className="flex flex-col items-center min-h-screen w-full py-10"
-      style={{
-        backgroundImage: `url(${isDarkMode ? DarkBackground : LightBackground})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div className="flex items-center gap-2 mb-6">
-        <img src={Logo} alt="EchoChat Logo" className="h-10" />
-        <h1
-          className="text-4xl font-bold bg-clip-text text-transparent"
-          style={{
-            backgroundImage: isDarkMode
-            ? "linear-gradient(90deg, #FF8C00, #FFD700)" 
-            : "linear-gradient(90deg, #007BFF, #00CFFF)",
-          }}
-        > 
-          EchoChat
-        </h1>
-      </div>
-      
-      {/* Mục Login  */}
+    return (
       <div
-        className={`flex w-[800px] p-6 rounded-lg shadow-lg mx-auto transition-colors ${
-          isDarkMode ? "bg-[#2F3136] text-white" : "bg-white text-black border border-gray-300"
-        }`}
+        className="flex flex-col items-center min-h-screen w-full py-10"
+        style={{
+          backgroundImage: `url(${isDarkMode ? DarkBackground : LightBackground})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
       >
-        <div className={`w-1/2 flex flex-col justify-center items-center border-r p-6 transition-colors ${
-          isDarkMode ? "border-gray-700" : "border-gray-300"
-        }`}>
-          <h2 className="text-xl font-bold text-center mb-4">{t('Login with social media account')}</h2>
+        <div className="flex items-center gap-2 mb-6">
+          <img src={Logo} alt="EchoChat Logo" className="h-10" />
+          <h1
+            className="text-4xl font-bold bg-clip-text text-transparent"
+            style={{
+              backgroundImage: isDarkMode
+                ? "linear-gradient(90deg, #FF8C00, #FFD700)"
+                : "linear-gradient(90deg, #007BFF, #00CFFF)",
+            }}
+          >
+            EchoChat
+          </h1>
+        </div>
 
+        <div
+          className={`relative flex w-[800px] p-6 rounded-lg shadow-lg mx-auto transition-colors ${
+            isDarkMode ? "bg-[#2F3136] text-white" : "bg-white text-black border border-gray-300"
+          }`}
+        >
           <button
-            onClick={handleGoogleLogin}
-            className={`flex items-center justify-center gap-3 w-full py-2 rounded-md font-semibold shadow-md transition mt-3 ${
-              isDarkMode 
-                ? "bg-white text-gray-800 hover:bg-gray-300" 
-                : "border border-red-500 text-black bg-white hover:bg-gray-100"
+            onClick={() => navigate("/used-accounts")}
+            className="absolute top-3 left-4 text-xs text-blue-400 hover:underline"
+          >
+            {t("Used accounts?")}
+          </button>
+
+          <div className={`w-1/2 flex flex-col justify-center items-center border-r p-6 transition-colors ${
+            isDarkMode ? "border-gray-700" : "border-gray-300"
             }`}
           >
-            <FcGoogle className="text-2xl" />
-            {t('Google Login')}
-          </button>
-        </div>
+            <h2 className="text-xl font-bold text-center mb-4">{t('Login with social media account')}</h2>
 
-        <div className="w-1/2 p-6">
-          <h2 className="text-2xl font-bold text-center mb-4">{t('Welcome back!')}</h2>
-          <p className={`text-center mb-6 transition-colors ${
-            isDarkMode ? "text-gray-400" : "text-gray-600"
-          }`}>{t('We are excited to see you again!')}</p>
+            <SocialLogin onError={handleError} />
+          </div>
 
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            <input
-              type="text"
-              placeholder="Email"
-              className={`p-3 rounded-md border outline-none transition ${
-                isDarkMode 
-                  ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
-                  : "bg-[#F8F9FA] text-black border-gray-300 focus:border-gray-500 shadow-sm"
-              }`}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+          <div className="w-1/2 p-6">
+            <h2 className="text-2xl font-bold text-center mb-4">{t("Welcome back!")}</h2>
+            <p className={`text-center mb-6 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+              {t("We are excited to see you again!")}
+            </p>
 
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder={t("Password")}
-                className={`p-3 w-full rounded-md border outline-none transition ${
-                  isDarkMode 
-                    ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
-                    : "bg-[#F8F9FA] text-black border-gray-300 focus:border-gray-500 shadow-sm"
-                }`}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <FaEye /> : <FaEyeSlash />}
-              </button>
-            </div>
+            <LoginForm onSuccess={handleSuccess} onError={handleError} />
 
-            <button type="submit" className={`font-bold py-2 rounded-md transition ${
-              isDarkMode 
-                ? "bg-gray-600 hover:bg-gray-700 text-white"
-                : "bg-[#1877F2] hover:bg-[#0D6EFD] text-white"
-            }`}>
-              {t('Login')}
-            </button>
-          </form>
+            {errorMessage && (
+              <p className="text-sm text-center mt-2 text-red-500">{errorMessage}</p>
+            )}
 
-          <p className={`text-sm text-center mt-3 ${
-            isDarkMode ? "text-gray-400" : "text-gray-600"
-          }`}>
-            <Link to="/forgot-password" className="hover:underline transition">
-              {t('Forgot password?')}
-            </Link>
-          </p>
-          <p className={`text-sm text-center mt-5 ${
-            isDarkMode ? "text-gray-400" : "text-gray-600"
-          }`}>
-            {t('Need an account?')}
-            <Link to="/signup" className="text-blue-500 hover:underline transition"> {t('Signup')}</Link>
-          </p>
+            <p className={`text-sm text-center mt-3 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+              <Link to="/forgot-password" className="hover:underline transition">
+                {t("Forgot password?")}
+              </Link>
+            </p>
+            <p className={`text-sm text-center mt-5 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+              {t("Need an account?")}
+              <Link to="/signup" className="text-blue-500 hover:underline transition"> {t("Signup")}</Link>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
-export default Login;
-
-
-
-
+  export default Login;

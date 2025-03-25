@@ -17,19 +17,19 @@ import {
   UserPlus,
 } from "lucide-react"
 
-import DirectMessage from "../../components/friends/direct_message"
-import FriendsView from "../../components/friends/friends_view"
-import FriendContextMenu from "../../components/friends/friend_context_menu"
-import FriendProfile from "../../components/friends/friend_profile"
-import ServerChannels from "./server_channels"
-import ServerChat from "../../components/server/server_chat"
-import ServerMembers from "../../components/server/server_members"
-import CreateServerModal from "../../components/server/create_server_modal"
+import DirectMessage from "../../components/friends/DirectMessage"
+import FriendsView from "../../components/friends/FriendsView"
+import FriendContextMenu from "../../components/friends/FriendContextMenu"
+import FriendProfile from "../../components/friends/FriendProfile"
+import ServerChannels from "./ServerChannels"
+import ServerChat from "../../components/server/ServerChat"
+import ServerMembers from "../../components/server/ServerMembers"
+import CreateServerModal from "../../components/server/CreateServerModal"
 import { useTranslation } from "react-i18next";
 import SampleAvt from "../../assets/sample_avatar.svg"
 
-import { useTheme } from '../../components/ThemeProvider';
-import UserPanel from "../../components/user_panel"
+import { useTheme } from '../../components/layout/ThemeProvider';
+import UserPanel from "../../components/user/UserPanel"
 
 export default function Home({user, onProfileClick }) {
   // Dark mode & Light mode toggle

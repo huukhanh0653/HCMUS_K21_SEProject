@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { MoreVertical, Plus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { useTheme } from "../../components/ThemeProvider"
-import Logo from "../../assets/echochat_logo.svg";
+import { useTheme } from "../../components/layout/ThemeProvider"
+import Logo from "../../assets/echochat_logo.svg"
 
 // Background images
 import DarkBackground from "../../assets/darkmode_background.jpg"
@@ -13,16 +13,16 @@ export default function UsedAccounts() {
   const { isDarkMode } = useTheme()
   const navigate = useNavigate()
 
-  // Sample accounts
   const accounts = [
     { id: 1, username: "crypt_no_good", avatar: "https://i.pravatar.cc/50?img=41" },
     { id: 2, username: "ambatukom123", avatar: "https://i.pravatar.cc/50?img=42" },
     { id: 3, username: "nolink0598", avatar: "https://i.pravatar.cc/50?img=43" },
   ]
 
-  const handleLogin = (accountId) => {
-    console.log(`Logging in with account ${accountId}`)
-    navigate("/discord")
+  const handleLogin = (account) => {
+    console.log(`Logging in with account ${account.id}`)
+    localStorage.setItem("username", account.username.trim()) // ✅ Lưu username
+    navigate("/") // ✅ Chuyển về trang chủ
   }
 
   const toggleDropdown = (accountId) => {
@@ -50,15 +50,14 @@ export default function UsedAccounts() {
           className="text-4xl font-bold bg-clip-text text-transparent"
           style={{
             backgroundImage: isDarkMode
-              ? "linear-gradient(90deg, #FF8C00, #FFD700)" 
+              ? "linear-gradient(90deg, #FF8C00, #FFD700)"
               : "linear-gradient(90deg, #007BFF, #00CFFF)",
           }}
-        > 
+        >
           EchoChat
         </h1>
       </div>
 
-      {/* Mục Used Account*/}
       <div
         className="relative w-full max-w-md rounded-lg shadow-xl p-6"
         style={{
@@ -67,7 +66,6 @@ export default function UsedAccounts() {
           boxShadow: isDarkMode ? "none" : "0 4px 10px rgba(0, 0, 0, 0.1)",
         }}
       >
-        {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-xl font-bold mb-1">Hãy chọn một tài khoản</h1>
           <p style={{ color: isDarkMode ? "#B0B0B0" : "#666666" }}>
@@ -75,7 +73,6 @@ export default function UsedAccounts() {
           </p>
         </div>
 
-        {/* Account list */}
         <div className="space-y-3 mb-6">
           {accounts.map((account) => (
             <div
@@ -103,7 +100,7 @@ export default function UsedAccounts() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleLogin(account.id)}
+                  onClick={() => handleLogin(account)} // ✅ truyền object account
                   className="px-3 py-1 rounded text-sm"
                   style={{
                     background: isDarkMode ? "#4E5058" : "#007BFF",
@@ -117,7 +114,6 @@ export default function UsedAccounts() {
                   <button onClick={() => toggleDropdown(account.id)} className="p-1 rounded">
                     <MoreVertical size={20} />
                   </button>
-
                   {showDropdown === account.id && (
                     <div
                       className="absolute right-0 mt-1 w-48 rounded-md shadow-lg z-10 py-1"
@@ -141,7 +137,6 @@ export default function UsedAccounts() {
           ))}
         </div>
 
-        {/* Add account button */}
         <button
           className="flex items-center justify-center w-full font-bold py-2 rounded-lg transition"
           onClick={() => navigate("/login")}
@@ -155,7 +150,6 @@ export default function UsedAccounts() {
           Thêm tài khoản
         </button>
       </div>
-
     </div>
   )
 }

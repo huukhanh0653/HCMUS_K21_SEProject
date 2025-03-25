@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import Home from "@/home"
+import Home from "@/Home.jsx"
 import Profile from "@/profile"
 
 export default function Page() {

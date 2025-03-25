@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "src/components/ThemeProvider.tsx"]
+  "include": ["src", "src/components/layout/ThemeProvider.tsx"]
 }

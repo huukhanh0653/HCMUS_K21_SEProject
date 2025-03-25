@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from "react"
 import { X, LogOut, Camera, User, Lock, Moon, Sun } from "lucide-react"
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useLanguage } from "../../components/LanguageProvider";
-import { useTheme } from '../../components/ThemeProvider';
+import { useLanguage } from "../layout/LanguageProvider";
+import { useTheme } from '../layout/ThemeProvider';
 import SampleAvt from "../../assets/sample_avatar.svg"
 import { getAuth, signOut } from "firebase/auth";
 

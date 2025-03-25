@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useTheme } from "../../components/ThemeProvider";
+import { useTheme } from "../../components/layout/ThemeProvider";
 import Logo from "../../assets/echochat_logo.svg";
 import { useTranslation } from "react-i18next";
 //Background image

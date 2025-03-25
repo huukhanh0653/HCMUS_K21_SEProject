@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useTheme } from "../../components/ThemeProvider";
+import { useTheme } from "../../components/layout/ThemeProvider";
 import Logo from "../../assets/echochat_logo.svg";
 import { useTranslation } from "react-i18next";
 import { signInWithEmail} from "../../firebase";
