@@ -19,9 +19,11 @@ export default function ServerChat({ channel }) {
   const [isFetching, setIsFetching] = useState(true)
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isPrepending, setIsPrepending] = useState(false);
   const limit = 20;
   const loadMessages = (lastTimestamp = null) => {
     setIsLoadingMore(true);
+    setIsPrepending(true); // <-- đánh dấu đang prepend
     socket.emit("fetchMoreMessages", {
       channel_id: channel.id,
       limit: limit,
@@ -80,26 +82,47 @@ export default function ServerChat({ channel }) {
     loadMessages(); // Fetch initial messages
     
     socket.on("moreMessages", (moreMessages) => {
-      console.log("Received more messages:", moreMessages.length);
+      const container = messagesWrapperRef.current;
+      if (!container) return;
+    
+      const previousScrollHeight = container.scrollHeight;
+      const previousScrollTop = container.scrollTop;
+    
       if (moreMessages.length < limit) {
-        setHasMoreMessages(false); // No more messages to load
+        setHasMoreMessages(false);
       }
-  
+    
       setMessages((prev) => {
         const allMessages = beforeRef.current
-          ? [...moreMessages, ...prev] // Prepend if scrolling
-          : [...moreMessages]; // Replace if loading initially
-  
+          ? [...moreMessages, ...prev]
+          : [...moreMessages];
         return allMessages;
       });
-  
+    
+      setTimeout(() => {
+        const newScrollHeight = container.scrollHeight;
+        container.scrollTop = newScrollHeight - (previousScrollHeight - previousScrollTop);
+        setIsPrepending(false); // <-- load xong, reset lại flag
+      }, 0);
+    
       setIsLoadingMore(false);
     });
+    
 
     // Listen for new messages
     socket.on("receiveMessage", (newMessage) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage])
+      const container = messagesWrapperRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    
+      if (isNearBottom) {
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 0);
+      }
     })
+
     socket.on('messageUpdated', (data) => {
       setMessages((prev) => prev.map((msg) => (msg.message_id === data.message_id ? data : msg)));
     });
@@ -113,8 +136,11 @@ export default function ServerChat({ channel }) {
   }, [channel.id]);
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    if (!isPrepending) {
+      scrollToBottom();
+    }
+  }, [messages]);
+  
 
   const handleSendMessage = () => {
     if (!messageInput.trim()) return
@@ -203,7 +229,7 @@ export default function ServerChat({ channel }) {
           });
 
           return (
-            <div key={message.message_id} className={`mb-2 ${!isGrouped ? "pt-4" : ""}`}>
+            <div key={message.message_id} className={`${!isGrouped ? "pt-4" : ""}`}>
               {/* Divider ngày */}
               {showDateDivider && (
                 <div className="flex justify-center items-center my-6">
@@ -235,7 +261,7 @@ export default function ServerChat({ channel }) {
                   </div>
                 )}
 
-                <div className={`${isGrouped ? "pl-14" : "pl-14 mt-1"} relative`}>
+                <div className={`${isGrouped ? "pl-14" : "pl-14"} relative`}>
                   {editingMessageId === message.message_id ? (
                     <textarea
                       value={editedContent}
@@ -251,7 +277,7 @@ export default function ServerChat({ channel }) {
                       }}
                     />
                   ) : (
-                    <p className="text-gray-100 break-words whitespace-pre-wrap break-all text-left mt-1 pr-14">
+                    <p className="text-gray-100 break-words whitespace-pre-wrap break-all text-left pr-14">
                       {message.content}
                     </p>
                   )}
