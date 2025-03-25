@@ -1,9 +1,8 @@
 import {
   Controller,
   Post,
-  Delete,
   Get,
-  Body,
+  Delete,
   Param,
   Res,
   HttpStatus,
@@ -12,11 +11,45 @@ import {
 import { FriendService } from './friend.service';
 import { Response } from 'express';
 
-@Controller('friends')
+@Controller('friends/:username')
 export class FriendController {
   constructor(private readonly friendService: FriendService) {}
 
-  @Get(':username')
+  @Post(':friendUsername')
+  async addFriend(
+    @Param('username') username: string,
+    @Param('friendUsername') friendUsername: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.friendService.addFriend(
+        username,
+        friendUsername,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (err) {
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
+    }
+  }
+
+  @Delete(':friendUsername')
+  async removeFriend(
+    @Param('username') username: string,
+    @Param('friendUsername') friendUsername: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.friendService.removeFriend(
+        username,
+        friendUsername,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (err) {
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
+    }
+  }
+
+  @Get()
   async getFriends(@Param('username') username: string, @Res() res: Response) {
     try {
       const friends = await this.friendService.getFriends(username);
@@ -26,7 +59,7 @@ export class FriendController {
     }
   }
 
-  @Get('search/:username')
+  @Get('search')
   async searchFriend(
     @Param('username') username: string,
     @Query('query') query: string,
@@ -43,40 +76,6 @@ export class FriendController {
       return res.status(HttpStatus.OK).json(friends);
     } catch (err) {
       return res.status(HttpStatus.NOT_FOUND).json({ message: err.message });
-    }
-  }
-
-  @Post(':username')
-  async addFriend(
-    @Param('username') username: string,
-    @Body('friend_username') friendUsername: string,
-    @Res() res: Response,
-  ) {
-    try {
-      const result = await this.friendService.addFriend(
-        username,
-        friendUsername,
-      );
-      return res.status(HttpStatus.OK).json(result);
-    } catch (err) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
-    }
-  }
-
-  @Delete(':username')
-  async removeFriend(
-    @Param('username') username: string,
-    @Body('friendUsername') friendUsername: string,
-    @Res() res: Response,
-  ) {
-    try {
-      const result = await this.friendService.removeFriend(
-        username,
-        friendUsername,
-      );
-      return res.status(HttpStatus.OK).json(result);
-    } catch (err) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
     }
   }
 }

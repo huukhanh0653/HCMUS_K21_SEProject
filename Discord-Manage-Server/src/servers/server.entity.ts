@@ -12,11 +12,17 @@ export class Server {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 255 })
+  @Column({ type: 'text' })
   name: string;
 
-  @Column()
+  @Column({ type: 'uuid', nullable: true })
   owner_id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created_at: Date;
+
+  @Column({ type: 'text', nullable: true })
+  server_pic: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'owner_id' })

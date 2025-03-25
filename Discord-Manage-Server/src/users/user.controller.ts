@@ -5,10 +5,9 @@ import {
   Put,
   Delete,
   Body,
-  Query,
+  Param,
   Res,
   HttpStatus,
-  Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Response } from 'express';
@@ -18,63 +17,57 @@ import { UserDto } from './user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get()
-  async getUsers(@Res() res: Response) {
-    try {
-      const users = await this.userService.getUsers();
-      return res.status(HttpStatus.OK).json(users);
-    } catch (err) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
-    }
-  }
-
   @Post()
-  async create(@Body() body: UserDto, @Res() res: Response) {
+  async createUser(@Body() body: UserDto, @Res() res: Response) {
     try {
-      const newUser = await this.userService.createUser(body);
-      return res.status(HttpStatus.CREATED).json(newUser);
+      const user = await this.userService.createUser(body);
+      return res.status(HttpStatus.CREATED).json(user);
     } catch (err) {
       return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
     }
   }
 
-  @Get('search')
-  async search(@Query('query') query: string, @Res() res: Response) {
-    if (!query || query.trim() === '') {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .send('Query parameter is required');
-    }
-
+  @Get(':username')
+  async searchUsers(@Param('username') username: string, @Res() res: Response) {
     try {
-      const users = await this.userService.searchUser(query);
+      const user = await this.userService.searchUsers(username);
+      return res.status(HttpStatus.OK).json(user);
+    } catch (err) {
+      return res.status(HttpStatus.NOT_FOUND).json({ message: err.message });
+    }
+  }
+
+  @Get()
+  async getAllUsers(@Res() res: Response) {
+    try {
+      const users = await this.userService.getAllUsers();
       return res.status(HttpStatus.OK).json(users);
     } catch (err) {
-      return res.status(HttpStatus.NOT_FOUND).send(err.message);
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
     }
   }
 
   @Put(':username')
-  async update(
+  async updateUser(
     @Param('username') username: string,
     @Body() body: Partial<UserDto>,
     @Res() res: Response,
   ) {
     try {
-      const updatedUser = await this.userService.updateUser(username, body);
-      return res.status(HttpStatus.OK).json(updatedUser);
+      const result = await this.userService.updateUser(username, body);
+      return res.status(HttpStatus.OK).json(result);
     } catch (err) {
       return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
     }
   }
 
   @Delete(':username')
-  async delete(@Param('username') username: string, @Res() res: Response) {
+  async deleteUser(@Param('username') username: string, @Res() res: Response) {
     try {
       const result = await this.userService.deleteUser(username);
       return res.status(HttpStatus.OK).json(result);
     } catch (err) {
-      return res.status(HttpStatus.NOT_FOUND).json({ message: err.message });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: err.message });
     }
   }
 }

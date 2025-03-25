@@ -3,10 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Channel } from './channel.entity';
 import { Server } from '../servers/server.entity';
-import { ServerMember } from '../server_members/server_member.entity';
-import { User } from '../users/user.entity';
-import { Client } from '@elastic/elasticsearch';
+import { ChannelMember } from '../channel_members/channel_member.entity';
+import { UserService } from '../users/user.service';
+import { ChannelMemberService } from '../channel_members/channel_member.service';
 import { ChannelDto } from './channel.dto';
+import { Client } from '@elastic/elasticsearch';
+import { channel } from 'node:diagnostics_channel';
 
 @Injectable()
 export class ChannelService {
@@ -15,10 +17,10 @@ export class ChannelService {
     private channelRepository: Repository<Channel>,
     @InjectRepository(Server)
     private serverRepository: Repository<Server>,
-    @InjectRepository(ServerMember)
-    private serverMemberRepository: Repository<ServerMember>,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @InjectRepository(ChannelMember)
+    private channelMemberRepository: Repository<ChannelMember>,
+    private userService: UserService,
+    private channelMemberService: ChannelMemberService,
   ) {
     this.esClient = new Client({
       node: process.env.ELASTIC_NODE,
@@ -28,53 +30,105 @@ export class ChannelService {
 
   private readonly esClient: Client;
 
-  async createChannel(serverId: string, username: string, data: ChannelDto) {
-    const user = await this.userRepository.findOne({ where: { username } });
-    if (!user) {
-      throw new Error('User not found');
-    }
+  async createChannel(serverId: string, data: ChannelDto, username: string) {
+    const user = await this.userService.getUserByUsername(username);
+    if (!user) throw new Error('User not found');
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) {
-      throw new Error('Server not found');
-    }
+    if (!server) throw new Error('Server not found');
 
-    const member = await this.serverMemberRepository.findOne({
-      where: { server_id: serverId, user_id: user.id },
+    if (server.owner_id !== user.id)
+      throw new Error('Only the owner can create channels');
+
+    const existingChannel = await this.channelRepository.findOne({
+      where: { server_id: serverId, name: data.name },
     });
-    if (!member || (member.role !== 'admin' && server.owner_id !== user.id)) {
-      throw new Error('Permission denied');
-    }
+    if (existingChannel)
+      throw new Error('Channel with this name already exists in the server');
 
     const channel = this.channelRepository.create({
       server_id: serverId,
       name: data.name,
-      type: data.type,
+      type: data.type || 'text',
+      created_at: new Date(),
+      is_private: data.is_private || false,
     });
 
     await this.channelRepository.save(channel);
+
+    await this.channelMemberService.addMember(channel.id, username, {
+      username: user.username,
+    });
 
     await this.esClient.index({
       index: 'channels',
       id: channel.id,
       body: {
         server_id: serverId,
+        server_name: server.name,
         name: channel.name,
         type: channel.type,
+        created_at: channel.created_at,
+        is_private: channel.is_private,
+        server_pic: server.server_pic,
       },
     });
 
     return channel;
   }
 
-  async getChannels(serverId: string) {
+  async getChannels(username: string, serverId: string, query: string) {
+    const user = await this.userService.getUserByUsername(username);
+    if (!user) throw new Error('User not found');
+
+    const server = await this.serverRepository.findOne({
+      where: { id: serverId },
+    });
+    if (!server) throw new Error('Server not found');
+
     const result = await this.esClient.search({
       index: 'channels',
       body: {
         query: {
-          term: { server_id: serverId },
+          bool: {
+            filter: [{ term: { server_id: server.id } }],
+            must: [
+              {
+                query_string: {
+                  query: `*${query}*`,
+                  fields: ['name'],
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    const channels = result.hits.hits.map((hit: any) => hit._source);
+    if (channels.length === 0) {
+      throw new Error('No channels found');
+    }
+
+    return channels;
+  }
+
+  async getChannelsByServer(serverId: string, username: string) {
+    const user = await this.userService.getUserByUsername(username);
+    if (!user) throw new Error('User not found');
+
+    const server = await this.serverRepository.findOne({
+      where: { id: serverId },
+    });
+    if (!server) throw new Error('Server not found');
+
+    const result = await this.esClient.search({
+      index: 'channels',
+      body: {
+        query: {
+          term: { server_id: server.id },
         },
       },
     });
@@ -84,38 +138,39 @@ export class ChannelService {
 
   async updateChannel(
     channelId: string,
-    username: string,
     data: Partial<ChannelDto>,
+    username: string,
   ) {
-    const user = await this.userRepository.findOne({ where: { username } });
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await this.userService.getUserByUsername(username);
+    if (!user) throw new Error('User not found');
 
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
+      relations: ['server'],
     });
-    if (!channel) {
-      throw new Error('Channel not found');
-    }
+    if (!channel) throw new Error('Channel not found');
 
-    const server = await this.serverRepository.findOne({
-      where: { id: channel.server_id },
-    });
-    const member = await this.serverMemberRepository.findOne({
-      where: { server_id: channel.server_id, user_id: user.id },
-    });
-    if (!member || (member.role !== 'admin' && server!.owner_id !== user.id)) {
-      throw new Error('Permission denied');
-    }
+    if (channel.server.owner_id !== user.id)
+      throw new Error('Only the owner can update the channel');
 
-    await this.channelRepository.update(channelId, data);
+    const updatedData: Partial<Channel> = {
+      name: data.name || channel.name,
+      type: data.type || channel.type,
+      is_private:
+        data.is_private !== undefined ? data.is_private : channel.is_private,
+    };
+
+    await this.channelRepository.update(channelId, updatedData);
 
     await this.esClient.update({
       index: 'channels',
       id: channelId,
       body: {
-        doc: { name: data.name, type: data.type },
+        doc: {
+          name: updatedData.name,
+          type: updatedData.type,
+          is_private: updatedData.is_private,
+        },
       },
     });
 
@@ -123,27 +178,17 @@ export class ChannelService {
   }
 
   async deleteChannel(channelId: string, username: string) {
-    const user = await this.userRepository.findOne({ where: { username } });
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await this.userService.getUserByUsername(username);
+    if (!user) throw new Error('User not found');
 
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
+      relations: ['server'],
     });
-    if (!channel) {
-      throw new Error('Channel not found');
-    }
+    if (!channel) throw new Error('Channel not found');
 
-    const server = await this.serverRepository.findOne({
-      where: { id: channel.server_id },
-    });
-    const member = await this.serverMemberRepository.findOne({
-      where: { server_id: channel.server_id, user_id: user.id },
-    });
-    if (!member || (member.role !== 'admin' && server!.owner_id !== user.id)) {
-      throw new Error('Permission denied');
-    }
+    if (channel.server.owner_id !== user.id)
+      throw new Error('Only the owner can delete the channel');
 
     await this.channelRepository.delete(channelId);
 
