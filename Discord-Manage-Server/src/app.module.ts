@@ -11,6 +11,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+console.log(process.env.POSTGRES_SINGAPORE_CONNECTION_STRING);
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({

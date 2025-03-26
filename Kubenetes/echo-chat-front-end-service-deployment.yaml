@@ -5,7 +5,7 @@ metadata:
   labels:
     app: echo-chat-front-end-service
 spec:
-  replicas: 
+  replicas: 3
   selector:
     matchLabels:
       app: echo-chat-front-end-service
@@ -31,4 +31,4 @@ spec:
     - protocol: TCP
       port: 5173
       targetPort: 5173
-  type: ClusterIP
+  type: LoadBalancer

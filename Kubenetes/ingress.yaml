@@ -16,7 +16,7 @@ spec:
   - host: localhost
     http:
       paths:
-      - path: /message-server
+      - path: /message-service
         pathType: Prefix
         backend:
           service:

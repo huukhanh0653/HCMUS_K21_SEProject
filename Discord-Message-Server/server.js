@@ -9,19 +9,18 @@ const { createClient } = require('redis');
 
 // Initialize Redis client
 const redis = createClient({
-    username: process.env.REDIS_USERNAME,
+    username: process.env.REDIS_USERNAME || "default",
     password: process.env.REDIS_PASSWORD,
     socket: {
         host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT
-    }
+        port: process.env.REDIS_PORT,
+    },
 });
 
 redis.on('error', (err) => console.log('Redis Client Error', err));
 
 (async () => {
     await redis.connect();
-    console.log(redis.username, redis.password, redis.options);
     console.log('Connected to Redis');
 })();
 
@@ -41,16 +40,29 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch(err => console.log('MongoDB connection error:', err));
 
 // Define Message Schema & Model
+// const MessageSchema = new mongoose.Schema({
+//     message_id: { type: String, required: true },
+//     channel_id: { type: String, required: true },
+//     sender_id: { type: String, required: true },
+//     content: { type: String, required: true },
+//     attachments: { type: Array, default: [] },
+//     timestamp: { type: Date, default: Date.now },
+//     edited: { type: Boolean, default: false },
+//     deleted: { type: Boolean, default: false }
+// });
+
 const MessageSchema = new mongoose.Schema({
-    message_id: { type: String, required: true },
-    channel_id: { type: String, required: true },
-    sender_id: { type: String, required: true },
-    content: { type: String, required: true },
-    attachments: { type: Array, default: [] },
-    timestamp: { type: Date, default: Date.now },
-    edited: { type: Boolean, default: false },
-    deleted: { type: Boolean, default: false }
+  server_id: { type: String, required: true }, // add shard key
+  message_id: { type: String, required: true, unique: true },
+  channel_id: { type: String, required: true }, // shard key
+  sender_id: { type: String, required: true },
+  content: { type: String, required: true },
+  attachments: [{ type: String }],
+  timestamp: { type: Date, default: Date.now },
+  edited: { type: Boolean, default: false },
+  deleted: { type: Boolean, default: false },
 });
+
 const Message = mongoose.model('Message', MessageSchema);
 
 // Initialize WebSocket Server
@@ -135,14 +147,15 @@ io.on('connection', (socket) => {
         }
 
         const newMessage = {
-            message_id: uuidv4(),
-            channel_id: data.channel_id,
-            sender_id: data.sender_id,
-            content: data.content,
-            attachments: data.attachments || [],
-            timestamp: new Date(),
-            edited: false,
-            deleted: false
+          message_id: uuidv4(),
+          server_id: data.server_id, // ✅ Thêm dòng này!
+          channel_id: data.channel_id,
+          sender_id: data.sender_id,
+          content: data.content,
+          attachments: data.attachments || [],
+          timestamp: new Date(),
+          edited: false,
+          deleted: false,
         };
 
         // Save message to MongoDB

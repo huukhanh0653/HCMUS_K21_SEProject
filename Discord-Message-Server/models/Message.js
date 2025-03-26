@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const MessageSchema = new mongoose.Schema({
+    server_id: { type: String, required: true},
     message_id: { type: String, required: true, unique: true },
     channel_id: { type: String, required: true },
     sender_id: { type: String, required: true },

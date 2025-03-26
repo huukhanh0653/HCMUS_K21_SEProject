@@ -20,12 +20,16 @@ spec:
         ports:
         - containerPort: 5000
         env:
-        - name: POSTGRES_URL
-          value: postgresql://postgres.halunphayrvdnvtcshoh:_3guQc4jik-zmWs@aws-0-us-west-1.pooler.supabase.com:6543/postgres
         - name: MONGO_URI
           value: mongodb+srv://vietlinhg4:5S88GUHWwbz8AHY@cluster0.ewhqtdg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
         - name: REDIS_USERNAME
-          value: redis://redis-0.redis-headless.default.svc.cluster.local:6379 
+          value: default
+        - name: REDIS_PASSWORD
+          value: cEjGBZrJH5FXXbyr1dzKabIHi4MQuWz8
+        - name: REDIS_HOST
+          value: redis-11588.c334.asia-southeast2-1.gce.redns.redis-cloud.com
+        - name: REDIS_PORT
+          value: "11588"
 ---
 apiVersion: v1
 kind: Service
@@ -38,4 +42,4 @@ spec:
     - protocol: TCP
       port: 5000
       targetPort: 5000
-  type: ClusterIP
+  type: LoadBalancer
