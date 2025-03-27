@@ -13,26 +13,29 @@ export default function UsedAccounts() {
   const { isDarkMode } = useTheme()
   const navigate = useNavigate()
 
-  const accounts = [
-    { id: 1, username: "crypt_no_good", avatar: "https://i.pravatar.cc/50?img=41" },
-    { id: 2, username: "ambatukom123", avatar: "https://i.pravatar.cc/50?img=42" },
-    { id: 3, username: "nolink0598", avatar: "https://i.pravatar.cc/50?img=43" },
-  ]
+  const storedAccounts = JSON.parse(localStorage.getItem("used_user")) || [];
+  const [accounts, setAccounts] = useState(storedAccounts);
 
   const handleLogin = (account) => {
-    console.log(`Logging in with account ${account.id}`)
-    localStorage.setItem("username", account.username.trim()) // ✅ Lưu username
-    navigate("/") // ✅ Chuyển về trang chủ
-  }
+    console.log(`Logging in with account ${account.email}`);
+    localStorage.setItem("username", account.username);
+    localStorage.setItem("email", account.email);
+    localStorage.setItem("user", JSON.stringify(account)); // hoặc lưu lại theo format mới
+    navigate("/");
+  };
+  
 
   const toggleDropdown = (accountId) => {
     setShowDropdown(showDropdown === accountId ? null : accountId)
   }
 
-  const handleRemoveAccount = (accountId) => {
-    console.log(`Removing account ${accountId}`)
-    setShowDropdown(null)
-  }
+  const handleRemoveAccount = (emailToRemove) => {
+    const updatedAccounts = accounts.filter(acc => acc.email !== emailToRemove);
+    localStorage.setItem("used_user", JSON.stringify(updatedAccounts));
+    setAccounts(updatedAccounts);
+    setShowDropdown(null);
+  };
+  
 
   return (
     <div
@@ -89,7 +92,11 @@ export default function UsedAccounts() {
                   className="w-10 h-10 rounded-full overflow-hidden"
                   style={{ background: isDarkMode ? "#4E5058" : "#DDDDDD" }}
                 >
-                  <img src={account.avatar || "/placeholder.svg"} alt={account.username} className="w-full h-full object-cover" />
+                  <img
+                    src={account.photoURL || "/placeholder.svg"}
+                    alt={account.username}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div>
                   <div className="font-medium">{account.username}</div>

@@ -33,12 +33,13 @@ const SignupForm = ({ onError, onSuccess }) => {
       const user = await signUpWithEmail(email, password);
       if (!user) throw new Error("User creation failed, no user data returned.");
 
-      await fetch("http://localhost:5001/users/sync-firebase", {
+      await fetch("http://localhost:5001/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           uid: user.uid,
           email: user.email,
+          username: username,
           password,
           phone,
         }),

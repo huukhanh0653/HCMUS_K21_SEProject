@@ -3,6 +3,7 @@ import { useTheme } from "../../components/layout/ThemeProvider";
 import { useTranslation } from "react-i18next";
 import { signInWithGoogle } from "../../firebase";
 import { useNavigate } from "react-router-dom";
+import { updateUsedUserList } from './updateUsedUserList';
 
 const SocialLogin = ({ onError }) => {
   const { isDarkMode } = useTheme();
@@ -13,18 +14,21 @@ const SocialLogin = ({ onError }) => {
     try {
       const user = await signInWithGoogle();
       if (!user) return onError("Đăng nhập Google thất bại");
-      console.log(user.displayName);
-      console.log(user);
+      console.log("User: ", user);
 
       await fetch("http://localhost:5001/users/sync-firebase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ uid: user.uid, email: user.email }),
       });
+      const res = await fetch(`http://localhost:5001/users/email/${user.email}`);
+      const response = await res.json(); // Giải mã JSON trả về từ server
+      localStorage.setItem("email", response.email);
+      localStorage.setItem("username", response.username);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      localStorage.setItem("email", user.email);
+      updateUsedUserList(user, response.username);
 
-      localStorage.setItem("username", user.displayName);
       navigate("/");
     } catch (err) {
       onError("Google login failed: " + err.message);

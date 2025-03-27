@@ -43,6 +43,12 @@ export default function UserProfile({ user, onClose }) {
     try {
       await signOut(auth);
       console.log("User logged out");
+
+      // ✅ Xóa thông tin người dùng khỏi localStorage
+      localStorage.removeItem("email");
+      localStorage.removeItem("username");
+      localStorage.removeItem("user");
+      localStorage.removeItem("user_info");
       navigate("/login"); // Redirect to login page
     } catch (error) {
       console.error("Logout failed:", error.message);

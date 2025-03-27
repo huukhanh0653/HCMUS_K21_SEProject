@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useTheme } from "../../components/layout/ThemeProvider";
 import { useTranslation } from "react-i18next";
 import { signInWithEmail } from "../../firebase";
+import { updateUsedUserList } from './updateUsedUserList';
 
 const LoginForm = ({ onSuccess, onError }) => {
   const { isDarkMode } = useTheme();
@@ -25,8 +26,8 @@ const LoginForm = ({ onSuccess, onError }) => {
 
     try {
       const user = await signInWithEmail(email, password);
-      console.log("Hello");
-      console.log(user);
+      console.log("User: ", user);
+      
       await fetch("http://localhost:5001/users/sync-firebase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,10 +35,11 @@ const LoginForm = ({ onSuccess, onError }) => {
       });
       const res = await fetch(`http://localhost:5001/users/email/${email}`);
       const response = await res.json(); // Giải mã JSON trả về từ server
-      console.log("User: ", response);
       localStorage.setItem("email", response.email);
-      localStorage.setItem("username", response.username);  
+      localStorage.setItem("username", response.username);
       localStorage.setItem("user", JSON.stringify(user));
+
+      updateUsedUserList(user, response.username);
       onSuccess();
     } catch (err) {
       onError("Đăng nhập thất bại: " + err.message);
