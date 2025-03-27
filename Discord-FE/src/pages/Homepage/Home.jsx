@@ -17,12 +17,12 @@ import {
   UserPlus,
 } from "lucide-react"
 
-import DirectMessage from "../../components/friends/DirectMessage"
+import DirectMessage from "../../components/friends/DirectMessage/DirectMessage"
 import FriendsView from "../../components/friends/FriendsView"
 import FriendContextMenu from "../../components/friends/FriendContextMenu"
 import FriendProfile from "../../components/friends/FriendProfile"
-import ServerChannels from "./ServerChannels"
-import ServerChat from "../../components/server/ServerChat"
+import ServerChannels from "../../components/server/ServerChannels"
+import ServerChat from "../../components/server/ServerChat/ServerChat"
 import ServerMembers from "../../components/server/ServerMembers"
 import CreateServerModal from "../../components/server/CreateServerModal"
 import { useTranslation } from "react-i18next";

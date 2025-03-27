@@ -20,7 +20,7 @@ export default function UserProfile({ user, onClose }) {
   const [showChangePassword, setShowChangePassword] = useState(false)
 
   // Form states
-  const [username, setUsername] = useState(user.name)
+  const [username, setUsername] = useState("")
   const [avatar, setAvatar] = useState(user?.avatar || SampleAvt)
   const [wallpaper, setWallpaper] = useState("")
 

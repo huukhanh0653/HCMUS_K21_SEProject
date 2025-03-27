@@ -16,7 +16,7 @@
     const { t } = useTranslation();
     const [errorMessage, setErrorMessage] = useState("");
 
-    const handleSuccess = () => window.location.replace("/");
+    const handleSuccess = () => navigate("/");
     const handleError = (message) => setErrorMessage(message);
 
     return (

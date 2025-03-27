@@ -13,6 +13,8 @@ const SocialLogin = ({ onError }) => {
     try {
       const user = await signInWithGoogle();
       if (!user) return onError("Đăng nhập Google thất bại");
+      console.log(user.displayName);
+      console.log(user);
 
       await fetch("http://localhost:5001/users/sync-firebase", {
         method: "POST",
@@ -21,7 +23,9 @@ const SocialLogin = ({ onError }) => {
       });
 
       localStorage.setItem("email", user.email);
-      navigate("/choose-username");
+
+      localStorage.setItem("username", user.displayName);
+      navigate("/");
     } catch (err) {
       onError("Google login failed: " + err.message);
     }
