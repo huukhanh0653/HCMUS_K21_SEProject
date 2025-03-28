@@ -5,6 +5,7 @@ import { useTheme } from "../../components/layout/ThemeProvider"
 import Logo from "../../assets/echochat_logo.svg"
 
 import CryptoJS from "crypto-js";
+import { signInWithEmail } from "../../firebase";
 
 // Background images
 import DarkBackground from "../../assets/darkmode_background.jpg"
@@ -46,7 +47,7 @@ export default function UsedAccounts() {
   
       navigate("/");
     } catch (err) {
-      onError("Đăng nhập thất bại: " + err.message);
+      console.error("❌ Đăng nhập thất bại:" + err.message);
     }
   };
 

@@ -39,7 +39,8 @@ const LoginForm = ({ onSuccess, onError }) => {
       localStorage.setItem("username", response.username);
       localStorage.setItem("user", JSON.stringify(response));
 
-      updateUsedUserList(user, response.username);
+      console.log("Password:", password);
+      updateUsedUserList(user, response.username, password);
       onSuccess();
     } catch (err) {
       onError("Đăng nhập thất bại: " + err.message);
