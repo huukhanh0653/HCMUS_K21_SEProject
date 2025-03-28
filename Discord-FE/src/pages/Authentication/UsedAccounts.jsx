@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom"
 import { useTheme } from "../../components/layout/ThemeProvider"
 import Logo from "../../assets/echochat_logo.svg"
 
+import CryptoJS from "crypto-js";
+
 // Background images
 import DarkBackground from "../../assets/darkmode_background.jpg"
 import LightBackground from "../../assets/whitemode_background.jpg"
@@ -15,15 +17,38 @@ export default function UsedAccounts() {
 
   const storedAccounts = JSON.parse(localStorage.getItem("used_user")) || [];
   const [accounts, setAccounts] = useState(storedAccounts);
+  const SECRET_KEY = import.meta.env.VITE_SECRET_KEY;
 
-  const handleLogin = (account) => {
+  const handleLogin = async (account) => {
     console.log(`Logging in with account ${account.email}`);
-    localStorage.setItem("username", account.username);
-    localStorage.setItem("email", account.email);
-    localStorage.setItem("user", JSON.stringify(account)); // hoặc lưu lại theo format mới
-    navigate("/");
-  };
   
+    const email = account.email;
+  
+    // 🔓 Giải mã password AES
+    const bytes = CryptoJS.AES.decrypt(account.encryptedPassword, SECRET_KEY);
+    const password = bytes.toString(CryptoJS.enc.Utf8);
+  
+    try {
+      const user = await signInWithEmail(email, password);
+  
+      await fetch("http://localhost:5001/users/sync-firebase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid, email: user.email }),
+      });
+  
+      const res = await fetch(`http://localhost:5001/users/email/${email}`);
+      const response = await res.json();
+  
+      localStorage.setItem("email", response.email);
+      localStorage.setItem("username", response.username);
+      localStorage.setItem("user", JSON.stringify(response));
+  
+      navigate("/");
+    } catch (err) {
+      onError("Đăng nhập thất bại: " + err.message);
+    }
+  };
 
   const toggleDropdown = (accountId) => {
     setShowDropdown(showDropdown === accountId ? null : accountId)
@@ -34,9 +59,8 @@ export default function UsedAccounts() {
     localStorage.setItem("used_user", JSON.stringify(updatedAccounts));
     setAccounts(updatedAccounts);
     setShowDropdown(null);
-  };
+  };  
   
-
   return (
     <div
       className="flex flex-col items-center min-h-screen w-full py-10"
@@ -130,7 +154,7 @@ export default function UsedAccounts() {
                       }}
                     >
                       <button
-                        onClick={() => handleRemoveAccount(account.id)}
+                        onClick={() => handleRemoveAccount(account.email)}
                         className="w-full text-left px-4 py-2 text-sm"
                         style={{ color: "red" }}
                       >

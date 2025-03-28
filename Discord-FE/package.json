@@ -23,6 +23,7 @@
     "@tanstack/react-table": "^8.21.2",
     "axios": "^1.8.1",
     "class-variance-authority": "^0.7.1",
+    "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "firebase": "^11.4.0",
     "i18next": "^24.2.2",

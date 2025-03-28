@@ -14,7 +14,7 @@ const SocialLogin = ({ onError }) => {
     try {
       const user = await signInWithGoogle();
       if (!user) return onError("Đăng nhập Google thất bại");
-      console.log("User: ", user);
+      //console.log("User: ", user);
 
       await fetch("http://localhost:5001/users/sync-firebase", {
         method: "POST",
@@ -25,7 +25,7 @@ const SocialLogin = ({ onError }) => {
       const response = await res.json(); // Giải mã JSON trả về từ server
       localStorage.setItem("email", response.email);
       localStorage.setItem("username", response.username);
-      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(response));
 
       updateUsedUserList(user, response.username);
 
