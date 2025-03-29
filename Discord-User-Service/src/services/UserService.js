@@ -57,6 +57,10 @@ class UserService {
   async getUserById(id) {
     return User.findById(id).select('-password');
   }
+  async getUsersByUsername(username) {
+    return User.find({ username }).select('-password');
+  }
+  
   async getUserByEmail(email){  
     return User.findOne({email: email}).select('-password');
   }

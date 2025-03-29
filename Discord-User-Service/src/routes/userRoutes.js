@@ -114,6 +114,34 @@ router.get('/email/:email', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /users/username/{username}:
+ *   get:
+ *     summary: Get a user by username
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user's username
+ *     responses:
+ *       200:
+ *         description: The user object
+ *       404:
+ *         description: User not found
+ */
+router.get('/username/:username', async (req, res) => {
+  try {
+    const user = await UserService.getUserByEmail(req.params.username);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 /**
  * @swagger
