@@ -3,7 +3,6 @@ import { useTheme } from "../../components/layout/ThemeProvider";
 import { useTranslation } from "react-i18next";
 import { signInWithGoogle } from "../../firebase";
 import { useNavigate } from "react-router-dom";
-import { updateUsedUserList } from './updateUsedUserList';
 
 const SocialLogin = ({ onError }) => {
   const { isDarkMode } = useTheme();
@@ -26,8 +25,6 @@ const SocialLogin = ({ onError }) => {
       localStorage.setItem("email", response.email);
       localStorage.setItem("username", response.username);
       localStorage.setItem("user", JSON.stringify(response));
-
-      updateUsedUserList(user, response.username);
 
       navigate("/");
     } catch (err) {
