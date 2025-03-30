@@ -53,7 +53,7 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-app.use('/apiapi/users', userRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/friendships', friendshipRoutes);
 
 const PORT = 8081;
