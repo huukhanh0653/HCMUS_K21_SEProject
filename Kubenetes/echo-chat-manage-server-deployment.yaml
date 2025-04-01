@@ -16,12 +16,12 @@ spec:
     spec:
       containers:
       - name: echo-chat-manage-server-service
-        image: huukhanh0653/message:v1.0
+        image: huukhanh0653/server:v1.0
         ports:
         - containerPort: 5432
         env:
         - name: POSTGRES_SINGAPORE_CONNECTION_STRING
-          value: postgresql://postgres:_3guQc4jik-zmWs@db.iuaklcffbnuipnfxeshq.supabase.co:5432/postgres
+          value: postgresql://postgres.iuaklcffbnuipnfxeshq:_3guQc4jik-zmWs@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
         - name: ELASTIC_NODE
           value: https://discord-project-dc6a33.es.us-east-1.aws.elastic.cloud:443
         - name: ELASTIC_API_KEY
