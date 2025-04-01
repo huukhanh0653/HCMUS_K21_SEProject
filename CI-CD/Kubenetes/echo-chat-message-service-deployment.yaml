@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: echo-chat-message-service
-        image: huukhanh0653/message:v1.0
+        image: huukhanh0653/echo-chat-message-service:latest
         ports:
         - containerPort: 8082
         env:
