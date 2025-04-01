@@ -1,4 +1,4 @@
-name: CI - Build Multi-Service Docker Images
+name: Build Docker Images
 
 on:
   push:
@@ -62,3 +62,19 @@ jobs:
           file: ./Discord-FE/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-front-end-service:latest
+
+      - name: Build and Push Notification Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Discord-Notification-Service
+          file: ./Discord-Notification-Service/Dockerfile
+          push: true
+          tags: huukhanh0653/echo-chat-notification-service:latest
+
+      - name: Build and Push API Gateway Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Discord-API-Gateway-Service
+          file: ./Discord-API-Gateway-Service/Dockerfile
+          push: true
+          tags: huukhanh0653/echo-chat-api-gateway-service:latest

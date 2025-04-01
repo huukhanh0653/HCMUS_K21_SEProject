@@ -21,7 +21,7 @@ spec:
         - containerPort: 8082
         env:
         - name: MONGO_URI
-          value: mongodb+srv://vietlinhg4:5S88GUHWwbz8AHY@cluster0.ewhqtdg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+          value: mongodb://35.225.51.17:27117/message_service?directConnection=true
         - name: REDIS_USERNAME
           value: default
         - name: REDIS_PASSWORD

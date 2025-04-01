@@ -16,9 +16,9 @@ spec:
     spec:
       containers:
       - name: echo-chat-manage-server-service
-        image: huukhanh0653/server:v1.0
+        image: huukhanh0653/echo-chat-manage-server:latest
         ports:
-        - containerPort: 5432
+        - containerPort: 8084
         env:
         - name: POSTGRES_SINGAPORE_CONNECTION_STRING
           value: postgresql://postgres.iuaklcffbnuipnfxeshq:_3guQc4jik-zmWs@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
@@ -36,6 +36,6 @@ spec:
     app: echo-chat-manage-server-service
   ports:
     - protocol: TCP
-      port: 5432
-      targetPort: 5432
+      port: 8084
+      targetPort: 8084
   type: LoadBalancer
