@@ -243,6 +243,44 @@ io.on('connection', (socket) => {
     });
 });
 
+// Graceful shutdown for Redis and HTTP server
+const shutdown = async () => {
+    console.log('Shutting down server...');
+
+    // Close Redis client
+    if (redis.isOpen) {
+        try {
+            await redis.quit();
+            console.log('Redis client disconnected.');
+        } catch (error) {
+            console.error('Error disconnecting Redis client:', error);
+        }
+    }
+
+    // Close HTTP server
+    server.close((err) => {
+        if (err) {
+            console.error('Error closing HTTP server:', err);
+        } else {
+            console.log('HTTP server closed.');
+        }
+    });
+
+    // Close MongoDB connection
+    if (mongoose.connection.readyState !== 0) {
+        try {
+            await mongoose.connection.close();
+            console.log('MongoDB connection closed.');
+        } catch (error) {
+            console.error('Error closing MongoDB connection:', error);
+        }
+    }
+};
+
+// Handle termination signals
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
 // Start the server
-const PORT = process.env.SERVER_PORT || 5000;
+const PORT = process.env.SERVER_PORT || 8082;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
