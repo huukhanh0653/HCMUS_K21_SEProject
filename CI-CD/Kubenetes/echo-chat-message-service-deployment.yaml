@@ -18,7 +18,7 @@ spec:
       - name: echo-chat-message-service
         image: huukhanh0653/message:v1.0
         ports:
-        - containerPort: 5000
+        - containerPort: 8082
         env:
         - name: MONGO_URI
           value: mongodb+srv://vietlinhg4:5S88GUHWwbz8AHY@cluster0.ewhqtdg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
@@ -40,6 +40,6 @@ spec:
     app: echo-chat-message-service
   ports:
     - protocol: TCP
-      port: 5000
-      targetPort: 5000
+      port: 8082
+      targetPort: 8082
   type: LoadBalancer

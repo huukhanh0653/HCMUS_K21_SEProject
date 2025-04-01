@@ -22,18 +22,18 @@ spec:
           service:
             name: echo-chat-message-service
             port:
-              number: 5000
-      - path: /front-end
-        pathType: Prefix
-        backend:
-          service:
-            name: echo-chat-front-end-service
-            port:
-              number: 5173
-      - path: /user-service
-        pathType: Prefix
-        backend:
-          service:
-            name: echo-chat-user-service
-            port:
-              number: 5001
+              number: 8082
+      # - path: /front-end
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: echo-chat-front-end-service
+      #       port:
+      #         number: 5173
+      # - path: /user-service
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: echo-chat-user-service
+      #       port:
+      #         number: 5001
