@@ -34,8 +34,8 @@ jobs:
       - name: Build and Push Message Service
         uses: docker/build-push-action@v4
         with:
-          context: ./Discord-Message-Server
-          file: ./Discord-Message-Server/Dockerfile
+          context: ./Discord-Message-Service
+          file: ./Discord-Message-Service/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-message-service:latest
 
@@ -43,9 +43,9 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./Discord-Manage-Server 
-          file: ./Discord-Manage-Server/Dockerfile
+          file: ./Discord-Manage-Server-Service/Dockerfile
           push: true
-          tags: huukhanh0653/order-service:latest
+          tags: huukhanh0653/echo-chat-manage-server:latest
 
       - name: Build and Push GCS Service
         uses: docker/build-push-action@v4
