@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function AddFriend() {
   const [email, setEmail] = useState("");
@@ -32,23 +33,23 @@ export default function AddFriend() {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold mb-2">Add Friend</h2>
+      <h2 className="text-xl font-semibold mb-2">{t('Add Friend')}</h2>
       <p className="text-sm text-gray-400 mb-4">
-        You can find new friends to make with their email
+        {t('You can find new friends to make with their email')}
       </p>
       <div className="flex items-center gap-2">
         <input
           type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter email"
+          placeholder={t("Enter email")}
           className="flex-1 p-2 bg-[#2b2d31] text-gray-300 rounded"
         />
         <button
           onClick={handleSearch}
           className="px-4 py-1 bg-[#5865f2] text-white rounded hover:bg-[#4752c4] inline-block"
         >
-          Find Friend
+          {t("Find Friend")}
         </button>
       </div>
       
