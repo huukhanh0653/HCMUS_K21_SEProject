@@ -2,11 +2,9 @@ name: CI - Build Multi-Service Docker Images
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "master" ]
   pull_request:
-    branches:
-      - main
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -56,3 +54,11 @@ jobs:
           file: ./Discord-GCS-Service/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-gcs-service:latest
+      
+      - name: Build and Push Front-end Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Discord-FE
+          file: ./Discord-FE/Dockerfile
+          push: true
+          tags: huukhanh0653/echo-chat-front-end-service:latest

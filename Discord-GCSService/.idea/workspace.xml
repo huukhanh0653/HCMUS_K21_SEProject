@@ -5,90 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="313d97ee-49f2-4cd3-9e4a-c4f35d12d590" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/deployment.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/service.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/DiscordClone/GCSService/GcsServiceApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/DiscordClone/GCSService/controller/StorageController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/DiscordClone/GCSService/service/StorageService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/DiscordClone/GCSService/GcsServiceApplicationTests.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/.eslintrc.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/.prettierrc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/dockerfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/nest-cli.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/package-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/app.controller.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/app.module.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/app.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channel_members/channel_member.controller.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channel_members/channel_member.dto.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channel_members/channel_member.entity.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channel_members/channel_member.module.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channel_members/channel_member.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channels/channel.controller.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channels/channel.dto.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channels/channel.entity.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channels/channel.module.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/channels/channel.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/friends/friend.controller.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/friends/friend.entity.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/friends/friend.module.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/friends/friend.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/main.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/roles/role.controller.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/roles/role.dto.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/roles/role.entity.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/roles/role.module.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/roles/role.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/server_members/server_member.controller.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/server_members/server_member.dto.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/server_members/server_member.entity.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/server_members/server_member.module.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/server_members/server_member.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/servers/server.controller.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/servers/server.dto.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/servers/server.entity.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/servers/server.module.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/servers/server.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/users/user.controller.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/users/user.dto.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/users/user.entity.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/users/user.module.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/src/users/user.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/tsconfig.build.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Manage-Server/tsconfig.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Message-Server/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Message-Server/db.stress.test.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Message-Server/dockerfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Message-Server/models/Message.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Message-Server/package-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Message-Server/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Message-Server/server.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-Message-Server/service-stress.test.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/dockerfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/src/main/java/com/DiscordClone/NotificationService/NotificationServiceApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/src/main/java/com/DiscordClone/NotificationService/controller/NotificationController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/src/main/java/com/DiscordClone/NotificationService/model/Notification.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/src/main/java/com/DiscordClone/NotificationService/repository/NotificationRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/src/main/java/com/DiscordClone/NotificationService/service/NotificationService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Discord-NotificationService/src/test/java/com/DiscordClone/NotificationService/NotificationServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -186,7 +103,7 @@
       <workItem from="1742891578761" duration="1453000" />
       <workItem from="1742894895099" duration="6520000" />
       <workItem from="1743496998837" duration="271000" />
-      <workItem from="1743498267914" duration="682000" />
+      <workItem from="1743498267914" duration="1800000" />
     </task>
     <servers />
   </component>

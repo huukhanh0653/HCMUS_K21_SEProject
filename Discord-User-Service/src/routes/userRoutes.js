@@ -5,7 +5,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /users/sync-firebase:
+ * /api/users/sync-firebase:
  *   post:
  *     summary: Sync Firebase users with MongoDB
  *     tags: [Users]
@@ -25,7 +25,7 @@ router.post('/sync-firebase', async (req, res) => {
 
 /**
  * @swagger
- * /users/firebase:
+ * /api/users/firebase:
  *   get:
  *     summary: Get all users from Firebase Authentication
  *     tags: [Users]
@@ -50,7 +50,7 @@ router.get('/firebase', async (req, res) => {
 
 /**
  * @swagger
- * /users:
+ * /api/users:
  *   post:
  *     summary: Create a new user
  *     tags: [Users]
@@ -87,7 +87,7 @@ router.post('/', async (req, res) => {
 
 /**
  * @swagger
- * /users/email/{email}:
+ * /api/users/email/{email}:
  *   get:
  *     summary: Get a user by email
  *     tags: [Users]
@@ -116,7 +116,7 @@ router.get('/email/:email', async (req, res) => {
 
 /**
  * @swagger
- * /users/username/{username}:
+ * /api/users/username/{username}:
  *   get:
  *     summary: Get a user by username
  *     tags: [Users]
@@ -145,7 +145,7 @@ router.get('/username/:username', async (req, res) => {
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   get:
  *     summary: Get a user by ID
  *     tags: [Users]
@@ -174,7 +174,7 @@ router.get('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   put:
  *     summary: Update a user by ID
  *     tags: [Users]
@@ -220,7 +220,7 @@ router.put('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   delete:
  *     summary: Delete a user by ID
  *     tags: [Users]
