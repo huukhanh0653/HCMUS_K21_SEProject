@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-chat-message-service
+  labels:
+    app: echo-chat-message-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: echo-chat-message-service
+  template:
+    metadata:
+      labels:
+        app: echo-chat-message-service
+    spec:
+      containers:
+      - name: echo-chat-message-service
+        image: huukhanh0653/echo-chat-message-service:latest
+        ports:
+        - containerPort: 8082
+        env:
+        - name: MONGO_URI
+          value: mongodb+srv://vietlinhg4:5S88GUHWwbz8AHY@cluster0.ewhqtdg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+        - name: REDIS_USERNAME
+          value: default
+        - name: REDIS_PASSWORD
+          value: cEjGBZrJH5FXXbyr1dzKabIHi4MQuWz8
+        - name: REDIS_HOST
+          value: redis-11588.c334.asia-southeast2-1.gce.redns.redis-cloud.com
+        - name: REDIS_PORT
+          value: "11588"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-chat-message-service
+spec:
+  selector:
+    app: echo-chat-message-service
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
+  type: LoadBalancer

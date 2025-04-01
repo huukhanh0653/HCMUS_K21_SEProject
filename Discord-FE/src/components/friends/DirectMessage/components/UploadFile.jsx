@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { FolderPlus, ClipboardList, AppWindow } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 export default function UploadFile({ onFileSelect }) {
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef(null); // Ref cho input file
@@ -26,7 +26,7 @@ export default function UploadFile({ onFileSelect }) {
         <div className="absolute bottom-full left-0 mb-2 bg-[#383a40] p-2 rounded-lg shadow-lg w-48 z-50">
           {/* Nút Tải Lên */}
           <label className="flex items-center p-2 hover:bg-[#404249] rounded cursor-pointer">
-            <span className="text-gray-200">Tải Lên Tệp</span>
+            <span className="text-gray-200">{t('Upload File')}</span>
             <input 
               type="file" 
               ref={fileInputRef} 
@@ -37,10 +37,10 @@ export default function UploadFile({ onFileSelect }) {
 
           {/* Các nút khác */}
           <button className="flex items-center p-2 hover:bg-[#404249] rounded w-full">
-            <span className="text-gray-200">Tạo Chủ Đề</span>
+            <span className="text-gray-200">{t('Create Theme')}</span>
           </button>
           <button className="flex items-center p-2 hover:bg-[#404249] rounded w-full">
-            <span className="text-gray-200">Dùng Ứng Dụng</span>
+            <span className="text-gray-200">{t('Use App')}</span>
           </button>
         </div>
       )}

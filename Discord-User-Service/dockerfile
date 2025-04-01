@@ -1,14 +1,20 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:17-jdk-slim
+# Use an official Node.js runtime as a parent image
+FROM node:18-slim
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the JAR file into the container
-COPY target/your-spring-boot-app.jar app.jar
+# Copy package.json and package-lock.json into the container
+COPY package*.json ./
 
-# Expose the port your Spring Boot application runs on
-EXPOSE 8080
+# Install dependencies
+RUN npm install
 
-# Run the Spring Boot application
-CMD ["java", "-jar", "app.jar"]
+# Copy the rest of the application code into the container
+COPY . .
+
+# Expose the port your Node.js application runs on
+EXPOSE 8081
+
+# Run the Node.js application
+CMD ["npm", "start"]

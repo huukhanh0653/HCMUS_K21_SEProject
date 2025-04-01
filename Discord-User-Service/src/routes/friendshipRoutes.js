@@ -4,7 +4,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /friendships/add:
+ * /api/friendships/add:
  *   post:
  *     summary: Add a friend
  *     tags: [Friendships]
@@ -35,7 +35,7 @@ router.post('/add', async (req, res) => {
 
 /**
  * @swagger
- * /friendships/{userID}:
+ * /api/friendships/{userID}:
  *   get:
  *     summary: Get a user's friends
  *     tags: [Friendships]
@@ -66,7 +66,7 @@ router.get('/:userID', async (req, res) => {
 
 /**
  * @swagger
- * /friendships/remove:
+ * /api/friendships/remove:
  *   delete:
  *     summary: Remove a friend
  *     tags: [Friendships]
@@ -97,7 +97,7 @@ router.delete('/remove', async (req, res) => {
 
 /**
  * @swagger
- * /friendships/request:
+ * /api/friendships/request:
  *   post:
  *     summary: Send a friend request
  *     tags: [Friendships]
@@ -128,7 +128,7 @@ router.post('/request', async (req, res) => {
 
 /**
  * @swagger
- * /friendships/requests/{userID}:
+ * /api/friendships/requests/{userID}:
  *   get:
  *     summary: Get friend requests for a user
  *     tags: [Friendships]
@@ -159,7 +159,7 @@ router.get('/requests/:userID', async (req, res) => {
 
 /**
  * @swagger
- * /friendships/request/accept:
+ * /api/friendships/request/accept:
  *   post:
  *     summary: Accept a friend request
  *     tags: [Friendships]
@@ -188,7 +188,7 @@ router.post('/request/accept', async (req, res) => {
 
 /**
  * @swagger
- * /friendships/request/decline:
+ * /api/friendships/request/decline:
  *   post:
  *     summary: Decline a friend request
  *     tags: [Friendships]

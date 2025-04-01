@@ -79,14 +79,61 @@ export default function UserProfile({ user, onClose }) {
     }
   }
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
-    console.log("Saving profile:", { username, avatar, wallpaper });
   
-    localStorage.setItem("username", username.trim()); // Cập nhật localStorage
-    setShowEditProfile(false);
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser || !storedUser._id) {
+      alert("Không tìm thấy thông tin người dùng để cập nhật.");
+      return;
+    }
+  
+    const userId = storedUser._id;
+  
+    const updatedUser = {
+      username: username.trim(),
+      email: storedUser.email,
+      password: "",
+      role: storedUser.role,
+      avatar: avatar || "",
+    };
+  
+    try {
+      const res = await fetch(`http://localhost:5001/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedUser),
+      });
+  
+      if (!res.ok) {
+        throw new Error("Cập nhật thông tin thất bại");
+      }
+  
+      const responseData = await res.json();
+      console.log("✅ User updated:", responseData);
+  
+      // ✅ Cập nhật lại localStorage: user, username
+      const newUserData = { ...storedUser, username: updatedUser.username, avatar: updatedUser.avatar };
+      localStorage.setItem("user", JSON.stringify(newUserData));
+      localStorage.setItem("username", updatedUser.username);
+  
+      // ✅ Cập nhật used_user
+      const usedUserList = JSON.parse(localStorage.getItem("used_user")) || [];
+      const updatedUsedUserList = usedUserList.map((acc) =>
+        acc.email === updatedUser.email
+          ? { ...acc, username: updatedUser.username, photoURL: updatedUser.avatar }
+          : acc
+      );
+      localStorage.setItem("used_user", JSON.stringify(updatedUsedUserList));
+  
+      setShowEditProfile(false);
+    } catch (error) {
+      console.error("❌ Lỗi khi cập nhật hồ sơ:", error.message);
+      alert("Không thể cập nhật hồ sơ. Vui lòng thử lại sau.");
+    }
   };
-  
 
   const handleChangePassword = (e) => {
     e.preventDefault()
