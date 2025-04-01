@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function AddFriend() {
@@ -6,46 +6,11 @@ export default function AddFriend() {
   const [searchResult, setSearchResult] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  
-  // Lưu trữ các lời mời kết bạn
-  const [pendingRequests, setPendingRequests] = useState([]);
 
   const { t } = useTranslation();
 
-  // Giả sử user đang đăng nhập được lưu trong localStorage:
-  // {
-  //   "_id": "67e58b59171f9075a48afe76",
-  //   "username": "New Test17",
-  //   "email": "test15@gmail.com",
-  //   ... 
-  // }
+  // Giả sử user đang đăng nhập được lưu trong localStorage
   const currentUser = JSON.parse(localStorage.getItem("user")) || {};
-
-  // Listener: mỗi 5 giây gọi API lấy danh sách thư mời kết bạn
-  useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8081/api/friendships/requests/${currentUser._id}`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setPendingRequests(data); // data có thể là mảng các lời mời kết bạn
-        } else {
-          setPendingRequests([]);
-        }
-      } catch (error) {
-        console.error("Error fetching friend requests:", error);
-      }
-    };
-
-    // Gọi ngay khi component mount
-    fetchRequests();
-
-    // Lặp lại mỗi 5 giây
-    const interval = setInterval(fetchRequests, 5000);
-    return () => clearInterval(interval);
-  }, [currentUser._id]);
 
   const handleSearch = async () => {
     try {
@@ -75,15 +40,17 @@ export default function AddFriend() {
       setErrorMessage("");
       setSuccessMessage("");
 
-      // Endpoint POST gửi lời mời kết bạn
+      console.log("Current userID:", currentUser._id);
+      console.log("Friend ID:", searchResult?._id);
+
       const response = await fetch("http://localhost:8081/api/friendships/request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          userID: currentUser._id,    // ID người gửi lời mời
-          friendID: searchResult._id  // ID người nhận
+          userID: currentUser._id,       // ID người gửi lời mời
+          friendID: searchResult._id     // ID người nhận
         })
       });
 
@@ -99,43 +66,8 @@ export default function AddFriend() {
     }
   };
 
-  // Xử lý Đồng ý kết bạn
-  const handleAcceptRequest = async (requestID) => {
-    try {
-      await fetch("http://localhost:8081/api/friendships/request/accept", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ requestID })
-      });
-      // Sau khi đồng ý, xóa request khỏi danh sách pendingRequests
-      setPendingRequests(prev => prev.filter(req => req._id !== requestID));
-    } catch (error) {
-      console.error("Error accepting request:", error);
-    }
-  };
-
-  // Xử lý Từ chối kết bạn
-  const handleDeclineRequest = async (requestID) => {
-    try {
-      await fetch("http://localhost:8081/api/friendships/request/decline", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ requestID })
-      });
-      // Sau khi từ chối, xóa request khỏi danh sách pendingRequests
-      setPendingRequests(prev => prev.filter(req => req._id !== requestID));
-    } catch (error) {
-      console.error("Error declining request:", error);
-    }
-  };
-
   return (
     <div className="p-4">
-      {/* Khu vực tìm bạn bè */}
       <h2 className="text-xl font-semibold mb-2">{t('Add Friend')}</h2>
       <p className="text-sm text-gray-400 mb-4">
         {t('You can find new friends to make with their email')}
@@ -185,7 +117,7 @@ export default function AddFriend() {
                   searchResult.status === "online" ? "text-green-500" : "text-gray-500"
                 }`}
               >
-                {searchResult.status}
+                {searchResult.status || "offline"}
               </p>
             </div>
           </div>
@@ -213,32 +145,6 @@ export default function AddFriend() {
                 24-24v-16c0-13.3-10.7-24-24-24z" />
             </svg>
           </button>
-        </div>
-      )}
-
-      {/* Modal hiển thị lời mời kết bạn (nếu có) */}
-      {pendingRequests.length > 0 && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          {/* Lấy request đầu tiên để hiển thị */}
-          <div className="bg-white text-black rounded p-6 w-[300px] text-center">
-            <h3 className="text-lg font-semibold mb-2">
-              {pendingRequests[0].sender.username} muốn kết bạn với bạn
-            </h3>
-            <div className="flex justify-center gap-4 mt-4">
-              <button
-                onClick={() => handleAcceptRequest(pendingRequests[0]._id)}
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-              >
-                Đồng ý
-              </button>
-              <button
-                onClick={() => handleDeclineRequest(pendingRequests[0]._id)}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Từ chối
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

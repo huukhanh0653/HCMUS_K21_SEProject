@@ -28,12 +28,12 @@ const LoginForm = ({ onSuccess, onError }) => {
       const user = await signInWithEmail(email, password);
       //console.log("User: ", user);
       
-      await fetch("http://localhost:5001/users/sync-firebase", {
+      await fetch("http://localhost:8081/api/users/sync-firebase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ uid: user.uid, email: user.email }),
       });
-      const res = await fetch(`http://localhost:5001/users/email/${email}`);
+      const res = await fetch(`http://localhost:8081/api/users/email/${email}`);
       const response = await res.json(); // Giải mã JSON trả về từ server
       localStorage.setItem("email", response.email);
       localStorage.setItem("username", response.username);
