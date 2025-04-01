@@ -62,3 +62,11 @@ jobs:
           file: ./Discord-FE/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-front-end-service:latest
+
+      - name: Build and Push Notification Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Discord-Notification-Service
+          file: ./Discord-Notification-Service
+          push: true
+          tags: huukhanh0653/echo-chat-notification-service:latest
