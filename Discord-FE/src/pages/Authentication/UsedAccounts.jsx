@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom"
 import { useTheme } from "../../components/layout/ThemeProvider"
 import Logo from "../../assets/echochat_logo.svg"
 
+import CryptoJS from "crypto-js";
+import { signInWithEmail } from "../../firebase";
+
 // Background images
 import DarkBackground from "../../assets/darkmode_background.jpg"
 import LightBackground from "../../assets/whitemode_background.jpg"
@@ -13,27 +16,52 @@ export default function UsedAccounts() {
   const { isDarkMode } = useTheme()
   const navigate = useNavigate()
 
-  const accounts = [
-    { id: 1, username: "crypt_no_good", avatar: "https://i.pravatar.cc/50?img=41" },
-    { id: 2, username: "ambatukom123", avatar: "https://i.pravatar.cc/50?img=42" },
-    { id: 3, username: "nolink0598", avatar: "https://i.pravatar.cc/50?img=43" },
-  ]
+  const storedAccounts = JSON.parse(localStorage.getItem("used_user")) || [];
+  const [accounts, setAccounts] = useState(storedAccounts);
+  const SECRET_KEY = import.meta.env.VITE_SECRET_KEY;
 
-  const handleLogin = (account) => {
-    console.log(`Logging in with account ${account.id}`)
-    localStorage.setItem("username", account.username.trim()) // ✅ Lưu username
-    navigate("/") // ✅ Chuyển về trang chủ
-  }
+  const handleLogin = async (account) => {
+    console.log(`Logging in with account ${account.email}`);
+  
+    const email = account.email;
+  
+    // 🔓 Giải mã password AES
+    const bytes = CryptoJS.AES.decrypt(account.encryptedPassword, SECRET_KEY);
+    const password = bytes.toString(CryptoJS.enc.Utf8);
+  
+    try {
+      const user = await signInWithEmail(email, password);
+  
+      await fetch("http://localhost:5001/users/sync-firebase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid, email: user.email }),
+      });
+  
+      const res = await fetch(`http://localhost:5001/users/email/${email}`);
+      const response = await res.json();
+  
+      localStorage.setItem("email", response.email);
+      localStorage.setItem("username", response.username);
+      localStorage.setItem("user", JSON.stringify(response));
+  
+      navigate("/");
+    } catch (err) {
+      console.error("❌ Đăng nhập thất bại:" + err.message);
+    }
+  };
 
   const toggleDropdown = (accountId) => {
     setShowDropdown(showDropdown === accountId ? null : accountId)
   }
 
-  const handleRemoveAccount = (accountId) => {
-    console.log(`Removing account ${accountId}`)
-    setShowDropdown(null)
-  }
-
+  const handleRemoveAccount = (emailToRemove) => {
+    const updatedAccounts = accounts.filter(acc => acc.email !== emailToRemove);
+    localStorage.setItem("used_user", JSON.stringify(updatedAccounts));
+    setAccounts(updatedAccounts);
+    setShowDropdown(null);
+  };  
+  
   return (
     <div
       className="flex flex-col items-center min-h-screen w-full py-10"
@@ -89,7 +117,11 @@ export default function UsedAccounts() {
                   className="w-10 h-10 rounded-full overflow-hidden"
                   style={{ background: isDarkMode ? "#4E5058" : "#DDDDDD" }}
                 >
-                  <img src={account.avatar || "/placeholder.svg"} alt={account.username} className="w-full h-full object-cover" />
+                  <img
+                    src={account.photoURL || "/placeholder.svg"}
+                    alt={account.username}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div>
                   <div className="font-medium">{account.username}</div>
@@ -123,7 +155,7 @@ export default function UsedAccounts() {
                       }}
                     >
                       <button
-                        onClick={() => handleRemoveAccount(account.id)}
+                        onClick={() => handleRemoveAccount(account.email)}
                         className="w-full text-left px-4 py-2 text-sm"
                         style={{ color: "red" }}
                       >

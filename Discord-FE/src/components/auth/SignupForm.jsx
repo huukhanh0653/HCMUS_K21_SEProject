@@ -24,6 +24,7 @@ const SignupForm = ({ onError, onSuccess }) => {
   const handleSignup = async (e) => {
     e.preventDefault();
     if (!email || !validateEmail(email)) return onError("Email không hợp lệ");
+    if (!username) return onError("Username không được để trống");
     if (!phone || !validatePhone(phone)) return onError("Số điện thoại không hợp lệ");
     if (!password) return onError("Mật khẩu không được để trống");
     if (password !== confirmPassword) return onError("Mật khẩu xác nhận không khớp");
@@ -32,12 +33,13 @@ const SignupForm = ({ onError, onSuccess }) => {
       const user = await signUpWithEmail(email, password);
       if (!user) throw new Error("User creation failed, no user data returned.");
 
-      await fetch("http://localhost:5001/users/sync-firebase", {
+      await fetch("http://localhost:5001/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           uid: user.uid,
           email: user.email,
+          username: username,
           password,
           phone,
         }),

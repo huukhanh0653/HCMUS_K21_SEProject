@@ -17,12 +17,16 @@ import {
   UserPlus,
 } from "lucide-react"
 
-import DirectMessage from "../../components/friends/DirectMessage"
+//Friends 
+import DirectMessage from "../../components/friends/DirectMessage/DirectMessage"
 import FriendsView from "../../components/friends/FriendsView"
 import FriendContextMenu from "../../components/friends/FriendContextMenu"
 import FriendProfile from "../../components/friends/FriendProfile"
-import ServerChannels from "./ServerChannels"
-import ServerChat from "../../components/server/ServerChat"
+import AddFriend from "../../components/friends/AddFriend"
+
+// Server
+import ServerChannels from "../../components/server/ServerChannels"
+import ServerChat from "../../components/server/ServerChat/ServerChat"
 import ServerMembers from "../../components/server/ServerMembers"
 import CreateServerModal from "../../components/server/CreateServerModal"
 import { useTranslation } from "react-i18next";
@@ -42,6 +46,9 @@ export default function Home({user, onProfileClick }) {
   const [selectedServer, setSelectedServer] = useState(null)
   const [selectedChannel, setSelectedChannel] = useState(null)
   const [showCreateServer, setShowCreateServer] = useState(false)
+
+  // Thêm state quản lý hiển thị màn hình Add Friend
+  const [showAddFriend, setShowAddFriend] = useState(false);
 
   // Default channels for servers
   const defaultChannels = [
@@ -290,8 +297,12 @@ export default function Home({user, onProfileClick }) {
                 className={`w-full px-2 py-1 rounded text-left flex items-center gap-2 ${
                   isDarkMode ? "bg-green-600 text-white" : "bg-green-500 text-black"
                 }`}
+                onClick={() => {
+                  setActiveTab("addfriend");
+                  setShowAddFriend(true); // Hiển thị màn hình Add Friend
+                }}
               >
-                <UserPlus size={16} /> {t('Add friend')}
+                <UserPlus size={16} /> {t("Add friend")}
               </button>
             </div>
           </div>
@@ -376,6 +387,8 @@ export default function Home({user, onProfileClick }) {
           </div>
         ) : selectedFriendObj ? (
           <DirectMessage friend={selectedFriendObj} messages={mockMessages[selectedFriend] || []} />
+        ) : showAddFriend ? (
+          <AddFriend /> // Hiển thị màn hình Add Friend
         ) : (
           <FriendsView />
         )}
