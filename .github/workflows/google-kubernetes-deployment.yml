@@ -20,7 +20,7 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          gcloud container clusters get-credentials my-cluster --region us-central1
+          gcloud container clusters get-credentials autopilot-cluster-1 --region us-central1
 
       - name: Deploy to GKE
         run: |
