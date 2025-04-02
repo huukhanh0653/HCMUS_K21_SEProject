@@ -43,8 +43,8 @@ jobs:
       - name: Build and Push Manage Server Service
         uses: docker/build-push-action@v4
         with:
-          context: ./Discord-Manage-Server-Service 
-          file: ./Discord-Manage-Server-Service/Dockerfile
+          context: ./Discord-Manage-Service 
+          file: ./Discord-Manage-Service/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-manage-server:latest
 
