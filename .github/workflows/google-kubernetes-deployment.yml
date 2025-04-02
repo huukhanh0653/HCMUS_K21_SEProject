@@ -1,16 +1,11 @@
 name: Deploy to GKE
 
-#on:
-#  workflow_run:
-#    workflows: ["Build Docker Images"]  # 🔥 Chỉ chạy khi CI build thành công
-#    types:
-#      - completed
-
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  workflow_run:
+    workflows: ["Build Docker Images"]  # 🔥 Chỉ chạy khi CI build thành công
+    types:
+      - completed
+
 
 jobs:
   deploy:
