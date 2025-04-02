@@ -18,12 +18,13 @@ import {
   UserPlus,
 } from "lucide-react"
 
-//Friends 
+// Friends 
 import DirectMessage from "../../components/friends/DirectMessage/DirectMessage"
 import FriendsView from "../../components/friends/FriendsView"
 import FriendContextMenu from "../../components/friends/FriendContextMenu"
 import FriendProfile from "../../components/friends/FriendProfile"
 import AddFriend from "../../components/friends/AddFriend"
+import FriendRequests from "../../components/friends/FriendRequests"
 
 // Server
 import ServerChannels from "../../components/server/ServerChannels"
@@ -45,12 +46,15 @@ export default function Home({user, onProfileClick }) {
   const [selectedServer, setSelectedServer] = useState(null);
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [showCreateServer, setShowCreateServer] = useState(false);
-
-  // Thêm state quản lý hiển thị màn hình Add Friend
+  // Quản lý hiển thị màn hình Add Friend
   const [showAddFriend, setShowAddFriend] = useState(false);
-
-  // ** Thêm state quản lý danh sách request kết bạn (chuyển từ AddFriend sang) **
+  // Danh sách yêu cầu kết bạn (dùng cho 2 mục: modal thông báo & FriendRequests component)
   const [pendingRequests, setPendingRequests] = useState([]);
+  // Để so sánh dữ liệu fetch
+  const [initialFetched, setInitialFetched] = useState(false);
+  const [prevRequests, setPrevRequests] = useState([]);
+  // Chứa danh sách yêu cầu mới (khác với lần fetch trước)
+  const [newRequests, setNewRequests] = useState([]);
 
   // Default channels for servers
   const defaultChannels = [
@@ -175,12 +179,10 @@ export default function Home({user, onProfileClick }) {
   };
 
   // ============================
-  // ========== NEW =============
+  // ======= FRIEND REQUESTS ==
   // ============================
-  // Lấy user hiện tại (nếu có) để gọi API
   const currentUserFromStorage = JSON.parse(localStorage.getItem("user")) || {};
 
-  // Polling 5s: fetch danh sách các request kết bạn
   useEffect(() => {
     const fetchRequests = async () => {
       console.log("Fetching friend requests in Home...");
@@ -192,7 +194,22 @@ export default function Home({user, onProfileClick }) {
         );
         if (response.ok) {
           const data = await response.json();
-          setPendingRequests(data); 
+          if (!initialFetched) {
+            // Lần fetch đầu tiên
+            setInitialFetched(true);
+            setPrevRequests(data);
+            setPendingRequests(data);
+          } else {
+            // So sánh dữ liệu mới với dữ liệu đã có
+            const diff = data.filter(
+              (req) => !prevRequests.some((prev) => prev._id === req._id)
+            );
+            if (diff.length > 0) {
+              setNewRequests(diff);
+            }
+            setPendingRequests(data);
+            setPrevRequests(data);
+          }
         } else {
           setPendingRequests([]);
         }
@@ -207,7 +224,7 @@ export default function Home({user, onProfileClick }) {
     // Lặp lại mỗi 5 giây
     const interval = setInterval(fetchRequests, 5000);
     return () => clearInterval(interval);
-  }, [currentUserFromStorage._id]);
+  }, [currentUserFromStorage._id, initialFetched, prevRequests]);
 
   // Xử lý Đồng ý kết bạn
   const handleAcceptRequest = async (requestID) => {
@@ -219,8 +236,9 @@ export default function Home({user, onProfileClick }) {
         },
         body: JSON.stringify({ requestID })
       });
-      // Xóa request đó khỏi pendingRequests
+      // Xóa request đó khỏi pendingRequests và newRequests nếu có
       setPendingRequests((prev) => prev.filter((req) => req._id !== requestID));
+      setNewRequests((prev) => prev.filter((req) => req._id !== requestID));
     } catch (error) {
       console.error("Error accepting request:", error);
     }
@@ -236,15 +254,18 @@ export default function Home({user, onProfileClick }) {
         },
         body: JSON.stringify({ requestID })
       });
-      // Xóa request khỏi pendingRequests
+      // Xóa request khỏi pendingRequests và newRequests nếu có
       setPendingRequests((prev) => prev.filter((req) => req._id !== requestID));
+      setNewRequests((prev) => prev.filter((req) => req._id !== requestID));
     } catch (error) {
       console.error("Error declining request:", error);
     }
   };
-  // ============================
-  // ========== END =============
-  // ============================
+
+  // Xử lý đóng modal hiển thị lời mời kết bạn
+  const handleCloseModal = () => {
+    setNewRequests([]);
+  };
 
   return (
     <div className="fixed inset-0 flex h-screen w-screen overflow-hidden bg-[#313338] text-gray-100">
@@ -360,7 +381,7 @@ export default function Home({user, onProfileClick }) {
                     ? isDarkMode
                       ? "bg-[#5865f2] text-white"
                       : "bg-blue-500 text-white"
-                : isDarkMode
+                    : isDarkMode
                     ? "text-gray-400 hover:bg-[#35373c]"
                     : "text-gray-700 hover:bg-gray-200"
                 }`}
@@ -369,7 +390,12 @@ export default function Home({user, onProfileClick }) {
                   setShowAddFriend(false);
                 }}
               >
-                {t('All')}
+                {t('Friend requests')}
+                {pendingRequests.length > 0 && (
+                  <span className="ml-2 bg-red-500 rounded-full px-2 py-0.5 text-xs">
+                    {pendingRequests.length}
+                  </span>
+                )}
               </button>
 
               <button
@@ -474,10 +500,16 @@ export default function Home({user, onProfileClick }) {
             <ServerChat channel={selectedChannel} />
             <ServerMembers />
           </div>
+        ) : activeTab === "addfriend" ? (
+          <AddFriend />
+        ) : activeTab === "all" ? (
+          <FriendRequests
+            friendRequests={pendingRequests}
+            onAccept={handleAcceptRequest}
+            onDecline={handleDeclineRequest}
+          />
         ) : selectedFriendObj ? (
           <DirectMessage friend={selectedFriendObj} messages={mockMessages[selectedFriend] || []} />
-        ) : showAddFriend ? (
-          <AddFriend /> 
         ) : (
           <FriendsView />
         )}
@@ -497,23 +529,29 @@ export default function Home({user, onProfileClick }) {
       {/* Create server modal */}
       {showCreateServer && <CreateServerModal onClose={() => setShowCreateServer(false)} />}
 
-      {/* ============= MODAL hiển thị lời mời kết bạn ============= */}
-      {pendingRequests.length > 0 && (
+      {/* ============= MODAL hiển thị lời mời kết bạn (chỉ hiển thị nếu có yêu cầu mới) ============= */}
+      {newRequests.length > 0 && activeTab !== "all" && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          {/* Hiển thị request đầu tiên (có thể mở rộng hiển thị nhiều request tùy ý) */}
-          <div className="bg-white text-black rounded p-6 w-[300px] text-center">
+          <div className="bg-white text-black rounded p-6 w-[300px] text-center relative">
+            {/* Nút tắt modal */}
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              X
+            </button>
             <h3 className="text-lg font-semibold mb-2">
-              {pendingRequests[0].sender?.username} muốn kết bạn với bạn
+              {newRequests[0].sender?.username} muốn kết bạn với bạn
             </h3>
             <div className="flex justify-center gap-4 mt-4">
               <button
-                onClick={() => handleAcceptRequest(pendingRequests[0]._id)}
+                onClick={() => handleAcceptRequest(newRequests[0]._id)}
                 className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
               >
                 Đồng ý
               </button>
               <button
-                onClick={() => handleDeclineRequest(pendingRequests[0]._id)}
+                onClick={() => handleDeclineRequest(newRequests[0]._id)}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
                 Từ chối
@@ -524,5 +562,5 @@ export default function Home({user, onProfileClick }) {
       )}
       {/* ============= End Modal ============= */}
     </div>
-  )
+  );
 }
