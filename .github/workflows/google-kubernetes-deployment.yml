@@ -1,10 +1,16 @@
 name: Deploy to GKE
 
+#on:
+#  workflow_run:
+#    workflows: ["Build Docker Images"]  # 🔥 Chỉ chạy khi CI build thành công
+#    types:
+#      - completed
+
 on:
-  workflow_run:
-    workflows: ["Build Docker Images"]  # 🔥 Chỉ chạy khi CI build thành công
-    types:
-      - completed
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   deploy:
@@ -24,4 +30,4 @@ jobs:
 
       - name: Deploy to GKE
         run: |
-          cd ../CI-CD/Kubenetes && kubectl applly -f .
+          cd ./CI-CD/Kubenetes && kubectl applly -f .
