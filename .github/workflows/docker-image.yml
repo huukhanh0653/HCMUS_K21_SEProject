@@ -1,10 +1,12 @@
 name: Build Docker Images
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  workflow_run:
+    workflows: ["Run Unit Tests"]  # 🔥 Chỉ chạy khi CI build thành công
+    types:
+      - completed
+    status: 
+      - success  # Chỉ chạy khi các bài test đã passed
 
 jobs:
   build:
@@ -55,13 +57,13 @@ jobs:
           push: true
           tags: huukhanh0653/echo-chat-gcs-service:latest
       
-      - name: Build and Push Front-end Service
-        uses: docker/build-push-action@v4
-        with:
-          context: ./Discord-FE
-          file: ./Discord-FE/Dockerfile
-          push: true
-          tags: huukhanh0653/echo-chat-front-end-service:latest
+      # - name: Build and Push Front-end Service
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: ./Discord-FE
+      #     file: ./Discord-FE/Dockerfile
+      #     push: true
+      #     tags: huukhanh0653/echo-chat-front-end-service:latest
 
       - name: Build and Push Notification Service
         uses: docker/build-push-action@v4
