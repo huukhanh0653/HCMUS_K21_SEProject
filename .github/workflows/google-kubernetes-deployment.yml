@@ -24,4 +24,4 @@ jobs:
 
       - name: Deploy to GKE
         run: |
-          cd ./CI-CD/Kubernetes && kubectl applly -f .
+          cd ../CI-CD/Kubenetes && kubectl applly -f .
