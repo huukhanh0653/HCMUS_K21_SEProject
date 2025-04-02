@@ -1,0 +1,31 @@
+spring:
+cloud:
+  gateway:
+    routes:
+      - id: storage-service
+        uri: lb://storage-service
+        predicates:
+          - Path=/api/storage/**
+        filters:
+          - StripPrefix=2
+      - id: user-service
+        uri: lb://user-service
+        predicates:
+          - Path=/api/users/**
+        filters:
+          - StripPrefix=2
+      - id: notification-service
+        uri: lb://notification-service
+        predicates:
+          - Path=/api/notifications/**
+        filters:
+          - StripPrefix=2
+      - id: server-service
+        uri: lb://server-service
+        predicates:
+          - Path=/api/servers/**
+        filters:
+          - StripPrefix=2
+  kubernetes:
+    discovery:
+      enabled: true
