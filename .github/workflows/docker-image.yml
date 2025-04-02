@@ -1,12 +1,19 @@
 name: Build Docker Images
 
+#on:
+#  workflow_run:
+#    workflows: ["Run Unit Tests"]  # 🔥 Chỉ chạy khi CI build thành công
+#    types:
+#      - completed
+#    status: 
+#      - success  # Chỉ chạy khi các bài test đã passed
+
 on:
-  workflow_run:
-    workflows: ["Run Unit Tests"]  # 🔥 Chỉ chạy khi CI build thành công
-    types:
-      - completed
-    status: 
-      - success  # Chỉ chạy khi các bài test đã passed
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
 jobs:
   build:
     runs-on: ubuntu-latest
