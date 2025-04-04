@@ -1,10 +1,12 @@
 name: Build Docker Images
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  workflow_run:
+    workflows: ["Run Unit Tests"]  # 🔥 Chỉ chạy khi CI build thành công
+    types:
+      - completed
+    status: 
+      - success  # Chỉ chạy khi các bài test đã passed
 
 jobs:
   build:
@@ -42,8 +44,8 @@ jobs:
       - name: Build and Push Manage Server Service
         uses: docker/build-push-action@v4
         with:
-          context: ./Discord-Manage-Server-Service 
-          file: ./Discord-Manage-Server-Service/Dockerfile
+          context: ./Discord-Manage-Service 
+          file: ./Discord-Manage-Service/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-manage-server:latest
 

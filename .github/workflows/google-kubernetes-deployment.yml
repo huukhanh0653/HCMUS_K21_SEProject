@@ -6,6 +6,7 @@ on:
     types:
       - completed
 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -24,4 +25,4 @@ jobs:
 
       - name: Deploy to GKE
         run: |
-          kubectl apply -f /CI-CD/Kubernetes/
+          cd ./CI-CD/Kubenetes && kubectl apply -f .

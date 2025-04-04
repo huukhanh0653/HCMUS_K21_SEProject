@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package channel_member;
+
+service ChannelMemberService {
+  rpc AddMember (AddMemberRequest) returns (ChannelMemberResponse) {}
+  rpc RemoveMember (RemoveMemberRequest) returns (ChannelMemberResponse) {}
+  rpc GetMembers (GetMembersRequest) returns (ChannelMemberListResponse) {}
+  rpc SearchMember (SearchMemberRequest) returns (ChannelMemberListResponse) {}
+}
+
+message AddMemberRequest {
+  string channel_id = 1;
+  string username = 2;
+  string member_username = 3;
+}
+
+message RemoveMemberRequest {
+  string channel_id = 1;
+  string username = 2;
+  string member_username = 3;
+}
+
+message GetMembersRequest {
+  string channel_id = 1;
+  string username = 2;
+}
+
+message SearchMemberRequest {
+  string channel_id = 1;
+  string username = 2;
+  string query = 3;
+}
+
+message ChannelMemberResponse {
+  string message = 1;
+}
+
+message ChannelMemberListResponse {
+  repeated ChannelMemberInfo members = 1;
+}
+
+message ChannelMemberInfo {
+  string username = 1;
+  string profile_pic = 2;
+  string created_at = 3;
+}
