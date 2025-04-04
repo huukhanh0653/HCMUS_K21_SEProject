@@ -15,12 +15,12 @@ const SocialLogin = ({ onError }) => {
       if (!user) return onError("Đăng nhập Google thất bại");
       //console.log("User: ", user);
 
-      await fetch("http://localhost:5001/users/sync-firebase", {
+      await fetch("http://localhost:8081/api/users/sync-firebase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ uid: user.uid, email: user.email }),
       });
-      const res = await fetch(`http://localhost:5001/users/email/${user.email}`);
+      const res = await fetch(`http://localhost:8081/api/users/email/${user.email}`);
       const response = await res.json(); // Giải mã JSON trả về từ server
       localStorage.setItem("email", response.email);
       localStorage.setItem("username", response.username);
