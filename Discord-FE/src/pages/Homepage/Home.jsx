@@ -25,6 +25,7 @@ import FriendContextMenu from "../../components/friends/FriendContextMenu"
 import FriendProfile from "../../components/friends/FriendProfile"
 import AddFriend from "../../components/friends/AddFriend"
 import FriendRequests from "../../components/friends/FriendRequests"
+import FriendList from "../../components/friends/FriendList"
 
 // Server
 import ServerChannels from "../../components/server/ServerChannels"
@@ -505,7 +506,7 @@ export default function Home({ user, onProfileClick }) {
               )}
               <span className="font-semibold">{selectedChannel.name}</span>
             </>
-          ) : selectedFriendObj ? (
+          )  : selectedFriendObj ? (
             <>
               <div className="w-8 h-8 bg-[#36393f] rounded-full mr-2 overflow-hidden">
                 <img
@@ -529,6 +530,8 @@ export default function Home({ user, onProfileClick }) {
             <ServerChat channel={selectedChannel} />
             <ServerMembers />
           </div>
+        ) : activeTab === "friends" ? (
+          <FriendList />
         ) : activeTab === "addfriend" ? (
           <AddFriend />
         ) : activeTab === "friend_requests" ? (
