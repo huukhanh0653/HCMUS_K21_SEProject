@@ -5,6 +5,8 @@ on:
     workflows: ["Run Unit Tests"]  # 🔥 Chỉ chạy khi CI build thành công
     types:
       - completed
+    status: 
+      - success  # Chỉ chạy khi các bài test đã passed
 
 jobs:
   build:
