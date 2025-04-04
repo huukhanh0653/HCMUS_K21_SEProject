@@ -8,21 +8,23 @@ import {
   Users,
   Gamepad2,
   TreePine,
-  BellIcon as Ball,
+  Bell as BellIcon, // Đã sửa BellIcon
   Ghost,
   Sword,
   Crown,
   Rocket,
   Hash, 
+  Volume2, // Thêm nếu cần
   UserPlus,
 } from "lucide-react"
 
-//Friends 
+// Friends 
 import DirectMessage from "../../components/friends/DirectMessage/DirectMessage"
 import FriendsView from "../../components/friends/FriendsView"
 import FriendContextMenu from "../../components/friends/FriendContextMenu"
 import FriendProfile from "../../components/friends/FriendProfile"
 import AddFriend from "../../components/friends/AddFriend"
+import FriendRequests from "../../components/friends/FriendRequests"
 
 // Server
 import ServerChannels from "../../components/server/ServerChannels"
@@ -30,25 +32,30 @@ import ServerChat from "../../components/server/ServerChat/ServerChat"
 import ServerMembers from "../../components/server/ServerMembers"
 import CreateServerModal from "../../components/server/CreateServerModal"
 import { useTranslation } from "react-i18next";
-import SampleAvt from "../../assets/sample_avatar.svg"
-
 import { useTheme } from '../../components/layout/ThemeProvider';
 import UserPanel from "../../components/user/UserPanel"
 
-export default function Home({user, onProfileClick }) {
+export default function Home({ user, onProfileClick }) {
   // Dark mode & Light mode toggle
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState("friends")
-  const [selectedFriend, setSelectedFriend] = useState(null)
-  const [showProfile, setShowProfile] = useState(false)
-  const [selectedProfileFriend, setSelectedProfileFriend] = useState(null)
-  const [selectedServer, setSelectedServer] = useState(null)
-  const [selectedChannel, setSelectedChannel] = useState(null)
-  const [showCreateServer, setShowCreateServer] = useState(false)
-
-  // Thêm state quản lý hiển thị màn hình Add Friend
+  const [activeTab, setActiveTab] = useState("friends");
+  const [selectedFriend, setSelectedFriend] = useState(null);
+  const [friends, setFriends] = useState([]); // <-- Lấy dữ liệu từ API
+  const [showProfile, setShowProfile] = useState(false);
+  const [selectedProfileFriend, setSelectedProfileFriend] = useState(null);
+  const [selectedServer, setSelectedServer] = useState(null);
+  const [selectedChannel, setSelectedChannel] = useState(null);
+  const [showCreateServer, setShowCreateServer] = useState(false);
+  // Quản lý hiển thị màn hình Add Friend
   const [showAddFriend, setShowAddFriend] = useState(false);
+  // Danh sách yêu cầu kết bạn (dùng cho 2 mục: modal thông báo & FriendRequests component)
+  const [pendingRequests, setPendingRequests] = useState([]);
+  // Để so sánh dữ liệu fetch
+  const [initialFetched, setInitialFetched] = useState(false);
+  const [prevRequests, setPrevRequests] = useState([]);
+  // Chứa danh sách yêu cầu mới (khác với lần fetch trước)
+  const [newRequests, setNewRequests] = useState([]);
 
   // Default channels for servers
   const defaultChannels = [
@@ -56,11 +63,11 @@ export default function Home({user, onProfileClick }) {
     { id: 2, name: "announcements", type: "text" },
     { id: 3, name: "General", type: "voice" },
     { id: 4, name: "Gaming", type: "voice" },
-  ]
+  ];
 
   // Mock messages data
   const mockMessages = {
-    Levii: [
+    "Levii": [
       {
         id: 1,
         sender: "Levii",
@@ -74,7 +81,7 @@ export default function Home({user, onProfileClick }) {
         timestamp: new Date("2025-03-22T08:09:00").getTime()
       }
     ],
-    Dolphin: [
+    "Dolphin": [
       {
         id: 1,
         sender: "Dolphin",
@@ -82,97 +89,201 @@ export default function Home({user, onProfileClick }) {
         timestamp: new Date("2025-03-22T14:30:00").getTime()
       }
     ]    
-    // Add more mock messages for other friends
-  }
+    // Add more mock messages...
+  };
 
-  // Friends data with status
-  const friends = [
-    { name: "Levii", status: "online", avatar: "/placeholder.svg?height=32&width=32" },
-    { name: "Dolphin", status: "idle", avatar: "/placeholder.svg?height=32&width=32" },
-    { name: "Cutehome", status: "dnd", avatar: "/placeholder.svg?height=32&width=32" },
-    { name: "Ngoc Tran", status: "offline", avatar: "/placeholder.svg?height=32&width=32" },
-    { name: "trstvxmnh", status: "online", avatar: "/placeholder.svg?height=32&width=32" },
-    { name: "s...", status: "online", avatar: "/placeholder.svg?height=32&width=32" },
-    { name: "DraNox", status: "idle", avatar: "/placeholder.svg?height=32&width=32" },
-    { name: "MEE6", status: "online", avatar: "/placeholder.svg?height=32&width=32" },
-  ]
-
-  // Server list data with icons and colors
+  // Server list data
   const servers = [
     { icon: TreePine, color: "#3ba55c", label: "Nature Gaming" },
     { icon: Gamepad2, color: "#5865f2", label: "Gaming Hub" },
-    { icon: Ball, color: "#faa61a", label: "Sports Club" },
+    { icon: BellIcon, color: "#faa61a", label: "Sports Club" },
     { icon: Ghost, color: "#ed4245", label: "Ghost Gaming" },
     { icon: Sword, color: "#9b59b6", label: "RPG Community" },
     { icon: Crown, color: "#f1c40f", label: "Royal Gaming" },
     { icon: Rocket, color: "#e91e63", label: "Space Station" },
-  ]
+  ];
 
-  //Save user info to local
+  // Save user info to local
   useEffect(() => {
     if (user) {
-      //console.log(user);
       localStorage.setItem("user_info", JSON.stringify(user));
     }
   }, [user]);
-  
+
+  // Fetch friends data from API
+  useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        const response = await fetch("http://localhost:8081/api/friendships/67e58b59171f9075a48afe76", {
+          headers: { accept: "application/json" }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          // Chuyển đổi mỗi friend: dùng username thay cho name và thêm status mặc định
+          const transformed = data.map(friend => ({
+            _id: friend._id,
+            username: friend.username,
+            email: friend.email,
+            avatar: friend.avatar,
+            status: "online" // Thay đổi tùy theo logic của bạn
+          }));
+          setFriends(transformed);
+        } else {
+          console.error("Failed to fetch friends data");
+        }
+      } catch (error) {
+        console.error("Error fetching friends data:", error);
+      }
+    };
+
+    fetchFriends();
+  }, []);
 
   // Auto-select the first channel when a server is selected
   useEffect(() => {
     if (selectedServer && !selectedChannel) {
-      const firstTextChannel = defaultChannels.find((channel) => channel.type === "text")
+      const firstTextChannel = defaultChannels.find((channel) => channel.type === "text");
       if (firstTextChannel) {
-        setSelectedChannel(firstTextChannel)
+        setSelectedChannel(firstTextChannel);
       }
     }
-  }, [selectedServer, selectedChannel])
+  }, [selectedServer, selectedChannel]);
 
   const getStatusColor = (status) => {
     switch (status) {
       case "online":
-        return "bg-green-500"
+        return "bg-green-500";
       case "idle":
-        return "bg-yellow-500"
+        return "bg-yellow-500";
       case "dnd":
-        return "bg-red-500"
+        return "bg-red-500";
       default:
-        return "bg-gray-500"
+        return "bg-gray-500";
     }
-  }
+  };
 
-  // Get the selected friend object
-  const selectedFriendObj = selectedFriend ? friends.find((f) => f.name === selectedFriend) : null
+  // Lấy friend object từ selectedFriend
+  const selectedFriendObj = selectedFriend
+    ? friends.find((f) => f.username === selectedFriend)
+    : null;
 
   const handleFriendAction = (action, friend) => {
     switch (action) {
       case "profile":
-        setSelectedProfileFriend(friend)
-        setShowProfile(true)
-        break
+        setSelectedProfileFriend(friend);
+        setShowProfile(true);
+        break;
       case "unfriend":
-        console.log(`Unfriend ${friend.name}`)
-        break
+        console.log(`Unfriend ${friend.username}`);
+        break;
       case "block":
-        console.log(`Block ${friend.name}`)
-        break
+        console.log(`Block ${friend.username}`);
+        break;
     }
-  }
+  };
 
   const handleServerClick = (server) => {
-    setSelectedServer(server)
-    setSelectedFriend(null) // Clear selected friend when switching to server view
-
-    // Select the first text channel by default
-    const firstTextChannel = defaultChannels.find((channel) => channel.type === "text")
+    setSelectedServer(server);
+    setSelectedFriend(null); 
+    const firstTextChannel = defaultChannels.find((channel) => channel.type === "text");
     if (firstTextChannel) {
-      setSelectedChannel(firstTextChannel)
+      setSelectedChannel(firstTextChannel);
     }
-  }
+  };
 
-  // Add this function to handle channel selection
+  // Handle channel selection
   const handleChannelSelect = (channel) => {
-    setSelectedChannel(channel)
-  }
+    setSelectedChannel(channel);
+  };
+
+  // ============================
+  // ======= FRIEND REQUESTS ==
+  // ============================
+  const currentUserFromStorage = JSON.parse(localStorage.getItem("user")) || {};
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      console.log("Fetching friend requests in Home...");
+      if (!currentUserFromStorage._id) return; // Nếu chưa có userID thì thoát
+
+      try {
+        const response = await fetch(
+          `http://localhost:8081/api/friendships/requests/${currentUserFromStorage._id}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (!initialFetched) {
+            // Lần fetch đầu tiên
+            setInitialFetched(true);
+            setPrevRequests(data);
+            setPendingRequests(data);
+          } else {
+            // So sánh dữ liệu mới với dữ liệu đã có
+            const diff = data.filter(
+              (req) => !prevRequests.some((prev) => prev._id === req._id)
+            );
+            if (diff.length > 0) {
+              setNewRequests(diff);
+            }
+            setPendingRequests(data);
+            setPrevRequests(data);
+          }
+        } else {
+          setPendingRequests([]);
+        }
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
+      }
+    };
+
+    // Gọi ngay khi component mount
+    fetchRequests();
+
+    // Lặp lại mỗi 5 giây
+    const interval = setInterval(fetchRequests, 5000);
+    return () => clearInterval(interval);
+  }, [currentUserFromStorage._id, initialFetched, prevRequests]);
+
+  // Xử lý Đồng ý kết bạn
+  const handleAcceptRequest = async (requestID) => {
+    try {
+      await fetch("http://localhost:8081/api/friendships/request/accept", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ requestID })
+      });
+      // Xóa request đó khỏi pendingRequests và newRequests nếu có
+      setPendingRequests((prev) => prev.filter((req) => req._id !== requestID));
+      setNewRequests((prev) => prev.filter((req) => req._id !== requestID));
+    } catch (error) {
+      console.error("Error accepting request:", error);
+    }
+  };
+
+  // Xử lý Từ chối kết bạn
+  const handleDeclineRequest = async (requestID) => {
+    try {
+      await fetch("http://localhost:8081/api/friendships/request/decline", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ requestID })
+      });
+      // Xóa request khỏi pendingRequests và newRequests nếu có
+      setPendingRequests((prev) => prev.filter((req) => req._id !== requestID));
+      setNewRequests((prev) => prev.filter((req) => req._id !== requestID));
+    } catch (error) {
+      console.error("Error declining request:", error);
+    }
+  };
+
+  // Xử lý đóng modal hiển thị lời mời kết bạn
+  const handleCloseModal = () => {
+    setNewRequests([]);
+  };
 
   return (
     <div className="fixed inset-0 flex h-screen w-screen overflow-hidden bg-[#313338] text-gray-100">
@@ -182,8 +293,8 @@ export default function Home({user, onProfileClick }) {
         <div
           className="w-12 h-12 bg-[#5865f2] rounded-full flex items-center justify-center mb-2 cursor-pointer hover:rounded-2xl transition-all duration-200 ease-linear"
           onClick={() => {
-            setSelectedServer(null)
-            setSelectedChannel(null)
+            setSelectedServer(null);
+            setSelectedChannel(null);
           }}
         >
           <MessageSquare className="text-white" size={24} />
@@ -258,6 +369,7 @@ export default function Home({user, onProfileClick }) {
                 onClick={() => {
                   setActiveTab("friends");
                   setSelectedFriend(null);
+                  setShowAddFriend(false);
                 }}
               >
                 {t('Friends')}
@@ -273,14 +385,17 @@ export default function Home({user, onProfileClick }) {
                     ? "text-gray-400 hover:bg-[#35373c]"
                     : "text-gray-700 hover:bg-gray-200"
                 }`}
-                onClick={() => setActiveTab("online")}
+                onClick={() => {
+                  setActiveTab("online");
+                  setShowAddFriend(false);
+                }}
               >
                 {t('Online')}
               </button>
 
               <button
                 className={`w-full px-2 py-1 rounded text-left ${
-                  activeTab === "all"
+                  activeTab === "friend_requests"
                     ? isDarkMode
                       ? "bg-[#5865f2] text-white"
                       : "bg-blue-500 text-white"
@@ -288,18 +403,33 @@ export default function Home({user, onProfileClick }) {
                     ? "text-gray-400 hover:bg-[#35373c]"
                     : "text-gray-700 hover:bg-gray-200"
                 }`}
-                onClick={() => setActiveTab("all")}
+                onClick={() => {
+                  setActiveTab("friend_requests");
+                  setShowAddFriend(false);
+                }}
               >
-                {t('All')}
+                {t('Friend requests')}
+                {pendingRequests.length > 0 && (
+                  <span className="ml-2 bg-red-500 rounded-full px-2 py-0.5 text-xs">
+                    {pendingRequests.length}
+                  </span>
+                )}
               </button>
 
               <button
                 className={`w-full px-2 py-1 rounded text-left flex items-center gap-2 ${
-                  isDarkMode ? "bg-green-600 text-white" : "bg-green-500 text-black"
+                  activeTab === "addfriend"
+                    ? isDarkMode 
+                      ? "bg-green-600 text-white" 
+                      : "bg-green-500 text-black"
+                    : isDarkMode 
+                      ? "text-gray-400 hover:bg-[#35373c]"
+                      : "text-gray-700 hover:bg-gray-200"
                 }`}
                 onClick={() => {
                   setActiveTab("addfriend");
-                  setShowAddFriend(true); // Hiển thị màn hình Add Friend
+                  setShowAddFriend(true);
+                  setSelectedFriend(null);
                 }}
               >
                 <UserPlus size={16} /> {t("Add friend")}
@@ -319,15 +449,19 @@ export default function Home({user, onProfileClick }) {
                 <FriendContextMenu key={index} friend={friend} onAction={handleFriendAction}>
                   <div
                     className={`flex items-center gap-2 p-1 rounded hover:bg-[#35373c] cursor-pointer ${
-                      selectedFriend === friend.name ? "bg-[#35373c]" : ""
+                      selectedFriend === friend.username ? "bg-[#35373c]" : ""
                     }`}
-                    onClick={() => setSelectedFriend(friend.name)}
+                    onClick={() => {
+                      setSelectedFriend(friend.username);
+                      setShowAddFriend(false);
+                      setActiveTab("friends");
+                    }}
                   >
                     <div className="relative">
                       <div className="w-8 h-8 bg-[#36393f] rounded-full flex-shrink-0 overflow-hidden">
                         <img
                           src={friend.avatar || "/placeholder.svg"}
-                          alt={friend.name}
+                          alt={friend.username}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -335,7 +469,7 @@ export default function Home({user, onProfileClick }) {
                         className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#2b2d31] ${getStatusColor(friend.status)}`}
                       ></div>
                     </div>
-                    <span className="text-gray-300">{friend.name}</span>
+                    <span className="text-gray-300">{friend.username}</span>
                   </div>
                 </FriendContextMenu>
               ))}
@@ -350,7 +484,18 @@ export default function Home({user, onProfileClick }) {
       {/* Main content area */}
       <div className="flex-1 h-full flex flex-col bg-[#313338]">
         {/* Header */}
-        <div className="h-12 min-h-[3rem] flex-shrink-0 border-b border-[#232428] flex items-center px-4">
+        <div
+          className="h-12 min-h-[3rem] flex-shrink-0 border-b border-[#232428] flex items-center px-4 cursor-pointer"
+          onClick={() => {
+            if (selectedFriendObj) {
+              // Khi có bạn bè được chọn, khi chạm vào sẽ gọi hàm onProfileClick
+              onProfileClick(selectedFriendObj);
+            } else if (selectedServer && selectedChannel) {
+              // Bạn có thể thêm xử lý riêng cho server/channel nếu cần
+              console.log("Channel selected:", selectedChannel.name);
+            }
+          }}
+        >
           {selectedServer && selectedChannel ? (
             <>
               {selectedChannel.type === "text" ? (
@@ -365,11 +510,11 @@ export default function Home({user, onProfileClick }) {
               <div className="w-8 h-8 bg-[#36393f] rounded-full mr-2 overflow-hidden">
                 <img
                   src={selectedFriendObj.avatar || "/placeholder.svg"}
-                  alt={selectedFriendObj.name}
+                  alt={selectedFriendObj.username}
                   className="w-full h-full rounded-full object-cover"
                 />
               </div>
-              <span className="font-semibold">{selectedFriendObj.name}</span>
+              <span className="font-semibold">{selectedFriendObj.username}</span>
             </>
           ) : (
             <>
@@ -378,17 +523,22 @@ export default function Home({user, onProfileClick }) {
             </>
           )}
         </div>
-
         {/* Main content */}
         {selectedServer && selectedChannel ? (
           <div className="flex flex-1">
             <ServerChat channel={selectedChannel} />
             <ServerMembers />
           </div>
+        ) : activeTab === "addfriend" ? (
+          <AddFriend />
+        ) : activeTab === "friend_requests" ? (
+          <FriendRequests
+            friendRequests={pendingRequests}
+            onAccept={handleAcceptRequest}
+            onDecline={handleDeclineRequest}
+          />
         ) : selectedFriendObj ? (
           <DirectMessage friend={selectedFriendObj} messages={mockMessages[selectedFriend] || []} />
-        ) : showAddFriend ? (
-          <AddFriend /> // Hiển thị màn hình Add Friend
         ) : (
           <FriendsView />
         )}
@@ -399,15 +549,47 @@ export default function Home({user, onProfileClick }) {
         <FriendProfile
           friend={selectedProfileFriend}
           onClose={() => {
-            setShowProfile(false)
-            setSelectedProfileFriend(null)
+            setShowProfile(false);
+            setSelectedProfileFriend(null);
           }}
         />
       )}
 
       {/* Create server modal */}
       {showCreateServer && <CreateServerModal onClose={() => setShowCreateServer(false)} />}
-    </div>
-  )
-}
 
+      {/* ============= MODAL hiển thị lời mời kết bạn (chỉ hiển thị nếu có yêu cầu mới) ============= */}
+      {newRequests.length > 0 && activeTab !== "friend_requests" && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white text-black rounded p-6 w-[300px] text-center relative">
+            {/* Nút tắt modal */}
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              X
+            </button>
+            <h3 className="text-lg font-semibold mb-2">
+              {newRequests[0].sender?.username} muốn kết bạn với bạn
+            </h3>
+            <div className="flex justify-center gap-4 mt-4">
+              <button
+                onClick={() => handleAcceptRequest(newRequests[0]._id)}
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                Đồng ý
+              </button>
+              <button
+                onClick={() => handleDeclineRequest(newRequests[0]._id)}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Từ chối
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ============= End Modal ============= */}
+    </div>
+  );
+}

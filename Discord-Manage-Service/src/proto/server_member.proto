@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package server_member;
+
+service ServerMemberService {
+  rpc AddMember (AddMemberRequest) returns (ServerMemberResponse) {}
+  rpc RemoveMember (RemoveMemberRequest) returns (ServerMemberResponse) {}
+  rpc UpdateMemberRole (UpdateMemberRoleRequest) returns (ServerMemberResponse) {}
+  rpc GetMembers (GetMembersRequest) returns (ServerMemberListResponse) {}
+  rpc SearchMember (SearchMemberRequest) returns (ServerMemberListResponse) {}
+}
+
+message AddMemberRequest {
+  string server_id = 1;
+  string username = 2;
+  optional string role_id = 3;
+}
+
+message RemoveMemberRequest {
+  string server_id = 1;
+  string username = 2;
+}
+
+message UpdateMemberRoleRequest {
+  string server_id = 1;
+  string username = 2;
+  optional string role_id = 3;
+}
+
+message GetMembersRequest {
+  string server_id = 1;
+  string username = 2;
+}
+
+message SearchMemberRequest {
+  string server_id = 1;
+  string username = 2;
+  string query = 3;
+}
+
+message ServerMemberResponse {
+  string message = 1;
+}
+
+message ServerMemberListResponse {
+  repeated ServerMemberInfo members = 1;
+}
+
+message ServerMemberInfo {
+  string username = 1;
+  string role_name = 2;
+  string profile_pic = 3;
+  string joined_at = 4;
+}

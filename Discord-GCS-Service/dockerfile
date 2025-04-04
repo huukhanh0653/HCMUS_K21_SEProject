@@ -20,5 +20,5 @@ USER myuser
 # Optimize JVM for containers
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
-EXPOSE 8080
+EXPOSE 8083
 ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar /app/app.jar"]

@@ -1,12 +1,33 @@
-FROM node:22-alpine
+# Sử dụng image Node.js chính thức
+FROM node:18-alpine
 
+# Thiết lập thư mục làm việc trong container
 WORKDIR /app
 
+# Copy file package.json và package-lock.json để cài đặt dependencies
 COPY package*.json ./
+
+# Cài đặt dependencies
 RUN npm install
 
+# Copy toàn bộ mã nguồn vào container
 COPY . .
+
+# Build ứng dụng ReactJS
+RUN npm run build
+
+# Sử dụng một image Nginx để phục vụ ứng dụng
+FROM nginx:stable-alpine
+
+# Copy file build từ bước trước vào thư mục phục vụ của Nginx
+COPY --from=0 /app/dist /usr/share/nginx/html
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+# Thiết lập quyền truy cập cho thư mục chứa mã nguồn
+RUN chmod -R 755 /usr/share/nginx/html
+RUN chown -R nginx:nginx /usr/share/nginx/html
+
+# Khởi chạy Nginx
+CMD ["nginx", "-g", "daemon off;"]

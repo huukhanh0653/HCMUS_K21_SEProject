@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package channel;
+
+service ChannelService {
+  rpc CreateChannel (CreateChannelRequest) returns (ChannelResponse) {}
+  rpc GetChannels (GetChannelsRequest) returns (ChannelListResponse) {}
+  rpc GetChannelsByServer (GetChannelsByServerRequest) returns (ChannelListResponse) {}
+  rpc UpdateChannel (UpdateChannelRequest) returns (ChannelResponse) {}
+  rpc DeleteChannel (DeleteChannelRequest) returns (ChannelResponse) {}
+}
+
+message CreateChannelRequest {
+  string server_id = 1;
+  string username = 2;
+  string name = 3;
+  optional string type = 4;
+  optional bool is_private = 5;
+}
+
+message GetChannelsRequest {
+  string username = 1;
+  string server_id = 2;
+  string query = 3;
+}
+
+message GetChannelsByServerRequest {
+  string server_id = 1;
+  string username = 2;
+}
+
+message UpdateChannelRequest {
+  string channel_id = 1;
+  string username = 2;
+  optional string name = 3;
+  optional string type = 4;
+  optional bool is_private = 5;
+}
+
+message DeleteChannelRequest {
+  string channel_id = 1;
+  string username = 2;
+}
+
+message ChannelResponse {
+  string id = 1;
+  string server_id = 2;
+  string name = 3;
+  string type = 4;
+  string created_at = 5;
+  bool is_private = 6;
+  string message = 7;
+}
+
+message ChannelListResponse {
+  repeated ChannelResponse channels = 1;
+}

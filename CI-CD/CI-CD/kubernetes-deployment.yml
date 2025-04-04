@@ -1,0 +1,27 @@
+name: Deploy to GKE
+
+on:
+  workflow_run:
+    workflows: ["Build Docker Images"]  # 🔥 Chỉ chạy khi CI build thành công
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Configure kubectl
+        run: |
+          gcloud container clusters get-credentials autopilot-cluster-1 --region us-central1
+
+      - name: Deploy to GKE
+        run: |
+          kubectl apply -f CI-CD/Kubernetes/
