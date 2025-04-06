@@ -1,129 +1,162 @@
-import { Edit, Trash2 } from "lucide-react";
-import SampleAvt from "../../../../assets/sample_avatar.svg";
-import { useTranslation } from "react-i18next";
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MoreVertical, MessageSquare, Video, UserMinus, Slash } from 'lucide-react';
+import { useTheme } from "../layout/ThemeProvider";
 
-export default function MessageList({
-  messages,
-  friend,
-  editingMessageId,
-  editedContent,
-  setEditingMessageId,
-  setEditedContent,
-  handleDeleteMessage,
-  handleSaveEdit,
-  messagesEndRef,
-}) {
-  const { i18n } = useTranslation();
+export default function FriendList() {
+  const { t } = useTranslation();
+  const [friends, setFriends] = useState([]);
+  const [showMenuForFriend, setShowMenuForFriend] = useState(null);
+  const { isDarkMode } = useTheme();
+
+  // Fetch danh sách bạn bè từ API
+  useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        const response = await fetch(
+          'http://localhost:8081/api/friendships/67e58b59171f9075a48afe76',
+          { headers: { accept: 'application/json' } }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const transformed = data.map(friend => ({
+            ...friend,
+            status: 'online', // hoặc logic khác tùy bạn
+          }));
+          setFriends(transformed);
+        } else {
+          console.error('Failed to fetch friends data');
+        }
+      } catch (error) {
+        console.error('Error fetching friends data:', error);
+      }
+    };
+
+    fetchFriends();
+  }, []);
+
+  // Xử lý nút Message
+  const handleMessage = (friend) => {
+    console.log('Message friend:', friend);
+    // Xử lý mở DM, chuyển tab chat, v.v.
+  };
+
+  // Xử lý các option trong menu 3 chấm
+  const handleOptionClick = (friendId, action) => {
+    switch (action) {
+      case 'video':
+        console.log(`Video call with friend: ${friendId}`);
+        break;
+      case 'unfriend':
+        console.log(`Unfriend friend: ${friendId}`);
+        break;
+      case 'block':
+        console.log(`Block friend: ${friendId}`);
+        break;
+      default:
+        break;
+    }
+    setShowMenuForFriend(null);
+  };
 
   return (
-    <div
-      className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
-      style={{ scrollbarWidth: "thin", scrollbarColor: "grey transparent" }}
-    >
-      {messages.map((message, index) => {
-        const previous = messages[index - 1];
-        const currentDate = new Date(message.timestamp);
-        const previousDate = previous ? new Date(previous.timestamp) : null;
-        const currentDay = currentDate.toDateString();
-        const previousDay = previousDate ? previousDate.toDateString() : null;
-        const showDateDivider = currentDay !== previousDay;
-        const currentTime = currentDate.getTime();
-        const previousTime = previousDate ? previousDate.getTime() : null;
-        const isGrouped =
-          previous &&
-          previous.sender === message.sender &&
-          currentDay === previousDay &&
-          previousTime &&
-          currentTime - previousTime <= 60000;
+    <div className="p-4">
+      <h2 className={`text-xl font-semibold mb-2 ${isDarkMode ? "text-white" : "text-[#333333]"}`}>
+        {t('Friends')}
+      </h2>
+      <p className={`text-sm mb-4 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+        {t('Your friends are listed below.')}
+      </p>
 
-        const formattedDate = currentDate.toLocaleDateString(i18n.language || "vi-VN", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        });
-
-        const formattedTime = currentDate.toLocaleTimeString(i18n.language || "vi-VN", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        });
-
-        return (
-          <div key={message.id} className={`mb-2 ${!isGrouped ? "pt-4" : ""}`}>
-            {showDateDivider && (
-              <div className="flex justify-center items-center my-6">
-                <div className="border-t border-gray-600 flex-1" />
-                <span className="px-4 text-sm text-gray-400">{formattedDate}</span>
-                <div className="border-t border-gray-600 flex-1" />
+      {/* Danh sách bạn bè với overflow và style cho scrollbar */}
+      <div
+        className="flex flex-col gap-2 overflow-y-auto"
+        style={{ scrollbarWidth: "thin", scrollbarColor: "grey transparent" }}
+      >
+        {friends.map((friend) => (
+          <div
+            key={friend._id}
+            className={`p-2 rounded flex justify-between items-center ${isDarkMode ? "bg-[#1e1f22]" : "bg-white border border-gray-300"}`}
+          >
+            {/* Thông tin bạn bè */}
+            <div className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-full overflow-hidden ${isDarkMode ? "bg-[#36393f]" : "bg-gray-200"}`}>
+                <img
+                  src={friend.avatar || '/placeholder.svg?height=32&width=32'}
+                  alt={friend.username}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            )}
+              <div className="text-left">
+                <p className={isDarkMode ? "text-gray-300" : "text-[#333333]"}>
+                  {friend.username}
+                </p>
+                <p className={`text-sm ${isDarkMode ? "text-gray-500" : "text-gray-600"}`}>
+                  {friend.email}
+                </p>
+                <p className={`text-sm ${friend.status === 'online' ? (isDarkMode ? "text-green-500" : "text-green-600") : "text-gray-500"}`}>
+                  {friend.status || 'offline'}
+                </p>
+              </div>
+            </div>
 
-            <div className="relative group hover:bg-[#2e3035] rounded px-2 py-1 transition-colors duration-150">
-              {!isGrouped && (
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden flex-shrink-0">
-                    <img
-                      src={message.sender === "You" ? SampleAvt : friend.avatar || "/placeholder.svg"}
-                      alt={message.sender}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{message.sender}</span>
-                      <span className="text-xs text-gray-400">{formattedTime}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+            {/* Các nút hành động */}
+            <div className="flex items-center gap-2 relative">
+              {/* Nút Message */}
+              <button className="relative group" onClick={() => handleMessage(friend)}>
+                <MessageSquare size={20} className={isDarkMode ? "text-gray-300" : "text-gray-600"} />
+                <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  {t('Message')}
+                </span>
+              </button>
 
-              <div className={`${isGrouped ? "pl-14" : "pl-14 mt-1"} relative`}>
-                {editingMessageId === message.id ? (
-                  <textarea
-                    value={editedContent}
-                    onChange={(e) => setEditedContent(e.target.value)}
-                    className="w-full bg-[#404249] text-gray-100 p-2 mt-1 rounded-md focus:outline-none resize-none break-words whitespace-pre-wrap pr-14"
-                    rows={2}
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSaveEdit(message.id);
-                      }
-                    }}
-                  />
-                ) : (
-                  <p className="text-gray-100 break-words whitespace-pre-wrap break-all text-left mt-1 pr-14">
-                    {message.content}
-                  </p>
-                )}
+              {/* Nút Options */}
+              <div className="relative">
+                <button
+                  className="relative group"
+                  onClick={() =>
+                    setShowMenuForFriend(
+                      showMenuForFriend === friend._id ? null : friend._id
+                    )
+                  }
+                >
+                  <MoreVertical size={20} className={isDarkMode ? "text-gray-300" : "text-gray-600"} />
+                  <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {t('Options')}
+                  </span>
+                </button>
 
-                {message.sender === "You" && (
-                  <div className="absolute top-0 right-0 hidden group-hover:flex items-center gap-2">
+                {/* Menu thả xuống */}
+                {showMenuForFriend === friend._id && (
+                  <div className={`absolute right-0 top-full mt-2 rounded shadow-md z-10 w-36 ${isDarkMode ? "bg-[#2b2d31] border border-gray-700" : "bg-white border border-gray-300"}`}>
                     <button
-                      className="p-1 text-gray-400 hover:text-gray-200"
-                      onClick={() => {
-                        setEditingMessageId(message.id);
-                        setEditedContent(message.content);
-                      }}
+                      onClick={() => handleOptionClick(friend._id, 'video')}
+                      className="flex items-center w-full px-4 py-2 hover:bg-[#3a3c41] text-left"
                     >
-                      <Edit size={16} />
+                      <Video size={16} className="mr-2" />
+                      {t('Video Call')}
                     </button>
                     <button
-                      className="p-1 text-gray-400 hover:text-red-500"
-                      onClick={() => handleDeleteMessage(message.id)}
+                      onClick={() => handleOptionClick(friend._id, 'unfriend')}
+                      className="flex items-center w-full px-4 py-2 hover:bg-[#3a3c41] text-left"
                     >
-                      <Trash2 size={16} />
+                      <UserMinus size={16} className="mr-2" />
+                      {t('Unfriend')}
+                    </button>
+                    <button
+                      onClick={() => handleOptionClick(friend._id, 'block')}
+                      className="flex items-center w-full px-4 py-2 hover:bg-[#3a3c41] text-left"
+                    >
+                      <Slash size={16} className="mr-2" />
+                      {t('Block')}
                     </button>
                   </div>
                 )}
               </div>
             </div>
           </div>
-        );
-      })}
-
-      <div ref={messagesEndRef} />
+        ))}
+      </div>
     </div>
   );
 }

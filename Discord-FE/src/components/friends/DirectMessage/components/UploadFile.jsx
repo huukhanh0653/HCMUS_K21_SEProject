@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
 import { FolderPlus, ClipboardList, AppWindow } from "lucide-react";
 import { useTranslation } from "react-i18next";
+
 export default function UploadFile({ onFileSelect }) {
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef(null); // Ref cho input file
+  const { t } = useTranslation();
 
   const handleFileChange = (event) => {
     const files = event.target.files;
