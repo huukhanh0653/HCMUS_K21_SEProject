@@ -118,6 +118,7 @@ export default function Home({ user, onProfileClick }) {
         const response = await fetch("http://localhost:8081/api/friendships/67e58b59171f9075a48afe76", {
           headers: { accept: "application/json" }
         });
+        console.log("Fetching friends data...");
         if (response.ok) {
           const data = await response.json();
           // Chuyển đổi mỗi friend: dùng username thay cho name và thêm status mặc định
@@ -238,11 +239,12 @@ export default function Home({ user, onProfileClick }) {
     };
 
     // Gọi ngay khi component mount
-    fetchRequests();
+    //fetchRequests();
 
-    // Lặp lại mỗi 5 giây
-    const interval = setInterval(fetchRequests, 5000);
-    return () => clearInterval(interval);
+    /* Lặp lại mỗi 10 phút
+    const interval = setInterval(fetchRequests, 600000);
+    return () => clearInterval(interval);*/
+
   }, [currentUserFromStorage._id, initialFetched, prevRequests]);
 
   // Xử lý Đồng ý kết bạn
@@ -455,7 +457,7 @@ export default function Home({ user, onProfileClick }) {
                     onClick={() => {
                       setSelectedFriend(friend.username);
                       setShowAddFriend(false);
-                      setActiveTab("friends");
+                      setActiveTab("friend");
                     }}
                   >
                     <div className="relative">
