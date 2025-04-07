@@ -51,7 +51,6 @@ export default function Home({ user, onProfileClick }) {
   const [showCreateServer, setShowCreateServer] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
-  const [initialFetched, setInitialFetched] = useState(false);
   const [prevRequests, setPrevRequests] = useState([]);
   const [newRequests, setNewRequests] = useState([]);
 
@@ -106,8 +105,10 @@ export default function Home({ user, onProfileClick }) {
   }, [user]);
   const currentUser = JSON.parse(localStorage.getItem("user")) || {};
 
-  // Fetch dữ liệu bạn bè từ API
+  // Fetch dữ liệu bạn bè và yêu cầu kết bạn chỉ chạy 1 lần khi component mount
   useEffect(() => {
+    if (!currentUser._id) return;
+
     const fetchFriends = async () => {
       try {
         const response = await fetch(`${User_API}/api/friendships/${currentUser._id}`, {
@@ -132,29 +133,14 @@ export default function Home({ user, onProfileClick }) {
     };
 
     const fetchRequests = async () => {
-      console.log("Fetching friend requests in Home...");
-      if (!currentUser._id) return;
-
       try {
         const response = await fetch(
           `${User_API}/api/friendships/requests/${currentUser._id}`
         );
         if (response.ok) {
           const data = await response.json();
-          if (!initialFetched) {
-            setInitialFetched(true);
-            setPrevRequests(data);
-            setPendingRequests(data);
-          } else {
-            const diff = data.filter(
-              (req) => !prevRequests.some((prev) => prev._id === req._id)
-            );
-            if (diff.length > 0) {
-              setNewRequests(diff);
-            }
-            setPendingRequests(data);
-            setPrevRequests(data);
-          }
+          setPrevRequests(data);
+          setPendingRequests(data);
         } else {
           setPendingRequests([]);
         }
@@ -163,8 +149,10 @@ export default function Home({ user, onProfileClick }) {
       }
     };
 
+    // Chỉ gọi 1 lần khi component mount (dependency chỉ có currentUser._id)
     fetchFriends();
-  }, [currentUser._id, initialFetched, prevRequests]);
+    fetchRequests();
+  }, [currentUser._id]);
 
   // Tự động chọn channel text đầu tiên khi chọn server
   useEffect(() => {
@@ -210,6 +198,7 @@ export default function Home({ user, onProfileClick }) {
 
   const handleServerClick = (server) => {
     setSelectedServer(server);
+    setActiveTab("server");
     setSelectedFriend(null);
     const firstTextChannel = defaultChannels.find((channel) => channel.type === "text");
     if (firstTextChannel) {
@@ -220,47 +209,6 @@ export default function Home({ user, onProfileClick }) {
   const handleChannelSelect = (channel) => {
     setSelectedChannel(channel);
   };
-
-
-  useEffect(() => {
-    const fetchRequests = async () => {
-      console.log("Fetching friend requests in Home...");
-      if (!currentUser._id) return;
-
-      try {
-        const response = await fetch(
-          `${User_API}/api/friendships/requests/${currentUser._id}`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          if (!initialFetched) {
-            setInitialFetched(true);
-            setPrevRequests(data);
-            setPendingRequests(data);
-          } else {
-            const diff = data.filter(
-              (req) => !prevRequests.some((prev) => prev._id === req._id)
-            );
-            if (diff.length > 0) {
-              setNewRequests(diff);
-            }
-            setPendingRequests(data);
-            setPrevRequests(data);
-          }
-        } else {
-          setPendingRequests([]);
-        }
-      } catch (error) {
-        console.error("Error fetching friend requests:", error);
-      }
-    };
-
-    // Gọi ngay khi component mount
-    // fetchRequests();
-    /* Lặp lại mỗi 10 phút
-    const interval = setInterval(fetchRequests, 600000);
-    return () => clearInterval(interval);*/
-  }, [currentUser._id, initialFetched, prevRequests]);
 
   const handleAcceptRequest = async (requestID) => {
     try {
@@ -594,6 +542,7 @@ export default function Home({ user, onProfileClick }) {
             </>
           )}
         </div>
+
         {/* Main content */}
         {selectedServer && selectedChannel ? (
           <div className="flex flex-1">
@@ -610,7 +559,7 @@ export default function Home({ user, onProfileClick }) {
             onAccept={handleAcceptRequest}
             onDecline={handleDeclineRequest}
           />
-        ) : selectedFriendObj ? (
+        ) : activeTab === "friend" && selectedFriendObj ? (
           <DirectMessage friend={selectedFriendObj} messages={mockMessages[selectedFriend] || []} />
         ) : (
           <FriendsView />

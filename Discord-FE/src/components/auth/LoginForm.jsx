@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { signInWithEmail } from "../../firebase";
 import { updateUsedUserList } from './updateUsedUserList';
 
+import { User_API } from "../../../apiConfig";
+
 const LoginForm = ({ onSuccess, onError }) => {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
@@ -28,12 +30,12 @@ const LoginForm = ({ onSuccess, onError }) => {
       const user = await signInWithEmail(email, password);
       //console.log("User: ", user);
       
-      await fetch("http://localhost:8081/api/users/sync-firebase", {
+      await fetch(`${User_API}/api/users/sync-firebase`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ uid: user.uid, email: user.email }),
       });
-      const res = await fetch(`http://localhost:8081/api/users/email/${email}`);
+      const res = await fetch(`${User_API}/api/users/email/${email}`);
       const response = await res.json(); // Giải mã JSON trả về từ server
       localStorage.setItem("email", response.email);
       localStorage.setItem("username", response.username);
