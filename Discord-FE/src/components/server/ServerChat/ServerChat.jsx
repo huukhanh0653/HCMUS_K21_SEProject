@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import MessageList from "./Components/MessageList";
 import MessageInput from "./Components/MessageInput";
 
-const socket = io("http://localhost:8084");
+const socket = io("http://localhost:8082");
 
 export default function ServerChat({ channel }) {
   const [messageInput, setMessageInput] = useState("");

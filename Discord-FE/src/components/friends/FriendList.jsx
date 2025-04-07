@@ -68,11 +68,8 @@ export default function FriendList() {
         {t('Your friends are listed below.')}
       </p>
 
-      {/* Danh sách bạn bè với overflow và style cho scrollbar */}
-      <div
-        className="flex flex-col gap-2 overflow-y-auto"
-        style={{ scrollbarWidth: "thin", scrollbarColor: "grey transparent" }}
-      >
+      {/* Danh sách bạn bè */}
+      <div className="flex flex-col gap-2">
         {friends.map((friend) => (
           <div
             key={friend._id}

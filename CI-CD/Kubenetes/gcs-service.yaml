@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gcp-service-account
+type: Opaque
+data:
+  # Replace 'your-base64-encoded-key' with the base64-encoded content of your service account JSON key file
+  key.json: ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAib3B0aW1hbC1icmFuZC00NTQwMDctYjciLAogICJwcml2YXRlX2tleV9pZCI6ICI2MjE3NjAxZTc4YTI2OTliOTYxZDVhZDYzZTFlOTdkYWNhMmMzODkwIiwKICAicHJpdmF0ZV9rZXkiOiAiLS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdmdJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLZ3dnZ1NrQWdFQUFvSUJBUURNRjR5QmxYR3d0ZTdVXG5lU3pLQm5OTmd6Y29VNjVPRzlLcTVIdzdjSnROUmw4QnV2Nk9RclNpY1c5MVhGSVZaUlhIWXZ3aFp0N2hMMms3XG44RE82WE1hQ0NGU2czUkZPT2hHRHBLRmc1UlFubGcwWnBoNGNuZVRIdVZ6aG1HWXZSRVJ3dENnWFZ2OHhRWVBTXG54cE5pRUpXZWF2d2RzZUJXRXRDVWpsMnlvLzQ5M2tlckk3RDVGQTJiTjZXNE04NTVxbGlwNVg4eUxRcjhYYmkxXG5JendkQ2ZGZDNJQVFyNVlQRzFUS05VRGNESDJFWEp6MlRMc2JzbVBwcFIzejhudDVhM0Q5NDBETWQxVGtieDlXXG5JN0lnendPcWNDYk1idDhZWTRaeGZhS2R2Q3JDRXdwT1U2SkU3c1JCN09pclF0bHRwUndsUHNzZWYzNnVPcE5EXG43RSttYW5wZkFnTUJBQUVDZ2dFQVd3VFBqVVVFUUg1S3htaEtJTWtTcUFseVVtSkxkSnMwN3pEWjlMcEtFSUxuXG5RUUxQbnN0QitzWWpJcEJyTFE1NVVZUWtGSk5ucDc2NHJGbjUvODE3WENkeDhwSFVzM0h6T0tYMXNKeEpTa1JCXG5rR1JFdnBkdUhlSmRlV0M1aGEvbzQraDhqcmdtTkNYWEwrdU9kQ2dZU2QvRmswcXVWVVNyeit6VC9hVGtjRnRDXG44ZDlkbVFVQWQ5d1FYeEp5Z1VMTzh1RmIvQTBUV2tIS2tFenNmODR2RDNxRjlWUmVhUEN5ZzM2ZVRnMEhPWnd0XG5CZWF1UU5tSVpuM1prWWNPenR5TmwrSTN2V2dyOVlzOWRiNTRoWjhiVmhEdHZ3M2p4dERhMGU2QTNiMlJadWhnXG4wNC8zdTFGQWs5Q2lpNGN0b2h1dUZDZ3MvR1JFUThVeTcvRW8yRXBVTFFLQmdRRGwrT2NVUmVsNld0bFdLOVQvXG5zR01uZ0d6QUd3UTc3OFA0SytoRTVJQXBSTUFSS1JOallkci85bE11RENHWnVZM0djejRmUTV5RlNqeEhNSDlsXG5kcVR6TVYxQmc3a3VqQ3pyWWFqVnE5czNnbCtJcDNmTENCNTJCUDJ5RHJjbXgzQkNablR3NkVXYjRCdUZjVkZZXG5WZ3dvZ2taWDZOOHRVZGRCcHd0ZndlNnVOUUtCZ1FEak1NM2RlMFFzVVlBZlVoM2RTZ05tb1A4MzN5cnpnREN3XG40elM3TENFeGJrN1MxZ1Q3anhBWjNIcVJOdUpLWWpwVm5aeTRXN3V4MzVhR1VaUWwxWjdGTW90SU45eGVlNTNPXG52eENGanlxZzMzMnVObk40RVBLTHJSdFZLQlg4RDYwMTdTMzRvRVFyT1VqTWJxQkV4OHJwSXRvcld2K0dnVW9YXG5aNHVHMjBXb3d3S0JnRjQ4UXp4OGRYTHMzVmhCTjlQYWpKYjRPaGZ5T2lieFZnVlF3S25TVkc0VXZQdUxNR1d1XG5DSmFRY245USswZkowRDI4cFgwY01Id3g4a2RkcVNhRG1vNEk4V1RTUEVURnJmWjZHendMWXhYNDkzckEzUWEyXG5lZnowaUp5NUNQWDhEWlUzOUwxdkFHOGlRMFRJTFlRY0pubEhBTm92RTV5M2g1UmdoZm1rTjFEdEFvR0JBTUZJXG5xQndoM3VJRmhJY2hDWjlXZElZL3VtSUNUenhTZHhwR2NubzdGUkpFMG5LMCtoQTZxbXdXRTRDdnZOMmpyQlZpXG52ZzVxbk1pN2ZBaFNKMFA0OWRhM0phQVBSa0JyMHRvdDJ4U0Z0TEtnOFAvaCsyTE9xRXNFdnhnM3ZseHZ5ZUR6XG5KQVU5OUVFQnYxbU5WSFN2dFlXYXpSbk5sVThOZDhkcHBGN2E5ZXlaQW9HQkFNN2dzdUsraUc1NW95cUJpY0xUXG5ZM050cm5JYzBiSFFJa2h3Z1habEFrTmJ4WmxEdGsrU01GaVY2MUphR0c5R08yWHVlaFpXTXcxbFdqVUpCb1kyXG5ORjdGME5USmsvVURBSzc3eHlvQ0V5RWpRbnllYVJZRjJydDlIOXB5c293NENjd085UG5MT2JVamRqRUdUdE1ZXG4wV004T25Fem1CVzlnWFNxSjI0WlU0YTNcbi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS1cbiIsCiAgImNsaWVudF9lbWFpbCI6ICJkaXNjb3JkLXN0b3JhZ2VAb3B0aW1hbC1icmFuZC00NTQwMDctYjcuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJjbGllbnRfaWQiOiAiMTEwMjg2NDYyMDE3MjY5NjQzNTA3IiwKICAiYXV0aF91cmkiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLAogICJ0b2tlbl91cmkiOiAiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLAogICJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwKICAiY2xpZW50X3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vcm9ib3QvdjEvbWV0YWRhdGEveDUwOS9kaXNjb3JkLXN0b3JhZ2UlNDBvcHRpbWFsLWJyYW5kLTQ1NDAwNy1iNy5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgInVuaXZlcnNlX2RvbWFpbiI6ICJnb29nbGVhcGlzLmNvbSIKfQo=
+
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,21 +30,16 @@ spec:
           ports:
             - containerPort: 8083
           env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "kubernetes"
-          resources:
-            requests:
-              cpu: "500m"
-              memory: "512Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8083
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/key.json
+          volumeMounts:
+            - name: gcp-service-account-volume
+              mountPath: /var/secrets/google
+              readOnly: true
+      volumes:
+        - name: gcp-service-account-volume
+          secret:
+            secretName: gcp-service-account
 
 ---
 
@@ -45,6 +52,6 @@ spec:
     app: storage-service
   ports:
     - protocol: TCP
-      port: 80
+      port: 8083
       targetPort: 8083
   type: LoadBalancer  # Exposes the service externally

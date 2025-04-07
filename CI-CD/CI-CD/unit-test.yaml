@@ -39,7 +39,7 @@ jobs:
       # 👉 Chạy Unit Test cho Node.js services
       - name: Run Unit Test - Node.js Services
         run: |
-          cd Discord-User-Service && npm install && npm test || exit 1
+          cd  Discord-User-Service && npm install && npm test || exit 1
           cd ../Discord-Message-Service && npm install && npm test || exit 1
           cd ../Discord-Manage-Server-Service && npm install && npm test || exit 1
           cd ../Discord-Message-Service && npm install && npm test || exit 1
