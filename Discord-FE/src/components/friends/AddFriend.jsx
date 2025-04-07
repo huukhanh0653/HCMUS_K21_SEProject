@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../layout/ThemeProvider";
+import { User_API } from "../../../apiConfig";
 
 export default function AddFriend() {
   const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ export default function AddFriend() {
       setErrorMessage("");
       setSuccessMessage("");
 
-      const response = await fetch(`http://localhost:8081/api/users/email/${email}`);
+      const response = await fetch(`${User_API}/api/users/email/${email}`);
       if (!response.ok) {
         throw new Error("User not found");
       }
@@ -41,7 +42,7 @@ export default function AddFriend() {
       setErrorMessage("");
       setSuccessMessage("");
 
-      const response = await fetch("http://localhost:8081/api/friendships/request", {
+      const response = await fetch(`${User_API}/api/friendships/request`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +100,7 @@ export default function AddFriend() {
             isDarkMode ? "bg-[#1e1f22]" : "bg-gray-100 border border-gray-300"
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-[60%]">
             <div className={`w-8 h-8 rounded-full ${isDarkMode ? "bg-[#36393f]" : "bg-gray-200"}`}>
               <img
                 src={searchResult.avatar || "/placeholder.svg?height=32&width=32"}
@@ -107,7 +108,7 @@ export default function AddFriend() {
                 className="w-full h-full object-cover rounded-full"
               />
             </div>
-            <div>
+            <div className="text-left">
               <p className={isDarkMode ? "text-gray-300" : "text-[#333333]"}>{searchResult.username}</p>
               <p className={isDarkMode ? "text-gray-500 text-sm" : "text-gray-600 text-sm"}>{searchResult.email}</p>
               <p className={`text-sm ${searchResult.status === "online" ? (isDarkMode ? "text-green-500" : "text-green-600") : "text-gray-500"}`}>

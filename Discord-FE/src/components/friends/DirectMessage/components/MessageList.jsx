@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MoreVertical, MessageSquare, Video, UserMinus, Slash } from 'lucide-react';
-import { useTheme } from "../layout/ThemeProvider";
+import { useTheme } from '../../../layout/ThemeProvider';
+import { User_API } from "../../../apiConfig";
 
 export default function FriendList() {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ export default function FriendList() {
     const fetchFriends = async () => {
       try {
         const response = await fetch(
-          'http://localhost:8081/api/friendships/67e58b59171f9075a48afe76',
+          `${User_API}/api/friendships/67e58b59171f9075a48afe76`,
           { headers: { accept: 'application/json' } }
         );
         if (response.ok) {

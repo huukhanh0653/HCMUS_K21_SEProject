@@ -2,19 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MoreVertical, MessageSquare, Video, UserMinus, Slash } from 'lucide-react';
 import { useTheme } from "../layout/ThemeProvider";
+import { User_API } from "../../../apiConfig";
 
 export default function FriendList() {
   const { t } = useTranslation();
   const [friends, setFriends] = useState([]);
   const [showMenuForFriend, setShowMenuForFriend] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [friendToUnfriend, setFriendToUnfriend] = useState(null);
   const { isDarkMode } = useTheme();
+
+  const currentUser = JSON.parse(localStorage.getItem("user")) || {};
 
   // Fetch danh sách bạn bè từ API
   useEffect(() => {
     const fetchFriends = async () => {
       try {
+        const userID = currentUser._id; // Lấy userID từ localStorage
         const response = await fetch(
-          'http://localhost:8081/api/friendships/67e58b59171f9075a48afe76',
+          `${User_API}/api/friendships/${userID}`,
           { headers: { accept: 'application/json' } }
         );
         if (response.ok) {
@@ -33,7 +39,7 @@ export default function FriendList() {
     };
 
     fetchFriends();
-  }, []);
+  }, [currentUser._id]);
 
   // Xử lý nút Message
   const handleMessage = (friend) => {
@@ -48,7 +54,9 @@ export default function FriendList() {
         console.log(`Video call with friend: ${friendId}`);
         break;
       case 'unfriend':
-        console.log(`Unfriend friend: ${friendId}`);
+        // Hiện modal xác nhận hủy kết bạn
+        setFriendToUnfriend(friendId);
+        setShowConfirmModal(true);
         break;
       case 'block':
         console.log(`Block friend: ${friendId}`);
@@ -58,6 +66,46 @@ export default function FriendList() {
     }
     setShowMenuForFriend(null);
   };
+
+  // Hàm gọi API DELETE hủy kết bạn
+  const unfriend = async () => {
+    try {
+      const response = await fetch(`${User_API}/api/friendships/remove`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+        body: JSON.stringify({
+          userID: currentUser._id,
+          friendID: friendToUnfriend,
+        }),
+      });
+      if (response.ok) {
+        console.log(`Successfully unfriended friend: ${friendToUnfriend}`);
+        // Cập nhật lại danh sách bạn bè (ví dụ: loại bỏ bạn vừa hủy kết bạn)
+        setFriends(prev => prev.filter(friend => friend._id !== friendToUnfriend));
+      } else {
+        console.error('Failed to unfriend');
+      }
+    } catch (error) {
+      console.error('Error during unfriending:', error);
+    } finally {
+      setShowConfirmModal(false);
+      setFriendToUnfriend(null);
+    }
+  };
+
+  // Hàm xử lý khi người dùng chọn No trong modal
+  const cancelUnfriend = () => {
+    setShowConfirmModal(false);
+    setFriendToUnfriend(null);
+  };
+
+  // Xác định các lớp CSS cho modal dựa trên Dark/Light mode
+  const modalContainerClasses = isDarkMode
+    ? "bg-gray-800 text-white"
+    : "bg-white text-gray-800";
 
   return (
     <div className="p-4">
@@ -76,10 +124,10 @@ export default function FriendList() {
             className={`p-2 rounded flex justify-between items-center ${isDarkMode ? "bg-[#1e1f22]" : "bg-white border border-gray-300"}`}
           >
             {/* Thông tin bạn bè */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-[60%]">
               <div className={`w-8 h-8 rounded-full overflow-hidden ${isDarkMode ? "bg-[#36393f]" : "bg-gray-200"}`}>
                 <img
-                  src={friend.avatar || '/placeholder.svg?height=32&width=32'}
+                  src={friend.avatar || 'https://via.placeholder.com/150'}
                   alt={friend.username}
                   className="w-full h-full object-cover"
                 />
@@ -154,6 +202,31 @@ export default function FriendList() {
           </div>
         ))}
       </div>
+
+      {/* Modal xác nhận hủy kết bạn */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
+          <div className={`${modalContainerClasses} p-4 rounded shadow-md`}>
+            <p className="mb-4">
+              {t('Are you sure you want to unfriend this person?')}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button 
+                onClick={cancelUnfriend} 
+                className="px-4 py-2 border rounded"
+              >
+                {t('No')}
+              </button>
+              <button 
+                onClick={unfriend} 
+                className="px-4 py-2 border rounded bg-red-500 text-white"
+              >
+                {t('Yes')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

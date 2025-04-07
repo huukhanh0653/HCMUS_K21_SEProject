@@ -36,6 +36,8 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from '../../components/layout/ThemeProvider';
 import UserPanel from "../../components/user/UserPanel";
 
+import { User_API } from "../../../apiConfig";
+
 export default function Home({ user, onProfileClick }) {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
@@ -102,15 +104,15 @@ export default function Home({ user, onProfileClick }) {
       localStorage.setItem("user_info", JSON.stringify(user));
     }
   }, [user]);
+  const currentUser = JSON.parse(localStorage.getItem("user")) || {};
 
   // Fetch dữ liệu bạn bè từ API
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await fetch("http://localhost:8081/api/friendships/67e58b59171f9075a48afe76", {
+        const response = await fetch(`${User_API}/api/friendships/${currentUser._id}`, {
           headers: { accept: "application/json" }
         });
-        console.log("Fetching friends data...");
         if (response.ok) {
           const data = await response.json();
           const transformed = data.map(friend => ({
@@ -129,8 +131,40 @@ export default function Home({ user, onProfileClick }) {
       }
     };
 
+    const fetchRequests = async () => {
+      console.log("Fetching friend requests in Home...");
+      if (!currentUser._id) return;
+
+      try {
+        const response = await fetch(
+          `${User_API}/api/friendships/requests/${currentUser._id}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (!initialFetched) {
+            setInitialFetched(true);
+            setPrevRequests(data);
+            setPendingRequests(data);
+          } else {
+            const diff = data.filter(
+              (req) => !prevRequests.some((prev) => prev._id === req._id)
+            );
+            if (diff.length > 0) {
+              setNewRequests(diff);
+            }
+            setPendingRequests(data);
+            setPrevRequests(data);
+          }
+        } else {
+          setPendingRequests([]);
+        }
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
+      }
+    };
+
     fetchFriends();
-  }, []);
+  }, [currentUser._id, initialFetched, prevRequests]);
 
   // Tự động chọn channel text đầu tiên khi chọn server
   useEffect(() => {
@@ -187,17 +221,15 @@ export default function Home({ user, onProfileClick }) {
     setSelectedChannel(channel);
   };
 
-  // ============================ FRIEND REQUESTS ============================
-  const currentUserFromStorage = JSON.parse(localStorage.getItem("user")) || {};
 
   useEffect(() => {
     const fetchRequests = async () => {
       console.log("Fetching friend requests in Home...");
-      if (!currentUserFromStorage._id) return;
+      if (!currentUser._id) return;
 
       try {
         const response = await fetch(
-          `http://localhost:8081/api/friendships/requests/${currentUserFromStorage._id}`
+          `${User_API}/api/friendships/requests/${currentUser._id}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -228,11 +260,11 @@ export default function Home({ user, onProfileClick }) {
     /* Lặp lại mỗi 10 phút
     const interval = setInterval(fetchRequests, 600000);
     return () => clearInterval(interval);*/
-  }, [currentUserFromStorage._id, initialFetched, prevRequests]);
+  }, [currentUser._id, initialFetched, prevRequests]);
 
   const handleAcceptRequest = async (requestID) => {
     try {
-      await fetch("http://localhost:8081/api/friendships/request/accept", {
+      await fetch(`${User_API}/api/friendships/request/accept`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestID })
@@ -246,7 +278,7 @@ export default function Home({ user, onProfileClick }) {
 
   const handleDeclineRequest = async (requestID) => {
     try {
-      await fetch("http://localhost:8081/api/friendships/request/decline", {
+      await fetch(`${User_API}/api/friendships/request/decline`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestID })
@@ -317,6 +349,8 @@ export default function Home({ user, onProfileClick }) {
         </div>
 
         <div className={`w-12 h-[2px] rounded-full my-2 ${isDarkMode ? "bg-[#35363c]" : "bg-gray-300"}`}></div>
+        
+        {/* Add Server button */}
         <div
           className={`w-12 h-12 rounded-full transition-all duration-200 ease-linear flex items-center justify-center cursor-pointer group mb-2 ${
             isDarkMode
@@ -338,6 +372,7 @@ export default function Home({ user, onProfileClick }) {
 
       {/* Channel/DM sidebar */}
       {selectedServer ? (
+        //Channel sidebar 
         <div
           className={`h-full w-60 flex flex-col ${
             isDarkMode ? "bg-[#2b2d31]" : "bg-white border-r border-gray-200"
@@ -352,6 +387,7 @@ export default function Home({ user, onProfileClick }) {
           <UserPanel user={user} onProfileClick={onProfileClick} />
         </div>
       ) : (
+        //DM sidebar
         <div
           className={`h-full w-60 flex flex-col ${
             isDarkMode ? "bg-[#2b2d31]" : "bg-white border-r border-gray-200"

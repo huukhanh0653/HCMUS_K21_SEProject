@@ -7,6 +7,8 @@ import { useTheme } from "../layout/ThemeProvider";
 import SampleAvt from "../../assets/sample_avatar.svg";
 import { getAuth, signOut } from "firebase/auth";
 
+import { User_API } from "../../../apiConfig";
+
 export default function UserProfile({ user, onClose }) {
   const { isDarkMode, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
@@ -92,7 +94,7 @@ export default function UserProfile({ user, onClose }) {
     };
 
     try {
-      const res = await fetch(`http://localhost:5001/users/${userId}`, {
+      const res = await fetch(`${User_API}/api/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
