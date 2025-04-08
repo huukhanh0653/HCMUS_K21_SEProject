@@ -13,9 +13,53 @@ export default function MessageInput({
 }) {
   const [showUpload, setShowUpload] = useState(false);
   const [showFile, setShowFile] = useState([]);
+  const [uploadedUrls, setUploadedUrls] = useState([]);
 
-  const handleFileSelect = (file) => {
-    setShowFile((prev) => [...prev, file]);
+  const uploadToGCS = async (file) => {
+    try {
+      console.log("Bắt đầu upload file:", file.name);
+      
+      const formData = new FormData();
+      formData.append("file", file);
+
+      console.log("Đang gửi request đến server...");
+      const response = await fetch("http://localhost:8080/api/storage/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log("Response status:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Upload failed:", errorText);
+        throw new Error("Upload failed: " + errorText);
+      }
+
+      const data = await response.text();
+      console.log("Response data:", data);
+      
+      const fileUrl = data.split(": ")[1];
+      console.log("File URL:", fileUrl);
+      
+      setUploadedUrls(prev => [...prev, fileUrl]);
+      return fileUrl;
+    } catch (error) {
+      console.error("Error details:", error);
+      return null;
+    }
+  };
+
+  const handleFileSelect = async (file) => {
+    console.log("File được chọn:", file);
+    setShowFile(prev => [...prev, file]);
+    
+    const fileUrl = await uploadToGCS(file);
+    if (fileUrl) {
+        console.log("Upload thành công, URL:", fileUrl);
+    } else {
+        console.log("Upload thất bại");
+    }
     setShowUpload(false);
   };
 

@@ -1,7 +1,6 @@
 import { Plus, Gift, ImageIcon, Sticker, SmilePlus } from "lucide-react";
 import { useState, useRef } from "react";
 
-// Danh sách người dùng mẫu cho @mention
 const SAMPLE_USERS = [
   { id: 1, name: "TanPhat", username: "tanphat" },
   { id: 2, name: "TanTai", username: "tantai" },
@@ -9,24 +8,18 @@ const SAMPLE_USERS = [
 ];
 
 export default function MessageInput({
-  value,          // Nội dung tin nhắn
-  onChange,       // Hàm cập nhật tin nhắn
-  onSend,         // Hàm gửi tin nhắn
-  t,              // Hàm dịch ngôn ngữ
-  channelName,    // Tên kênh chat
-  inputRef,       // Ref cho textarea
+  value,
+  onChange,
+  onSend,
+  t,
+  channelName,
+  inputRef,
 }) {
-  // State để xử lý @mention
   const [showMentions, setShowMentions] = useState(false);
   const [mentionUsers, setMentionUsers] = useState(SAMPLE_USERS);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const mentionListRef = useRef(null);
 
-  /**
-   * Xử lý thay đổi nội dung input:
-   * - Cập nhật giá trị tin nhắn.
-   * - Lọc danh sách người dùng nếu có ký tự '@' được nhập.
-   */
   const handleInputChange = (e) => {
     const newValue = e.target.value;
     onChange(newValue);
@@ -52,11 +45,6 @@ export default function MessageInput({
     }
   };
 
-  /**
-   * Xử lý các phím tắt cho textarea:
-   * - Khi danh sách mention hiển thị, xử lý điều hướng và chèn mention.
-   * - Nếu không, nhấn Enter gửi tin nhắn.
-   */
   const handleKeyDown = (e) => {
     if (showMentions) {
       if (e.key === "Tab" || e.key === "Enter") {
@@ -77,9 +65,6 @@ export default function MessageInput({
     }
   };
 
-  /**
-   * Chèn mention của user vào vị trí ký tự '@' cuối cùng.
-   */
   const insertMention = (user) => {
     const lastAtSymbol = value.lastIndexOf("@");
     const newValue = value.slice(0, lastAtSymbol) + `@${user.name} `;
@@ -87,10 +72,6 @@ export default function MessageInput({
     setShowMentions(false);
   };
 
-  /**
-   * Phân tích text thành các phần có chứa @mention và text thông thường,
-   * dùng để hiển thị hiệu ứng highlight.
-   */
   const getHighlightedText = (text) => {
     const parts = [];
     let lastIndex = 0;
@@ -124,12 +105,10 @@ export default function MessageInput({
   return (
     <div className="absolute bottom-0 left-0 right-0 bg-[#383a40] rounded-lg p-2">
       <div className="flex items-center relative">
-        {/* Nút thêm */}
         <button className="p-2 hover:bg-[#404249] rounded-lg">
           <Plus size={20} className="text-gray-200" />
         </button>
         <div className="relative flex-1">
-          {/* Overlay hiển thị text đã highlight */}
           <div
             className="absolute inset-0 px-4 py-2 pointer-events-none break-words whitespace-pre-wrap text-left"
             style={{
@@ -158,7 +137,10 @@ export default function MessageInput({
             onKeyDown={handleKeyDown}
             onInput={(e) => {
               e.target.style.height = "40px";
-              e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+              e.target.style.height = `${Math.min(
+                e.target.scrollHeight,
+                120
+              )}px`;
             }}
             placeholder={`${t("Message #")}${channelName}`}
             className="w-full bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none overflow-y-auto relative z-10 text-left"
