@@ -1,32 +1,31 @@
-"use client"
-
-import { useState, useEffect, useRef } from "react"
-import { X, LogOut, Camera, User, Lock, Moon, Sun } from "lucide-react"
+import { useState, useEffect, useRef } from "react";
+import { X, LogOut, Camera, User, Lock, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../layout/LanguageProvider";
-import { useTheme } from '../layout/ThemeProvider';
-import SampleAvt from "../../assets/sample_avatar.svg"
+import { useTheme } from "../layout/ThemeProvider";
+import SampleAvt from "../../assets/sample_avatar.svg";
 import { getAuth, signOut } from "firebase/auth";
 
+import { User_API } from "../../../apiConfig";
+
 export default function UserProfile({ user, onClose }) {
-  // Ligh & Dark mode toggle
-  const { isDarkMode, toggleTheme } = useTheme()
+  const { isDarkMode, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const modalRef = useRef(null)
-  const [showEditProfile, setShowEditProfile] = useState(false)
-  const [showChangePassword, setShowChangePassword] = useState(false)
+  const modalRef = useRef(null);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   // Form states
-  const [username, setUsername] = useState("")
-  const [avatar, setAvatar] = useState(user?.avatar || SampleAvt)
-  const [wallpaper, setWallpaper] = useState("")
+  const [username, setUsername] = useState("");
+  const [avatar, setAvatar] = useState(user?.avatar || SampleAvt);
+  const [wallpaper, setWallpaper] = useState("");
 
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -36,60 +35,56 @@ export default function UserProfile({ user, onClose }) {
       setUsername(user.name);
     }
   }, [user]);
-  
 
   const handleLogout = async () => {
     const auth = getAuth();
     try {
       await signOut(auth);
       console.log("User logged out");
-
-      // ✅ Xóa thông tin người dùng khỏi localStorage
       localStorage.removeItem("email");
       localStorage.removeItem("username");
       localStorage.removeItem("user");
       localStorage.removeItem("user_info");
-      navigate("/login"); // Redirect to login page
+      navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && onClose) {
         if (showEditProfile) {
-          setShowEditProfile(false)
+          setShowEditProfile(false);
         } else if (showChangePassword) {
-          setShowChangePassword(false)
+          setShowChangePassword(false);
         } else {
-          onClose()
+          onClose();
         }
       }
-    }
+    };
 
-    document.addEventListener("keydown", handleKeyDown)
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [onClose, showEditProfile, showChangePassword])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, showEditProfile, showChangePassword]);
 
   const handleClickOutside = (event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
-      onClose()
+      onClose();
     }
-  }
+  };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-  
+
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser || !storedUser._id) {
       alert("Không tìm thấy thông tin người dùng để cập nhật.");
       return;
     }
-  
+
     const userId = storedUser._id;
-  
+
     const updatedUser = {
       username: username.trim(),
       email: storedUser.email,
@@ -97,29 +92,27 @@ export default function UserProfile({ user, onClose }) {
       role: storedUser.role,
       avatar: avatar || "",
     };
-  
+
     try {
-      const res = await fetch(`http://localhost:5001/users/${userId}`, {
+      const res = await fetch(`${User_API}/api/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedUser),
       });
-  
+
       if (!res.ok) {
         throw new Error("Cập nhật thông tin thất bại");
       }
-  
+
       const responseData = await res.json();
       console.log("✅ User updated:", responseData);
-  
-      // ✅ Cập nhật lại localStorage: user, username
+
       const newUserData = { ...storedUser, username: updatedUser.username, avatar: updatedUser.avatar };
       localStorage.setItem("user", JSON.stringify(newUserData));
       localStorage.setItem("username", updatedUser.username);
-  
-      // ✅ Cập nhật used_user
+
       const usedUserList = JSON.parse(localStorage.getItem("used_user")) || [];
       const updatedUsedUserList = usedUserList.map((acc) =>
         acc.email === updatedUser.email
@@ -127,7 +120,7 @@ export default function UserProfile({ user, onClose }) {
           : acc
       );
       localStorage.setItem("used_user", JSON.stringify(updatedUsedUserList));
-  
+
       setShowEditProfile(false);
     } catch (error) {
       console.error("❌ Lỗi khi cập nhật hồ sơ:", error.message);
@@ -136,36 +129,37 @@ export default function UserProfile({ user, onClose }) {
   };
 
   const handleChangePassword = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (newPassword !== confirmPassword) {
-      alert("Passwords don't match!")
-      return
+      alert("Passwords don't match!");
+      return;
     }
-    console.log("Changing password")
-    setShowChangePassword(false)
-  }
+    console.log("Changing password");
+    setShowChangePassword(false);
+  };
 
   const handleAvatarChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setAvatar(e.target.result)
-      }
-      reader.readAsDataURL(file)
+        setAvatar(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleWallpaperChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setWallpaper(e.target.result)
-      }
-      reader.readAsDataURL(file)
+        setWallpaper(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
+
   const getTitle = () => {
     if (showEditProfile) {
       return "Edit Profile";
@@ -175,26 +169,32 @@ export default function UserProfile({ user, onClose }) {
       return "My Account";
     }
   };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={handleClickOutside}>
-      <div ref={modalRef} className="w-full max-w-2xl bg-[#313338] text-gray-100 rounded-md overflow-hidden">
-        {/* Header with close button */}
-        <div className="flex justify-between items-center p-4 border-b border-[#232428]">
-          <h1 className="text-xl font-bold">
-            {t(getTitle())}
-          </h1>
+      <div
+        ref={modalRef}
+        className={`w-full max-w-2xl rounded-md overflow-hidden ${
+          isDarkMode ? "bg-[#313338] text-gray-100" : "bg-white text-[#333333] shadow-md"
+        }`}
+      >
+        {/* Header */}
+        <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? "border-[#232428]" : "border-gray-300"}`}>
+          <h1 className="text-xl font-bold">{t(getTitle())}</h1>
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
                 if (showEditProfile) {
-                  setShowEditProfile(false)
+                  setShowEditProfile(false);
                 } else if (showChangePassword) {
-                  setShowChangePassword(false)
+                  setShowChangePassword(false);
                 } else {
-                  onClose()
+                  onClose();
                 }
               }}
-              className="w-8 h-8 rounded-full bg-[#2b2d31] flex items-center justify-center hover:bg-[#232428]"
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                isDarkMode ? "bg-[#2b2d31] hover:bg-[#232428]" : "bg-gray-200 hover:bg-gray-300"
+              }`}
             >
               <X size={20} />
             </button>
@@ -207,15 +207,13 @@ export default function UserProfile({ user, onClose }) {
             <form onSubmit={handleSaveProfile}>
               <div className="mb-6">
                 <div className="relative mb-6">
-                  <div className="h-24 bg-[#9b84b7] rounded-t-md overflow-hidden">
+                  <div className={`h-24 ${isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"} rounded-t-md overflow-hidden`}>
                     {wallpaper && (
-                      <img
-                        src={wallpaper || "/placeholder.svg"}
-                        alt="Wallpaper"
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={wallpaper || "/placeholder.svg"} alt="Wallpaper" className="w-full h-full object-cover" />
                     )}
-                    <label className="absolute right-2 bottom-2 w-8 h-8 bg-[#313338] rounded-full flex items-center justify-center cursor-pointer">
+                    <label
+                      className={`absolute right-2 bottom-2 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"} rounded-full flex items-center justify-center cursor-pointer`}
+                    >
                       <Camera size={16} />
                       <input type="file" accept="image/*" className="hidden" onChange={handleWallpaperChange} />
                     </label>
@@ -223,10 +221,16 @@ export default function UserProfile({ user, onClose }) {
 
                   <div className="flex justify-center">
                     <div className="relative -mt-10">
-                      <div className="w-20 h-20 rounded-full bg-[#36393f] border-4 border-[#232428] overflow-hidden">
+                      <div
+                        className={`w-20 h-20 rounded-full overflow-hidden ${
+                          isDarkMode ? "bg-[#36393f] border-4 border-[#232428]" : "bg-gray-200 border-4 border-gray-300"
+                        }`}
+                      >
                         <img src={avatar || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
                       </div>
-                      <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#313338] rounded-full flex items-center justify-center cursor-pointer">
+                      <label
+                        className={`absolute bottom-0 right-0 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"} rounded-full flex items-center justify-center cursor-pointer`}
+                      >
                         <Camera size={16} />
                         <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                       </label>
@@ -235,12 +239,16 @@ export default function UserProfile({ user, onClose }) {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t('Username')}</label>
+                  <label className="block text-sm font-medium mb-2">{t("Username")}</label>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full bg-[#1e1f22] border border-[#232428] rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#5865f2]"
+                    className={`w-full rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                      isDarkMode
+                        ? "bg-[#1e1f22] border border-[#232428] text-white focus:ring-[#5865f2]"
+                        : "bg-gray-100 border border-gray-300 text-[#333333] focus:ring-[#1877F2]"
+                    }`}
                   />
                 </div>
               </div>
@@ -249,12 +257,15 @@ export default function UserProfile({ user, onClose }) {
                 <button
                   type="button"
                   onClick={() => setShowEditProfile(false)}
-                  className="px-4 py-2 rounded-md bg-[#2b2d31] hover:bg-[#35373c]"
+                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#2b2d31] hover:bg-[#35373c]" : "bg-gray-200 hover:bg-gray-300"}`}
                 >
-                  {t('Cancel')}
+                  {t("Cancel")}
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-md bg-[#5865f2] hover:bg-[#4752c4]">
-                  {t('Save Changes')}
+                <button
+                  type="submit"
+                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"} `}
+                >
+                  {t("Save Changes")}
                 </button>
               </div>
             </form>
@@ -264,32 +275,44 @@ export default function UserProfile({ user, onClose }) {
             <form onSubmit={handleChangePassword}>
               <div className="mb-6">
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t('Current Password')}</label>
+                  <label className="block text-sm font-medium mb-2">{t("Current Password")}</label>
                   <input
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full bg-[#1e1f22] border border-[#232428] rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#5865f2]"
+                    className={`w-full rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                      isDarkMode
+                        ? "bg-[#1e1f22] border border-[#232428] text-white focus:ring-[#5865f2]"
+                        : "bg-gray-100 border border-gray-300 text-[#333333] focus:ring-[#1877F2]"
+                    }`}
                   />
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t('New Password')}</label>
+                  <label className="block text-sm font-medium mb-2">{t("New Password")}</label>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full bg-[#1e1f22] border border-[#232428] rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#5865f2]"
+                    className={`w-full rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                      isDarkMode
+                        ? "bg-[#1e1f22] border border-[#232428] text-white focus:ring-[#5865f2]"
+                        : "bg-gray-100 border border-gray-300 text-[#333333] focus:ring-[#1877F2]"
+                    }`}
                   />
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t('Confirm new Password')}</label>
+                  <label className="block text-sm font-medium mb-2">{t("Confirm new Password")}</label>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-[#1e1f22] border border-[#232428] rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#5865f2]"
+                    className={`w-full rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                      isDarkMode
+                        ? "bg-[#1e1f22] border border-[#232428] text-white focus:ring-[#5865f2]"
+                        : "bg-gray-100 border border-gray-300 text-[#333333] focus:ring-[#1877F2]"
+                    }`}
                   />
                 </div>
               </div>
@@ -298,50 +321,68 @@ export default function UserProfile({ user, onClose }) {
                 <button
                   type="button"
                   onClick={() => setShowChangePassword(false)}
-                  className="px-4 py-2 rounded-md bg-[#2b2d31] hover:bg-[#35373c]"
+                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#2b2d31] hover:bg-[#35373c]" : "bg-gray-200 hover:bg-gray-300"}`}
                 >
-                  {t('Cancel')}
+                  {t("Cancel")}
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-md bg-[#5865f2] hover:bg-[#4752c4]">
-                  {t('Change Password')}
+                <button
+                  type="submit"
+                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"} `}
+                >
+                  {t("Change Password")}
                 </button>
               </div>
             </form>
           </div>
         ) : (
           <div className="flex">
-            <div className="w-60 bg-[#2b2d31] p-4">
+            {/* Sidebar user settings */}
+            <div className={`w-60 p-4 ${isDarkMode ? "bg-[#2b2d31]" : "bg-white border border-gray-300"}`}>
               <div className="mb-8">
-                <div className="text-xs font-semibold text-gray-400 mb-2">{t('USER SETTINGS')}</div>
+                <div className={`text-xs font-semibold mb-2 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  {t("USER SETTINGS")}
+                </div>
               </div>
               <div className="mt-auto">
                 <button
                   onClick={toggleLanguage}
-                  className="flex items-center gap-2 text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white p-2 rounded w-full"
+                  className={`flex items-center gap-2 p-2 rounded w-full ${
+                    isDarkMode
+                      ? "text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-[#333333]"
+                  }`}
                 >
                   {language === "en" ? "Switch to Vietnamese" : "Chuyển sang Tiếng Anh"}
                 </button>
                 <button
                   onClick={toggleTheme}
-                  className="flex items-center gap-2 text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white p-2 rounded w-full"
+                  className={`flex items-center gap-2 p-2 rounded w-full ${
+                    isDarkMode
+                      ? "text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-[#333333]"
+                  }`}
                 >
                   {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-                  {isDarkMode ? <span>{t('Change Light Mode')}</span> : <span>{t('Change Dark Mode')}</span>}
+                  {isDarkMode ? <span>{t("Change Light Mode")}</span> : <span>{t("Change Dark Mode")}</span>}
                 </button>
-
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 text-[#ed4245] hover:bg-[#ed4245] hover:text-white p-2 rounded w-full"
+                  className={`flex items-center gap-2 p-2 rounded w-full ${
+                    isDarkMode
+                      ? "text-[#ed4245] hover:bg-[#ed4245] hover:text-white"
+                      : "text-red-600 hover:bg-red-100 hover:text-red-700"
+                  }`}
                 >
                   <LogOut size={16} />
-                  <span>{t('Logout')}</span>
+                  <span>{t("Logout")}</span>
                 </button>
               </div>
             </div>
 
+            {/* Profile overview */}
             <div className="flex-1 p-4">
-              <div className="bg-[#232428] rounded-md overflow-hidden mb-6">
-                <div className="h-24 bg-[#9b84b7]">
+              <div className={`rounded-md overflow-hidden mb-6 ${isDarkMode ? "bg-[#232428]" : "bg-gray-100 border border-gray-300"}`}>
+                <div className={`h-24 ${isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"}`}>
                   {wallpaper && (
                     <img src={wallpaper || "/placeholder.svg"} alt="Wallpaper" className="w-full h-full object-cover" />
                   )}
@@ -349,7 +390,11 @@ export default function UserProfile({ user, onClose }) {
                 <div className="px-4 pb-4 relative">
                   <div className="flex justify-between items-end">
                     <div className="flex items-end gap-4">
-                      <div className="w-20 h-20 rounded-full bg-[#36393f] border-4 border-[#232428] -mt-10 overflow-hidden">
+                      <div
+                        className={`w-20 h-20 rounded-full overflow-hidden ${
+                          isDarkMode ? "bg-[#36393f] border-4 border-[#232428]" : "bg-gray-200 border-4 border-gray-300"
+                        } -mt-10`}
+                      >
                         <img src={avatar || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
                       </div>
                       <h2 className="text-xl font-bold mb-2">{username}</h2>
@@ -358,20 +403,24 @@ export default function UserProfile({ user, onClose }) {
                 </div>
               </div>
               <button
-                className="bg-[#5865f2] text-white px-4 py-1 rounded text-sm flex items-center gap-1"
+                className={`flex items-center gap-1 text-sm rounded px-4 py-1 ${
+                  isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"
+                } text-white`}
                 onClick={() => setShowEditProfile(true)}
               >
                 <User size={14} />
-                {t('Edit User Profile')}
+                {t("Edit User Profile")}
               </button>
 
               <div className="mt-8 text-center">
-                <h3 className="text-lg font-semibold mb-4">{t('Password and Authentication')}</h3>
+                <h3 className="text-lg font-semibold mb-4">{t("Password and Authentication")}</h3>
                 <button
-                  className="bg-[#5865f2] text-white px-3 py-2 rounded text-sm flex items-center gap-1 mx-auto"
+                  className={`flex items-center gap-1 mx-auto text-sm rounded px-3 py-2 ${
+                    isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"
+                  } text-white`}
                   onClick={() => setShowChangePassword(true)}
                 >
-                  <Lock size={14} /> {t('Change Password')}
+                  <Lock size={14} /> {t("Change Password")}
                 </button>
               </div>
             </div>
@@ -379,6 +428,5 @@ export default function UserProfile({ user, onClose }) {
         )}
       </div>
     </div>
-  )
+  );
 }
-

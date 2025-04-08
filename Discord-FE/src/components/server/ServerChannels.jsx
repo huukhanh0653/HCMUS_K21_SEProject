@@ -5,6 +5,7 @@ import MemberManagementModal from "./MemberManagementModal";
 import ChannelManagementModal from "./ChannelManagementModal";
 import InviteServer from "./InviteServer";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "../../components/layout/ThemeProvider";
 
 export default function ServerChannels({ server, onChannelSelect, onProfileClick, selectedChannelId }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,7 +13,9 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const menuRef = useRef(null);
-  const {t} = useTranslation();
+  const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
+
   // Mock channels data
   const [channels, setChannels] = useState([
     { id: 1, name: "general", type: "text" },
@@ -27,12 +30,12 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
     { id: 2, name: "Bob",     avatar: "https://i.pravatar.cc/50?img=2" },
     { id: 3, name: "Charlie", avatar: "https://i.pravatar.cc/50?img=3" },
     { id: 4, name: "Cò",      avatar: "https://i.pravatar.cc/50?img=4" },
-    { id: 5, name: "Giang",   avatar: "https://i.pravatar.cc/50?img=5"},
+    { id: 5, name: "Giang",   avatar: "https://i.pravatar.cc/50?img=5" },
     { id: 6, name: "Bảo",     avatar: "https://i.pravatar.cc/50?img=6" },
-    { id: 7, name: "Khánh",   avatar: "https://i.pravatar.cc/50?img=7"},
+    { id: 7, name: "Khánh",   avatar: "https://i.pravatar.cc/50?img=7" },
   ];
 
-  // Initialize with the first text channel if none is selected
+  // Khởi tạo channel text đầu tiên nếu chưa có channel nào được chọn
   useEffect(() => {
     if (!selectedChannelId) {
       const firstTextChannel = channels.find((channel) => channel.type === "text");
@@ -40,18 +43,18 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
         onChannelSelect(firstTextChannel);
       }
     }
-  }, [selectedChannelId, onChannelSelect]);
+  }, [selectedChannelId, onChannelSelect, channels]);
 
   const handleChannelClick = (channel) => {
     onChannelSelect(channel);
   };
 
-  // Toggle menu visibility
+  // Toggle menu
   const toggleMenu = () => {
     setIsMenuOpen((prev) => !prev);
   };
 
-  // Handle click outside to close menu
+  // Đóng menu khi click bên ngoài
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -59,11 +62,8 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
 
   /* CHANNEL MANAGER FUNCTION */
   const handleDeleteChannel = (channelId) => {
@@ -81,33 +81,47 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
     setChannels([...channels, newChannel]);
   };
 
+  const getMenuButtonClasses = (option) => {
+    if (option === "Delete server") {
+      return isDarkMode 
+        ? "text-red-500 hover:bg-red-500 hover:text-white"
+        : "text-red-500 hover:bg-red-100 hover:text-red-700";
+    } else {
+      return isDarkMode 
+        ? "text-gray-400 hover:bg-[#35373c] hover:text-white"
+        : "text-gray-500 hover:bg-gray-100 hover:text-[#333333]";
+    }
+  };
+
   return (
-    <div className="h-full w-60 bg-[#2b2d31] flex flex-col relative">
+    <div className={`h-full w-60 flex flex-col relative ${isDarkMode ? "bg-[#2b2d31] text-gray-100" : "bg-white text-[#333333] border-r border-gray-200"}`}>
       {/* Server name header */}
       <div
-        className="h-12 px-4 flex items-center justify-between border-b border-[#1e1f22] shadow-sm cursor-pointer hover:bg-[#35373c] relative"
+        className={`h-12 px-4 flex items-center justify-between border-b shadow-sm cursor-pointer relative ${
+          isDarkMode ? "border-[#1e1f22] hover:bg-[#35373c]" : "border-gray-300 hover:bg-gray-100"
+        }`}
         onClick={toggleMenu}
       >
         <h2 className="font-semibold truncate">{server.label}</h2>
-        <ChevronDown size={20} className="text-gray-400" />
+        <ChevronDown size={20} className={`${isDarkMode ? "text-gray-400" : "text-gray-500"}`} />
       </div>
 
       {/* Dropdown menu */}
       {isMenuOpen && (
-        <div ref={menuRef} className="absolute top-12 left-0 w-full bg-[#2b2d31] border border-[#1e1f22] shadow-md rounded-md overflow-hidden z-10">
+        <div ref={menuRef} className={`absolute top-12 left-0 w-full shadow-md rounded-md overflow-hidden z-10 ${
+          isDarkMode ? "bg-[#2b2d31] border border-[#1e1f22]" : "bg-white border border-gray-300"
+        }`}>
           {["Manage Members", "Manage Channels", "Invite to server", "Delete server"].map((option, index) => (
             <button
               key={index}
-              className={`w-full text-left px-4 py-2 ${
-                option === "Delete server" ? "text-red-500 hover:bg-red-500 hover:text-white" : "text-gray-400 hover:bg-[#35373c] hover:text-white"
-              }`}
+              className={`w-full text-left px-4 py-2 ${getMenuButtonClasses(option)}`}
               onClick={() => {
                 if (option === "Manage Members") setIsMemberModalOpen(true);
                 if (option === "Manage Channels") setIsChannelModalOpen(true);
                 if (option === "Invite to server") setIsInviteModalOpen(true);
               }}
             >
-              {t(`${option}`)}
+              {t(option)}
             </button>
           ))}
         </div>
@@ -130,13 +144,12 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
         onCreateChannel={handleCreateChannel}
       />
 
-      {/* Invite Server Modal*/}
+      {/* Invite Server Modal */}
       <InviteServer
         serverCode="ABC123XYZ" 
         isOpen={isInviteModalOpen} 
         onClose={() => setIsInviteModalOpen(false)} 
       />
-
 
       {/* Channels list */}
       <div className="flex-1 overflow-y-auto pt-2">
@@ -144,8 +157,10 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
           <button
             key={channel.id}
             onClick={() => handleChannelClick(channel)}
-            className={`w-full px-2 py-1.5 flex items-center gap-2 text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${
-              selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""
+            className={`w-full px-2 py-1.5 flex items-center gap-2 ${
+              isDarkMode 
+                ? `text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""}`
+                : `text-gray-600 hover:bg-gray-100 hover:text-[#333333] ${selectedChannelId === channel.id ? "bg-[#1877F2] text-white" : ""}`
             }`}
           >
             {channel.type === "text" ? <Hash size={20} /> : <Volume2 size={20} />}
