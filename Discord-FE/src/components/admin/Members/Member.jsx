@@ -245,15 +245,15 @@ export function TerminateMemberForm({ className, setOpen }) {
   return (
     <form onSubmit={handleSubmit} className={cn("grid items-start gap-4", className)}>
       <div className="grid gap-2">
-        <Label htmlFor="end_date">Ngày xóa</Label>
+        <Label htmlFor="end_date">{t('End Date')}</Label>
         <DatePicker
           date={endDate} /* Pass state value */
           onDateChange={setEndDate} /* Pass state handlers */
         />
       </div>
       <div className='flex justify-between'>
-        <Button onClick={handleClose} variant="outline">Hủy</Button>
-        <Button type="submit">Xác nhận</Button>
+        <Button onClick={handleClose} variant="outline">{t('Cancel')}</Button>
+        <Button type="submit">{t('Confirm')}</Button>
       </div>
     </form>
   );
@@ -273,7 +273,7 @@ export function WorkHistoryDetail({ className, MemberID, MemberDepartment }) {
             <TableHead className="w-[100px]">Server</TableHead>
             <TableHead >{t('Start date')}</TableHead>
             <TableHead >{t('End date')}</TableHead>
-            <TableHead>Role</TableHead>
+            <TableHead>{t('Role')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody >

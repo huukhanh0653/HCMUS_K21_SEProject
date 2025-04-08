@@ -162,11 +162,11 @@ export default function UserProfile({ user, onClose }) {
 
   const getTitle = () => {
     if (showEditProfile) {
-      return "Edit Profile";
+      return t("Edit Profile");
     } else if (showChangePassword) {
-      return "Change Password";
+      return t("Change Password");
     } else {
-      return "My Account";
+      return t("My Account");
     }
   };
 
