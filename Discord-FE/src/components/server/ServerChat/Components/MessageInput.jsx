@@ -1,5 +1,5 @@
+import { useState, useRef, useEffect } from "react";
 import { Plus, Gift, ImageIcon, Sticker, SmilePlus } from "lucide-react";
-import { useState, useRef } from "react";
 
 const SAMPLE_USERS = [
   { id: 1, name: "TanPhat", username: "tanphat" },
@@ -7,34 +7,40 @@ const SAMPLE_USERS = [
   { id: 3, name: "ThanhTam", username: "thanhtam" },
 ];
 
-export default function MessageInput({
-  value,
-  onChange,
-  onSend,
-  t,
-  channelName,
-  inputRef,
-}) {
+export default function MessageInput({ value, onChange, onSend, t, channelName }) {
+  const editorRef = useRef(null);
   const [showMentions, setShowMentions] = useState(false);
   const [mentionUsers, setMentionUsers] = useState(SAMPLE_USERS);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
-  const mentionListRef = useRef(null);
 
-  const handleInputChange = (e) => {
-    const newValue = e.target.value;
+  const getTextContent = () => {
+    return editorRef.current?.innerText || "";
+  };
+
+  const handleInput = () => {
+    const newValue = getTextContent();
     onChange(newValue);
-
+  
+    const sel = window.getSelection();
     const lastAtSymbol = newValue.lastIndexOf("@");
+  
     if (lastAtSymbol !== -1) {
       const textAfterAt = newValue.slice(lastAtSymbol + 1);
       const wordAfterAt = textAfterAt.split(" ")[0];
-
+  
+      // Nếu chuỗi @... chứa dấu cách thì không phải là mention đang gõ => ẩn
+      const hasSpace = textAfterAt.includes(" ");
+      if (hasSpace || !sel || !sel.anchorNode || sel.anchorNode.parentNode?.contentEditable === "false") {
+        setShowMentions(false);
+        return;
+      }
+  
       if (wordAfterAt) {
-        const filteredUsers = SAMPLE_USERS.filter((user) =>
+        const filtered = SAMPLE_USERS.filter((user) =>
           user.name.toLowerCase().includes(wordAfterAt.toLowerCase())
         );
-        setMentionUsers(filteredUsers);
-        setShowMentions(filteredUsers.length > 0);
+        setMentionUsers(filtered);
+        setShowMentions(filtered.length > 0);
         setSelectedMentionIndex(0);
       } else {
         setMentionUsers(SAMPLE_USERS);
@@ -44,20 +50,47 @@ export default function MessageInput({
       setShowMentions(false);
     }
   };
+  
+
+  const insertMention = (user) => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const containerText = getTextContent();
+    const lastAt = containerText.lastIndexOf("@");
+    const mentionNode = document.createElement("span");
+    mentionNode.textContent = `@${user.name} `;
+    mentionNode.className = "bg-blue-500/20 text-blue-400 rounded px-1";
+    mentionNode.contentEditable = "false";
+    
+    // Clear the @... text before insert
+    range.setStart(range.startContainer, lastAt);
+    range.deleteContents();
+    range.insertNode(mentionNode);
+
+    // Move caret after mention
+    const space = document.createTextNode(" ");
+    mentionNode.after(space);
+    range.setStartAfter(space);
+    range.setEndAfter(space);
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    setShowMentions(false);
+    handleInput();
+  };
 
   const handleKeyDown = (e) => {
     if (showMentions) {
-      if (e.key === "Tab" || e.key === "Enter") {
+      if (e.key === "ArrowDown") {
         e.preventDefault();
-        insertMention(mentionUsers[selectedMentionIndex]);
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedMentionIndex((prev) =>
-          prev < mentionUsers.length - 1 ? prev + 1 : prev
-        );
+        setSelectedMentionIndex((i) => (i + 1) % mentionUsers.length);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setSelectedMentionIndex((prev) => (prev > 0 ? prev - 1 : prev));
+        setSelectedMentionIndex((i) => (i - 1 + mentionUsers.length) % mentionUsers.length);
+      } else if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        insertMention(mentionUsers[selectedMentionIndex]);
       }
     } else if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -65,42 +98,11 @@ export default function MessageInput({
     }
   };
 
-  const insertMention = (user) => {
-    const lastAtSymbol = value.lastIndexOf("@");
-    const newValue = value.slice(0, lastAtSymbol) + `@${user.name} `;
-    onChange(newValue);
-    setShowMentions(false);
-  };
-
-  const getHighlightedText = (text) => {
-    const parts = [];
-    let lastIndex = 0;
-    const mentionRegex = /@([A-Za-z]+)/g;
-    let match;
-
-    while ((match = mentionRegex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push({
-          text: text.slice(lastIndex, match.index),
-          isMention: false,
-        });
-      }
-      parts.push({
-        text: match[0],
-        isMention: true,
-      });
-      lastIndex = match.index + match[0].length;
+  useEffect(() => {
+    if (editorRef.current && value === "") {
+      editorRef.current.innerHTML = "";
     }
-
-    if (lastIndex < text.length) {
-      parts.push({
-        text: text.slice(lastIndex),
-        isMention: false,
-      });
-    }
-
-    return parts;
-  };
+  }, [value]);
 
   return (
     <div className="absolute bottom-0 left-0 right-0 bg-[#383a40] rounded-lg p-2">
@@ -109,53 +111,22 @@ export default function MessageInput({
           <Plus size={20} className="text-gray-200" />
         </button>
         <div className="relative flex-1">
+          {getTextContent().trim() === "" && (
+            <div className="absolute top-2 left-4 text-gray-400 pointer-events-none select-none">
+              {`${t("Message #")}${channelName}`}
+            </div>
+          )}
           <div
-            className="absolute inset-0 px-4 py-2 pointer-events-none break-words whitespace-pre-wrap text-left"
-            style={{
-              minHeight: "40px",
-              maxHeight: "120px",
-              overflow: "hidden",
-            }}
-          >
-            {getHighlightedText(value).map((part, index) => (
-              <span
-                key={index}
-                className={
-                  part.isMention
-                    ? "bg-blue-500/20 text-blue-400 rounded px-1"
-                    : "text-transparent"
-                }
-              >
-                {part.text}
-              </span>
-            ))}
-          </div>
-          <textarea
-            ref={inputRef}
-            value={value}
-            onChange={handleInputChange}
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
             onKeyDown={handleKeyDown}
-            onInput={(e) => {
-              e.target.style.height = "40px";
-              e.target.style.height = `${Math.min(
-                e.target.scrollHeight,
-                120
-              )}px`;
-            }}
+            className="w-full min-h-[40px] max-h-[120px] overflow-y-auto px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none text-left whitespace-pre-wrap break-words"
             placeholder={`${t("Message #")}${channelName}`}
-            className="w-full bg-transparent border-none px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none resize-none overflow-y-auto relative z-10 text-left"
-            style={{
-              minHeight: "40px",
-              height: "40px",
-              maxHeight: "120px",
-              caretColor: "white",
-              color: "transparent",
-              backgroundColor: "transparent",
-            }}
+            style={{ caretColor: "white" }}
           />
           {showMentions && (
             <div
-              ref={mentionListRef}
               className="absolute bottom-full left-0 mb-2 bg-[#2f3136] rounded-md shadow-lg overflow-hidden"
               style={{ width: "200px" }}
             >
@@ -185,10 +156,7 @@ export default function MessageInput({
           <button className="p-2 hover:bg-[#404249] rounded-lg">
             <Sticker size={20} className="text-gray-200" />
           </button>
-          <button
-            className="p-2 hover:bg-[#404249] rounded-lg"
-            onClick={onSend}
-          >
+          <button className="p-2 hover:bg-[#404249] rounded-lg" onClick={onSend}>
             <SmilePlus size={20} className="text-gray-200" />
           </button>
         </div>
