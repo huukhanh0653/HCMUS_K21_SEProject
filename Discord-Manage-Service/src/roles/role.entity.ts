@@ -12,7 +12,7 @@ export class Role {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'uuid' })
   server_id: string;
 
   @Column({ type: 'text' })
@@ -24,7 +24,7 @@ export class Role {
   @Column({ type: 'int', nullable: true })
   position: number;
 
-  @Column({ type: 'boolean', nullable: true })
+  @Column({ type: 'boolean', default: false })
   is_default: boolean;
 
   @ManyToOne(() => Server)

@@ -13,7 +13,7 @@ service ServerService {
 message CreateServerRequest {
   string username = 1;
   string name = 2;
-  optional string server_pic = 3;
+  string server_pic = 3;
 }
 
 message GetServersRequest {
@@ -28,8 +28,8 @@ message GetAllServersRequest {
 message UpdateServerRequest {
   string server_id = 1;
   string username = 2;
-  optional string name = 3;
-  optional string server_pic = 4;
+  string name = 3;
+  string server_pic = 4;
 }
 
 message DeleteServerRequest {

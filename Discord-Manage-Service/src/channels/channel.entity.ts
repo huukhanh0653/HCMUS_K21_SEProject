@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { Server } from '../servers/server.entity';
 
@@ -12,16 +13,16 @@ export class Channel {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'uuid' })
   server_id: string;
 
   @Column({ type: 'text' })
   name: string;
 
-  @Column({ type: 'text', nullable: true, default: 'text' })
+  @Column({ type: 'text', default: 'text' })
   type: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   created_at: Date;
 
   @Column({ type: 'boolean', default: false })

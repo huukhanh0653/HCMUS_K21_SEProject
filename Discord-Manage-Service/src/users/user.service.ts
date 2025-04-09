@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -26,7 +30,7 @@ export class UserService {
     const userDto = plainToClass(UserDto, data);
     const errors = await validate(userDto);
     if (errors.length > 0) {
-      throw new Error(
+      throw new BadRequestException(
         `Validation failed: ${errors
           .map((e) =>
             e.constraints
@@ -40,12 +44,10 @@ export class UserService {
     const existingUser = await this.userRepository.findOne({
       where: [{ username: data.username }, { email: data.email }],
     });
-    if (existingUser) throw new Error('Username or email already exists');
+    if (existingUser)
+      throw new BadRequestException('Username or email already exists');
 
-    const user = this.userRepository.create({
-      ...data,
-    });
-
+    const user = this.userRepository.create(data);
     await this.userRepository.save(user);
 
     await this.esClient.index({
@@ -67,7 +69,7 @@ export class UserService {
     const userDto = plainToClass(UserDto, data);
     const errors = await validate(userDto, { skipMissingProperties: true });
     if (errors.length > 0) {
-      throw new Error(
+      throw new BadRequestException(
         `Validation failed: ${errors
           .map((e) =>
             e.constraints
@@ -79,9 +81,7 @@ export class UserService {
     }
 
     const user = await this.getUserByUsername(username);
-    await this.userRepository.update(user.id, {
-      ...data,
-    });
+    await this.userRepository.update(user.id, data);
 
     await this.esClient.update({
       index: 'users',
@@ -101,7 +101,7 @@ export class UserService {
 
   async getUserByUsername(username: string) {
     const user = await this.userRepository.findOne({ where: { username } });
-    if (!user) throw new Error('User not found');
+    if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
@@ -110,19 +110,17 @@ export class UserService {
       index: 'users',
       body: {
         query: {
-          bool: {
-            should: [
-              { query_string: { query: `*${query}*`, fields: ['username'] } },
-              { query_string: { query: `*${query}*`, fields: ['email'] } },
-            ],
-            minimum_should_match: 1,
+          multi_match: {
+            query,
+            fields: ['username', 'email'],
+            type: 'phrase_prefix',
           },
         },
       },
     });
 
     const hits = result.hits.hits;
-    if (hits.length === 0) throw new Error('No users found');
+    if (hits.length === 0) throw new NotFoundException('No users found');
     return hits.map((hit: any) => hit._source);
   }
 

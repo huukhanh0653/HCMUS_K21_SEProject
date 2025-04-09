@@ -13,5 +13,6 @@ import { RoleModule } from '../roles/role.module';
     RoleModule,
   ],
   providers: [ServerMemberService],
+  exports: [ServerMemberService],
 })
 export class ServerMemberModule {}

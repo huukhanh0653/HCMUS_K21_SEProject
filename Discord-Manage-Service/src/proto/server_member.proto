@@ -13,8 +13,8 @@ service ServerMemberService {
 message AddMemberRequest {
   string server_id = 1;
   string username = 2;
-  string member_username = 3
-  optional string role_id = 4;
+  string member_username = 3;
+  string role_id = 4;
 }
 
 message RemoveMemberRequest {
@@ -25,8 +25,8 @@ message RemoveMemberRequest {
 message UpdateMemberRoleRequest {
   string server_id = 1;
   string username = 2;
-  string member_username = 3
-  optional string role_id = 4;
+  string member_username = 3;
+  string role_id = 4;
 }
 
 message GetMembersRequest {

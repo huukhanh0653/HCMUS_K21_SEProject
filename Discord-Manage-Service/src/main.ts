@@ -1,37 +1,49 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { join } from 'path';
+import { AppModule } from './app.module';
+import * as dotenv from 'dotenv';
+
+// Load biến môi trường từ file .env
+dotenv.config();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const protoDir =
+    process.env.NODE_ENV === 'prod'
+      ? join(__dirname, 'proto')
+      : join(__dirname, '../src/proto');
 
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.GRPC,
-    options: {
-      package: [
-        'user',
-        'friend',
-        'server',
-        'role',
-        'server_member',
-        'channel',
-        'channel_member',
-      ],
-      protoPath: [
-        join(__dirname, '../src/proto/user.proto'),
-        join(__dirname, '../src/proto/friend.proto'),
-        join(__dirname, '../src/proto/server.proto'),
-        join(__dirname, '../src/proto/role.proto'),
-        join(__dirname, '../src/proto/server_member.proto'),
-        join(__dirname, '../src/proto/channel.proto'),
-        join(__dirname, '../src/proto/channel_member.proto'),
-      ],
-      url: '0.0.0.0:50051',
+  const grpcPort = process.env.PORT || '8084';
+
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport: Transport.GRPC,
+      options: {
+        package: [
+          'user',
+          'friend',
+          'server',
+          'role',
+          'server_member',
+          'channel',
+          'channel_member',
+        ],
+        protoPath: [
+          join(protoDir, 'user.proto'),
+          join(protoDir, 'friend.proto'),
+          join(protoDir, 'server.proto'),
+          join(protoDir, 'role.proto'),
+          join(protoDir, 'server_member.proto'),
+          join(protoDir, 'channel.proto'),
+          join(protoDir, 'channel_member.proto'),
+        ],
+        url: `0.0.0.0:${grpcPort}`,
+      },
     },
-  });
+  );
 
-  await app.startAllMicroservices();
-  await app.listen(process.env.PORT || 8084);
+  await app.listen();
+  console.log(`gRPC server running on port ${grpcPort}`);
 }
 bootstrap();

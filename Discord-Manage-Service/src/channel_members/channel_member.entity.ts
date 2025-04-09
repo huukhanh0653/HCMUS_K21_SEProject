@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { Channel } from '../channels/channel.entity';
 import { User } from '../users/user.entity';
@@ -19,7 +20,7 @@ export class ChannelMember {
   @Column({ type: 'uuid' })
   user_id: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   created_at: Date;
 
   @ManyToOne(() => Channel)
