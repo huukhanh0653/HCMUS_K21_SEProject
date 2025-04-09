@@ -1,63 +1,99 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 import {
   Plus,
-  Mic,
-  Headphones,
-  Settings,
-  MessageSquare,
-  Users,
-  Gamepad2,
-  TreePine,
-  Bell as BellIcon,
-  Ghost,
-  Sword,
-  Crown,
-  Rocket,
   Hash,
   Volume2,
+  Users,
   UserPlus,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useTheme } from '../../components/layout/ThemeProvider';
-import UserPanel from "../../components/user/UserPanel";
+import { useTheme } from "../../components/layout/ThemeProvider";
+import { useDispatch, useSelector } from "react-redux";
 import { User_API } from "../../../apiConfig";
 
-// Friends 
-const DirectMessage = lazy(() => import("../../components/friends/DirectMessage/DirectMessage"));
-const FriendsView = lazy(() => import("../../components/friends/FriendsView"));
-const FriendContextMenu = lazy(() => import("../../components/friends/FriendContextMenu"));
-const FriendProfile = lazy(() => import("../../components/friends/FriendProfile"));
-const AddFriend = lazy(() => import("../../components/friends/AddFriend"));
-const FriendRequests = lazy(() => import("../../components/friends/FriendRequests"));
-const FriendList = lazy(() => import("../../components/friends/FriendList"));
-const FriendRequestModal = lazy(() => import("../../components/friends/FriendRequestModal"));
-const DMSidebar = lazy(() => import("../../components/friends/DMSidebar"));
+// Import các action từ homeSlice
+import {
+  setActiveTab,
+  setSelectedFriend,
+  setFriends,
+  setShowProfile,
+  setSelectedProfileFriend,
+  setSelectedServer,
+  setSelectedChannel,
+  setShowCreateServer,
+  setShowAddFriend,
+  setPendingRequests,
+  setPrevRequests,
+  setNewRequests,
+} from "../../redux/homeSlice";
 
-// Server
-const ServerList = lazy(() => import("../../components/server/ServerChat/ServerList"));
-const  ServerChannels = lazy(() => import("../../components/server/ServerChannels"));
-const  ServerChat = lazy(() => import("../../components/server/ServerChat/ServerChat"));
-const  ServerMembers = lazy(() => import("../../components/server/ServerMembers"));
-const  CreateServerModal = lazy(() => import("../../components/server/CreateServerModal"));
+// Friends - Lazy load các component liên quan
+const DirectMessage = lazy(() =>
+  import("../../components/friends/DirectMessage/DirectMessage")
+);
+const FriendsView = lazy(() =>
+  import("../../components/friends/FriendsView")
+);
+const FriendContextMenu = lazy(() =>
+  import("../../components/friends/FriendContextMenu")
+);
+const FriendProfile = lazy(() =>
+  import("../../components/friends/FriendProfile")
+);
+const AddFriend = lazy(() => import("../../components/friends/AddFriend"));
+const FriendRequests = lazy(() =>
+  import("../../components/friends/FriendRequests")
+);
+const FriendList = lazy(() => import("../../components/friends/FriendList"));
+const FriendRequestModal = lazy(() =>
+  import("../../components/friends/FriendRequestModal")
+);
+const DMSidebar = lazy(() =>
+  import("../../components/friends/DMSidebar")
+);
+
+// Server - Lazy load các component liên quan
+const ServerList = lazy(() =>
+  import("../../components/server/ServerChat/ServerList")
+);
+const ServerChannels = lazy(() =>
+  import("../../components/server/ServerChannels")
+);
+const ServerChat = lazy(() =>
+  import("../../components/server/ServerChat/ServerChat")
+);
+const ServerMembers = lazy(() =>
+  import("../../components/server/ServerMembers")
+);
+const CreateServerModal = lazy(() =>
+  import("../../components/server/CreateServerModal")
+);
+
+// Component không lazy
+import UserPanel from "../../components/user/UserPanel";
 
 export default function Home({ user, onProfileClick }) {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
+  // Lấy các state từ Redux (được khai báo trong homeSlice.js)
+  const dispatch = useDispatch();
 
-  // Các state quản lý nội bộ
-  const [activeTab, setActiveTab] = useState("friends");
-  const [selectedFriend, setSelectedFriend] = useState(null);
-  const [friends, setFriends] = useState([]);
-  const [showProfile, setShowProfile] = useState(false);
-  const [selectedProfileFriend, setSelectedProfileFriend] = useState(null);
-  const [selectedServer, setSelectedServer] = useState(null);
-  const [selectedChannel, setSelectedChannel] = useState(null);
-  const [showCreateServer, setShowCreateServer] = useState(false);
-  const [showAddFriend, setShowAddFriend] = useState(false);
-  const [pendingRequests, setPendingRequests] = useState([]);
-  const [prevRequests, setPrevRequests] = useState([]);
-  const [newRequests, setNewRequests] = useState([]);
+  // Lấy các state từ Redux (được khai báo trong homeSlice.js)
+  const {
+    activeTab,
+    selectedFriend,
+    friends,
+    showProfile,
+    selectedProfileFriend,
+    selectedServer,
+    selectedChannel,
+    showCreateServer,
+    showAddFriend,
+    pendingRequests,
+    newRequests,
+  } = useSelector((state) => state.home);
 
+  // Các default cấu hình
   const defaultChannels = [
     { id: 1, name: "general", type: "text" },
     { id: 2, name: "announcements", type: "text" },
@@ -88,7 +124,7 @@ export default function Home({ user, onProfileClick }) {
         timestamp: new Date("2025-03-22T14:30:00").getTime(),
       },
     ],
-    // Add thêm các tin nhắn mẫu nếu cần
+    // Thêm các tin nhắn mẫu nếu cần
   };
 
   // Lưu thông tin user vào localStorage
@@ -118,7 +154,7 @@ export default function Home({ user, onProfileClick }) {
             avatar: friend.avatar,
             status: "online", // hoặc logic khác tùy yêu cầu
           }));
-          setFriends(transformed);
+          dispatch(setFriends(transformed));
         } else {
           console.error("Failed to fetch friends data");
         }
@@ -134,10 +170,10 @@ export default function Home({ user, onProfileClick }) {
         );
         if (response.ok) {
           const data = await response.json();
-          setPrevRequests(data);
-          setPendingRequests(data);
+          dispatch(setPrevRequests(data));
+          dispatch(setPendingRequests(data));
         } else {
-          setPendingRequests([]);
+          dispatch(setPendingRequests([]));
         }
       } catch (error) {
         console.error("Error fetching friend requests:", error);
@@ -146,7 +182,7 @@ export default function Home({ user, onProfileClick }) {
 
     fetchFriends();
     fetchRequests();
-  }, [currentUser._id]);
+  }, [currentUser._id, dispatch]);
 
   // Tự động chọn channel text đầu tiên khi chọn server
   useEffect(() => {
@@ -155,10 +191,10 @@ export default function Home({ user, onProfileClick }) {
         (channel) => channel.type === "text"
       );
       if (firstTextChannel) {
-        setSelectedChannel(firstTextChannel);
+        dispatch(setSelectedChannel(firstTextChannel));
       }
     }
-  }, [selectedServer, selectedChannel]);
+  }, [selectedServer, selectedChannel, dispatch]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -180,8 +216,8 @@ export default function Home({ user, onProfileClick }) {
   const handleFriendAction = (action, friend) => {
     switch (action) {
       case "profile":
-        setSelectedProfileFriend(friend);
-        setShowProfile(true);
+        dispatch(setSelectedProfileFriend(friend));
+        dispatch(setShowProfile(true));
         break;
       case "unfriend":
         console.log(`Unfriend ${friend.username}`);
@@ -195,19 +231,19 @@ export default function Home({ user, onProfileClick }) {
   };
 
   const handleServerClick = (server) => {
-    setSelectedServer(server);
-    setActiveTab("server");
-    setSelectedFriend(null);
+    dispatch(setSelectedServer(server));
+    dispatch(setActiveTab("server"));
+    dispatch(setSelectedFriend(null));
     const firstTextChannel = defaultChannels.find(
       (channel) => channel.type === "text"
     );
     if (firstTextChannel) {
-      setSelectedChannel(firstTextChannel);
+      dispatch(setSelectedChannel(firstTextChannel));
     }
   };
 
   const handleChannelSelect = (channel) => {
-    setSelectedChannel(channel);
+    dispatch(setSelectedChannel(channel));
   };
 
   const handleAcceptRequest = async (requestID) => {
@@ -217,12 +253,10 @@ export default function Home({ user, onProfileClick }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestID }),
       });
-      setPendingRequests((prev) =>
-        prev.filter((req) => req._id !== requestID)
-      );
-      setNewRequests((prev) =>
-        prev.filter((req) => req._id !== requestID)
-      );
+      // Cập nhật lại state từ Redux thông qua action (giả sử đã có action removeRequest nếu cần)
+      // Ở đây ta dùng thủ công bằng cách lọc lại mảng hiện tại
+      dispatch(setPendingRequests(pendingRequests.filter((req) => req._id !== requestID)));
+      dispatch(setNewRequests(newRequests.filter((req) => req._id !== requestID)));
     } catch (error) {
       console.error("Error accepting request:", error);
     }
@@ -235,19 +269,15 @@ export default function Home({ user, onProfileClick }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestID }),
       });
-      setPendingRequests((prev) =>
-        prev.filter((req) => req._id !== requestID)
-      );
-      setNewRequests((prev) =>
-        prev.filter((req) => req._id !== requestID)
-      );
+      dispatch(setPendingRequests(pendingRequests.filter((req) => req._id !== requestID)));
+      dispatch(setNewRequests(newRequests.filter((req) => req._id !== requestID)));
     } catch (error) {
       console.error("Error declining request:", error);
     }
   };
 
   const handleCloseModal = () => {
-    setNewRequests([]);
+    dispatch(setNewRequests([]));
   };
 
   return (
@@ -263,7 +293,7 @@ export default function Home({ user, onProfileClick }) {
         <ServerList
           selectedServer={selectedServer}
           onServerClick={handleServerClick}
-          onShowCreateServer={() => setShowCreateServer(true)}
+          onShowCreateServer={() => dispatch(setShowCreateServer(true))}
         />
       </Suspense>
 
@@ -291,10 +321,10 @@ export default function Home({ user, onProfileClick }) {
           <DMSidebar
             isDarkMode={isDarkMode}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            setShowAddFriend={setShowAddFriend}
+            setActiveTab={(tab) => dispatch(setActiveTab(tab))}
+            setShowAddFriend={(show) => dispatch(setShowAddFriend(show))}
             selectedFriend={selectedFriend}
-            setSelectedFriend={setSelectedFriend}
+            setSelectedFriend={(friend) => dispatch(setSelectedFriend(friend))}
             friends={friends}
             handleFriendAction={handleFriendAction}
             getStatusColor={getStatusColor}
@@ -385,8 +415,8 @@ export default function Home({ user, onProfileClick }) {
           <FriendProfile
             friend={selectedProfileFriend}
             onClose={() => {
-              setShowProfile(false);
-              setSelectedProfileFriend(null);
+              dispatch(setShowProfile(false));
+              dispatch(setSelectedProfileFriend(null));
             }}
           />
         )}
@@ -395,7 +425,7 @@ export default function Home({ user, onProfileClick }) {
       {/* Create server modal */}
       <Suspense fallback={<div>Loading Create Server Modal...</div>}>
         {showCreateServer && (
-          <CreateServerModal onClose={() => setShowCreateServer(false)} />
+          <CreateServerModal onClose={() => dispatch(setShowCreateServer(false))} />
         )}
       </Suspense>
 
@@ -406,7 +436,7 @@ export default function Home({ user, onProfileClick }) {
             requests={newRequests}
             onAccept={handleAcceptRequest}
             onDecline={handleDeclineRequest}
-            onClose={() => setNewRequests([])}
+            onClose={() => dispatch(setNewRequests([]))}
           />
         )}
       </Suspense>
