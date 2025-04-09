@@ -54,7 +54,7 @@ const DMSidebar = lazy(() =>
 
 // Server - Lazy load các component liên quan
 const ServerList = lazy(() =>
-  import("../../components/server/ServerChat/ServerList")
+  import("../../components/server/ServerList")
 );
 const ServerChannels = lazy(() =>
   import("../../components/server/ServerChannels")
@@ -231,16 +231,26 @@ export default function Home({ user, onProfileClick }) {
   };
 
   const handleServerClick = (server) => {
-    dispatch(setSelectedServer(server));
+    if (!server) {
+      // Nếu server là null, bạn có thể xóa trạng thái server
+      dispatch(setSelectedServer(null));
+      dispatch(setActiveTab("server"));
+      dispatch(setSelectedFriend(null));
+      return;
+    }
+  
+    // Nếu server khác null, loại bỏ thuộc tính không tuần tự hóa như icon
+    const { icon, ...serializableServer } = server;
+    dispatch(setSelectedServer(serializableServer));
     dispatch(setActiveTab("server"));
     dispatch(setSelectedFriend(null));
-    const firstTextChannel = defaultChannels.find(
-      (channel) => channel.type === "text"
-    );
+    const firstTextChannel = defaultChannels.find((channel) => channel.type === "text");
     if (firstTextChannel) {
       dispatch(setSelectedChannel(firstTextChannel));
     }
   };
+  
+  
 
   const handleChannelSelect = (channel) => {
     dispatch(setSelectedChannel(channel));

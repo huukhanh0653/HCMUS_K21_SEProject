@@ -1,5 +1,5 @@
 import React from "react";
-import { useTheme } from "../../layout/ThemeProvider";
+import { useTheme } from "../layout/ThemeProvider";
 import {
     Plus,
     Mic,
