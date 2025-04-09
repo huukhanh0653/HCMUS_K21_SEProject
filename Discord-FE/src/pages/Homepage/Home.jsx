@@ -1,3 +1,4 @@
+// Home.jsx
 import React, { useEffect, lazy, Suspense } from "react";
 import {
   Plus,
@@ -9,6 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { User_API } from "../../../apiConfig";
 
 // Import các action từ homeSlice
@@ -26,6 +28,9 @@ import {
   setPrevRequests,
   setNewRequests,
 } from "../../redux/homeSlice";
+
+// Import UserService để gọi api
+import UserService from "../../service/UserService";
 
 // Friends - Lazy load các component liên quan
 const DirectMessage = lazy(() =>
@@ -75,8 +80,8 @@ import UserPanel from "../../components/user/UserPanel";
 export default function Home({ user, onProfileClick }) {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
-  // Lấy các state từ Redux (được khai báo trong homeSlice.js)
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Khai báo navigate
 
   // Lấy các state từ Redux (được khai báo trong homeSlice.js)
   const {
@@ -93,7 +98,7 @@ export default function Home({ user, onProfileClick }) {
     newRequests,
   } = useSelector((state) => state.home);
 
-  // Các default cấu hình
+  // Cấu hình mặc định cho channels (dành cho Server)
   const defaultChannels = [
     { id: 1, name: "general", type: "text" },
     { id: 2, name: "announcements", type: "text" },
@@ -141,42 +146,27 @@ export default function Home({ user, onProfileClick }) {
 
     const fetchFriends = async () => {
       try {
-        const response = await fetch(
-          `${User_API}/api/friendships/${currentUser._id}`,
-          { headers: { accept: "application/json" } }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          const transformed = data.map((friend) => ({
-            _id: friend._id,
-            username: friend.username,
-            email: friend.email,
-            avatar: friend.avatar,
-            status: "online", // hoặc logic khác tùy yêu cầu
-          }));
-          dispatch(setFriends(transformed));
-        } else {
-          console.error("Failed to fetch friends data");
-        }
+        const data = await UserService.getFriends(currentUser._id);
+        const transformed = data.map((friend) => ({
+          _id: friend._id,
+          username: friend.username,
+          email: friend.email,
+          avatar: friend.avatar,
+          status: "Offline",
+        }));
+        dispatch(setFriends(transformed));
       } catch (error) {
-        console.error("Error fetching friends data:", error);
+        console.error("Failed to fetch friends data");
       }
     };
 
     const fetchRequests = async () => {
       try {
-        const response = await fetch(
-          `${User_API}/api/friendships/requests/${currentUser._id}`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          dispatch(setPrevRequests(data));
-          dispatch(setPendingRequests(data));
-        } else {
-          dispatch(setPendingRequests([]));
-        }
+        const data = await UserService.getFriendRequests(currentUser._id);
+        dispatch(setPrevRequests(data));
+        dispatch(setPendingRequests(data));
       } catch (error) {
-        console.error("Error fetching friend requests:", error);
+        dispatch(setPendingRequests([]));
       }
     };
 
@@ -232,40 +222,36 @@ export default function Home({ user, onProfileClick }) {
 
   const handleServerClick = (server) => {
     if (!server) {
-      // Nếu server là null, bạn có thể xóa trạng thái server
+      // Nếu server là null, reset trạng thái server
       dispatch(setSelectedServer(null));
       dispatch(setActiveTab("server"));
       dispatch(setSelectedFriend(null));
       return;
     }
-  
-    // Nếu server khác null, loại bỏ thuộc tính không tuần tự hóa như icon
+    // Loại bỏ các thuộc tính không tuần tự hóa (ví dụ icon)
     const { icon, ...serializableServer } = server;
     dispatch(setSelectedServer(serializableServer));
     dispatch(setActiveTab("server"));
     dispatch(setSelectedFriend(null));
-    const firstTextChannel = defaultChannels.find((channel) => channel.type === "text");
+    const firstTextChannel = defaultChannels.find(
+      (channel) => channel.type === "text"
+    );
     if (firstTextChannel) {
       dispatch(setSelectedChannel(firstTextChannel));
     }
   };
-  
-  
 
   const handleChannelSelect = (channel) => {
     dispatch(setSelectedChannel(channel));
   };
 
+  // Xử lý friend request
   const handleAcceptRequest = async (requestID) => {
     try {
-      await fetch(`${User_API}/api/friendships/request/accept`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestID }),
-      });
-      // Cập nhật lại state từ Redux thông qua action (giả sử đã có action removeRequest nếu cần)
-      // Ở đây ta dùng thủ công bằng cách lọc lại mảng hiện tại
-      dispatch(setPendingRequests(pendingRequests.filter((req) => req._id !== requestID)));
+      await UserService.acceptFriendRequest(requestID);
+      dispatch(
+        setPendingRequests(pendingRequests.filter((req) => req._id !== requestID))
+      );
       dispatch(setNewRequests(newRequests.filter((req) => req._id !== requestID)));
     } catch (error) {
       console.error("Error accepting request:", error);
@@ -274,12 +260,10 @@ export default function Home({ user, onProfileClick }) {
 
   const handleDeclineRequest = async (requestID) => {
     try {
-      await fetch(`${User_API}/api/friendships/request/decline`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestID }),
-      });
-      dispatch(setPendingRequests(pendingRequests.filter((req) => req._id !== requestID)));
+      await UserService.declineFriendRequest(requestID);
+      dispatch(
+        setPendingRequests(pendingRequests.filter((req) => req._id !== requestID))
+      );
       dispatch(setNewRequests(newRequests.filter((req) => req._id !== requestID)));
     } catch (error) {
       console.error("Error declining request:", error);
@@ -289,6 +273,22 @@ export default function Home({ user, onProfileClick }) {
   const handleCloseModal = () => {
     dispatch(setNewRequests([]));
   };
+
+  // --- Routing tự động dựa trên nội dung chính ---
+  // Nếu đang chọn server & channel thì điều hướng đến URL /server/{serverId}/{channelId}
+  // Nếu đang ở DM (activeTab = "friend" và đã chọn friend) thì điều hướng đến /direct_message/{friendId}
+  // Còn lại vẫn giữ "/" cho trạng thái Home của DM sidebar.
+  useEffect(() => {
+    if (selectedServer && selectedChannel) {
+      // Ước tính id của server từ selectedServer (_id hoặc id)
+      const serverId = selectedServer._id || selectedServer.id;
+      navigate(`/server/${serverId}/${selectedChannel.id}`, { replace: true });
+    } else if (activeTab === "friend" && selectedFriendObj) {
+      navigate(`/direct_message/${selectedFriendObj._id}`, { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  }, [selectedServer, selectedChannel, activeTab, selectedFriendObj, navigate]);
 
   return (
     <div
@@ -309,7 +309,7 @@ export default function Home({ user, onProfileClick }) {
 
       {/* Channel/DM sidebar */}
       {selectedServer ? (
-        // Channel sidebar
+        // Channel sidebar (Server Mode)
         <div
           className={`h-full w-60 flex flex-col ${
             isDarkMode ? "bg-[#2b2d31]" : "bg-white border-r border-gray-200"
@@ -326,7 +326,7 @@ export default function Home({ user, onProfileClick }) {
           <UserPanel user={user} onProfileClick={onProfileClick} />
         </div>
       ) : (
-        // DM sidebar
+        // DM sidebar (Home Mode)
         <Suspense fallback={<div>Loading DM Sidebar...</div>}>
           <DMSidebar
             isDarkMode={isDarkMode}

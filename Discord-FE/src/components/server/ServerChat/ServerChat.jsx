@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { io } from "socket.io-client";
 import { Plus, SmilePlus, Gift, Sticker, ImageIcon, Edit, Trash2 } from "lucide-react";
 import SampleAvt from "../../../assets/sample_avatar.svg";
 import { useTranslation } from "react-i18next";
 import MessageList from "./Components/MessageList";
 import MessageInput from "./Components/MessageInput";
 
-const socket = io("http://localhost:8082");
+// Import MessageService để gọi api và socket
+import MessageService from "../../../service/MessageService";
 
 export default function ServerChat({ channel }) {
   const [messageInput, setMessageInput] = useState("");
@@ -46,7 +46,7 @@ export default function ServerChat({ channel }) {
   const loadMessages = (lastTimestamp = null) => {
     setIsLoadingMore(true);
     setIsPrepending(true);
-    socket.emit("fetchMoreMessages", {
+    MessageService.fetchMoreMessages({
       channel_id: channel.id,
       limit: limit,
       lastTimestamp: new Date(lastTimestamp).getTime() || Date.now(),
@@ -70,21 +70,24 @@ export default function ServerChat({ channel }) {
     if (!container) return;
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [messages]);
+  }, [messages, isLoadingMore]);
 
   useEffect(() => {
     if (!channel?.id) return;
-    socket.emit("joinChannel", channel.id);
+
+    MessageService.joinChannel(channel.id);
     loadMessages();
 
-    socket.on("moreMessages", (moreMessages) => {
+    MessageService.onMoreMessages((moreMessages) => {
       const container = messagesWrapperRef.current;
       const previousScrollHeight = container.scrollHeight;
       const previousScrollTop = container.scrollTop;
 
       if (moreMessages.length < limit) setHasMoreMessages(false);
 
-      setMessages((prev) => (beforeRef.current ? [...moreMessages, ...prev] : [...moreMessages]));
+      setMessages((prev) =>
+        beforeRef.current ? [...moreMessages, ...prev] : [...moreMessages]
+      );
 
       setTimeout(() => {
         const newScrollHeight = container.scrollHeight;
@@ -95,9 +98,10 @@ export default function ServerChat({ channel }) {
       setIsLoadingMore(false);
     });
 
-    socket.on("receiveMessage", (newMessage) => {
+    MessageService.onReceiveMessage((newMessage) => {
       const container = messagesWrapperRef.current;
-      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      const isNearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight < 100;
 
       setMessages((prev) => [...prev, newMessage]);
       if (isNearBottom) {
@@ -107,16 +111,20 @@ export default function ServerChat({ channel }) {
       }
     });
 
-    socket.on("messageUpdated", (data) => {
-      setMessages((prev) => prev.map((msg) => (msg.message_id === data.message_id ? data : msg)));
+    MessageService.onMessageUpdated((data) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg.message_id === data.message_id ? data : msg))
+      );
     });
 
-    socket.on("messageDeleted", (data) => {
-      setMessages((prev) => prev.filter((msg) => msg.message_id !== data.message_id));
+    MessageService.onMessageDeleted((data) => {
+      setMessages((prev) =>
+        prev.filter((msg) => msg.message_id !== data.message_id)
+      );
     });
 
     return () => {
-      socket.off();
+      MessageService.offAllListeners();
     };
   }, [channel.id]);
 
@@ -124,7 +132,7 @@ export default function ServerChat({ channel }) {
     if (!isPrepending) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, isPrepending]);
 
   const handleSendMessage = () => {
     if (!messageInput.trim()) return;
@@ -135,13 +143,13 @@ export default function ServerChat({ channel }) {
       timestamp: Date.now(),
       attachments: [],
     };
-    socket.emit("sendMessage", newMessage);
+    MessageService.sendMessage(newMessage);
     setMessageInput("");
     if (inputRef.current) inputRef.current.style.height = "40px";
   };
 
   const handleDeleteMessage = (id) => {
-    socket.emit("deleteMessage", { channel_id: channel.id, message_id: id });
+    MessageService.deleteMessage(channel.id, id);
   };
 
   const handleEditMessage = (id, content) => {
@@ -151,7 +159,7 @@ export default function ServerChat({ channel }) {
 
   const handleSaveEdit = (id) => {
     if (!editedContent.trim()) return;
-    socket.emit("editMessage", {
+    MessageService.editMessage({
       channel_id: channel.id,
       message_id: id,
       content: editedContent,
@@ -169,7 +177,7 @@ export default function ServerChat({ channel }) {
         editingMessageId={editingMessageId}
         editedContent={editedContent}
         setEditedContent={setEditedContent}
-        setEditingMessageId={setEditingMessageId} // bạn cần truyền cái này
+        setEditingMessageId={setEditingMessageId}
         handleDeleteMessage={handleDeleteMessage}
         handleSaveEdit={handleSaveEdit}
         messagesWrapperRef={messagesWrapperRef}

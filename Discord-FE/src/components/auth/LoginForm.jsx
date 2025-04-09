@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 import { useTheme } from "../../components/layout/ThemeProvider";
 import { useTranslation } from "react-i18next";
 import { signInWithEmail } from "../../firebase";
-import { updateUsedUserList } from './updateUsedUserList';
+import { updateUsedUserList } from "./updateUsedUserList";
 
-import { User_API } from "../../../apiConfig";
+// Import UserService để gọi api
+import UserService from "../../service/UserService";
 
 const LoginForm = ({ onSuccess, onError }) => {
   const { isDarkMode } = useTheme();
@@ -28,20 +29,15 @@ const LoginForm = ({ onSuccess, onError }) => {
 
     try {
       const user = await signInWithEmail(email, password);
-      //console.log("User: ", user);
-      
-      await fetch(`${User_API}/api/users/sync-firebase`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, email: user.email }),
-      });
-      const res = await fetch(`${User_API}/api/users/email/${email}`);
-      const response = await res.json(); // Giải mã JSON trả về từ server
+
+      // Sử dụng UserService để đồng bộ và lấy thông tin user
+      await UserService.syncFirebaseUser(user.uid, user.email);
+      const response = await UserService.getUserByEmail(email);
+
       localStorage.setItem("email", response.email);
       localStorage.setItem("username", response.username);
       localStorage.setItem("user", JSON.stringify(response));
 
-      console.log("Password:", password);
       updateUsedUserList(user, response.username, password);
       onSuccess();
     } catch (err) {
