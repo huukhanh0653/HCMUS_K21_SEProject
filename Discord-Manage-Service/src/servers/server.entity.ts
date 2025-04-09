@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
@@ -15,10 +16,10 @@ export class Server {
   @Column({ type: 'text' })
   name: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'uuid' })
   owner_id: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   created_at: Date;
 
   @Column({ type: 'text', nullable: true })

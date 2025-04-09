@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
@@ -18,7 +19,7 @@ export class Friend {
   @Column({ type: 'uuid' })
   friend_id: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   added_at: Date;
 
   @ManyToOne(() => User)

@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Channel } from './channel.entity';
@@ -33,7 +38,7 @@ export class ChannelService {
     const channelDto = plainToClass(ChannelDto, data);
     const errors = await validate(channelDto);
     if (errors.length > 0) {
-      throw new Error(
+      throw new BadRequestException(
         `Validation failed: ${errors
           .map((e) =>
             e.constraints
@@ -45,27 +50,26 @@ export class ChannelService {
     }
 
     const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) throw new Error('Server not found');
-
+    if (!server) throw new NotFoundException('Server not found');
     if (server.owner_id !== user.id)
-      throw new Error('Only the owner can create channels');
+      throw new ForbiddenException('Only the owner can create channels');
 
     const existingChannel = await this.channelRepository.findOne({
       where: { server_id: serverId, name: data.name },
     });
     if (existingChannel)
-      throw new Error('Channel with this name already exists in the server');
+      throw new BadRequestException(
+        'Channel with this name already exists in the server',
+      );
 
     const channel = this.channelRepository.create({
       server_id: serverId,
       name: data.name,
-      type: data.type,
-      is_private: data.is_private,
+      type: data.type || 'text',
+      is_private: data.is_private || false,
     });
 
     await this.channelRepository.save(channel);
@@ -99,7 +103,7 @@ export class ChannelService {
     const channelDto = plainToClass(ChannelDto, data);
     const errors = await validate(channelDto, { skipMissingProperties: true });
     if (errors.length > 0) {
-      throw new Error(
+      throw new BadRequestException(
         `Validation failed: ${errors
           .map((e) =>
             e.constraints
@@ -111,16 +115,13 @@ export class ChannelService {
     }
 
     const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['server'],
     });
-    if (!channel) throw new Error('Channel not found');
-
+    if (!channel) throw new NotFoundException('Channel not found');
     if (channel.server.owner_id !== user.id)
-      throw new Error('Only the owner can update the channel');
+      throw new ForbiddenException('Only the owner can update the channel');
 
     const updatedData = {
       name: data.name || channel.name,
@@ -142,12 +143,12 @@ export class ChannelService {
 
   async getChannels(username: string, serverId: string, query: string) {
     const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
+    if (!user) throw new NotFoundException('User not found');
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) throw new Error('Server not found');
+    if (!server) throw new NotFoundException('Server not found');
 
     const result = await this.esClient.search({
       index: 'channels',
@@ -155,25 +156,23 @@ export class ChannelService {
         query: {
           bool: {
             filter: [{ term: { server_id: server.id } }],
-            must: [{ query_string: { query: `*${query}*`, fields: ['name'] } }],
+            must: [{ match_phrase_prefix: { name: query } }],
           },
         },
       },
     });
 
     const channels = result.hits.hits.map((hit: any) => hit._source);
-    if (channels.length === 0) throw new Error('No channels found');
+    if (channels.length === 0) throw new NotFoundException('No channels found');
     return channels;
   }
 
   async getChannelsByServer(serverId: string, username: string) {
     const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) throw new Error('Server not found');
+    if (!server) throw new NotFoundException('Server not found');
 
     const result = await this.esClient.search({
       index: 'channels',
@@ -185,16 +184,13 @@ export class ChannelService {
 
   async deleteChannel(channelId: string, username: string) {
     const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['server'],
     });
-    if (!channel) throw new Error('Channel not found');
-
+    if (!channel) throw new NotFoundException('Channel not found');
     if (channel.server.owner_id !== user.id)
-      throw new Error('Only the owner can delete the channel');
+      throw new ForbiddenException('Only the owner can delete the channel');
 
     await this.channelRepository.delete(channelId);
     await this.esClient.delete({ index: 'channels', id: channelId });

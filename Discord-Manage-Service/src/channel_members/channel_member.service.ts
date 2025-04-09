@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChannelMember } from './channel_member.entity';
@@ -31,7 +36,7 @@ export class ChannelMemberService {
     const channelMemberDto = plainToClass(ChannelMemberDto, data);
     const errors = await validate(channelMemberDto);
     if (errors.length > 0) {
-      throw new Error(
+      throw new BadRequestException(
         `Validation failed: ${errors
           .map((e) =>
             e.constraints
@@ -43,25 +48,22 @@ export class ChannelMemberService {
     }
 
     const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['server'],
     });
-    if (!channel) throw new Error('Channel not found');
-
+    if (!channel) throw new NotFoundException('Channel not found');
     if (channel.server.owner_id !== user.id)
-      throw new Error('Only the owner can add members');
+      throw new ForbiddenException('Only the owner can add members');
 
     const memberToAdd = await this.userService.getUserByUsername(data.username);
-    if (!memberToAdd) throw new Error('User to add not found');
+    if (!memberToAdd) throw new NotFoundException('User to add not found');
 
     const existingMember = await this.channelMemberRepository.findOne({
       where: { channel_id: channelId, user_id: memberToAdd.id },
     });
     if (existingMember)
-      throw new Error('User is already a member of this channel');
+      throw new BadRequestException('User is already a member of this channel');
 
     const member = this.channelMemberRepository.create({
       channel_id: channelId,
@@ -93,25 +95,21 @@ export class ChannelMemberService {
     memberUsername: string,
   ) {
     const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
     const memberToRemove =
       await this.userService.getUserByUsername(memberUsername);
-    if (!memberToRemove) throw new Error('User to remove not found');
-
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['server'],
     });
-    if (!channel) throw new Error('Channel not found');
-
+    if (!channel) throw new NotFoundException('Channel not found');
     if (channel.server.owner_id !== user.id)
-      throw new Error('Only the owner can remove members');
+      throw new ForbiddenException('Only the owner can remove members');
 
     const member = await this.channelMemberRepository.findOne({
       where: { channel_id: channelId, user_id: memberToRemove.id },
     });
-    if (!member) throw new Error('User is not a member of this channel');
+    if (!member)
+      throw new NotFoundException('User is not a member of this channel');
 
     await this.channelMemberRepository.delete(member.id);
     await this.esClient.delete({ index: 'channel_members', id: member.id });
@@ -122,35 +120,13 @@ export class ChannelMemberService {
 
   async getMembers(channelId: string, username: string) {
     const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['server'],
     });
-    if (!channel) throw new Error('Channel not found');
-
+    if (!channel) throw new NotFoundException('Channel not found');
     if (channel.server.owner_id !== user.id)
-      throw new Error('Only the owner can view members');
-
-    const members = await this.channelMemberRepository.find({
-      where: { channel_id: channelId },
-      relations: ['user'],
-    });
-
-    for (const member of members) {
-      await this.esClient.index({
-        index: 'channel_members',
-        id: member.id,
-        body: {
-          channel_id: channelId,
-          channel_name: channel.name,
-          username: member.user.username,
-          profile_pic: member.user.profile_pic,
-          created_at: member.created_at,
-        },
-      });
-    }
+      throw new ForbiddenException('Only the owner can view members');
 
     const result = await this.esClient.search({
       index: 'channel_members',
@@ -162,16 +138,13 @@ export class ChannelMemberService {
 
   async searchMember(channelId: string, query: string, username: string) {
     const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['server'],
     });
-    if (!channel) throw new Error('Channel not found');
-
+    if (!channel) throw new NotFoundException('Channel not found');
     if (channel.server.owner_id !== user.id)
-      throw new Error('Only the owner can search members');
+      throw new ForbiddenException('Only the owner can search members');
 
     const result = await this.esClient.search({
       index: 'channel_members',
@@ -179,9 +152,7 @@ export class ChannelMemberService {
         query: {
           bool: {
             filter: [{ term: { channel_id: channelId } }],
-            must: [
-              { query_string: { query: `*${query}*`, fields: ['username'] } },
-            ],
+            must: [{ match_phrase_prefix: { username: query } }],
           },
         },
       },
@@ -189,7 +160,7 @@ export class ChannelMemberService {
 
     const members = result.hits.hits.map((hit: any) => hit._source);
     if (members.length === 0)
-      throw new Error('No members found matching the query');
+      throw new NotFoundException('No members found matching the query');
     return members;
   }
 

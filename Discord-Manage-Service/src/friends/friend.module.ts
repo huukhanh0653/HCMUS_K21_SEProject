@@ -7,5 +7,6 @@ import { UserModule } from '../users/user.module';
 @Module({
   imports: [TypeOrmModule.forFeature([Friend]), UserModule],
   providers: [FriendService],
+  exports: [FriendService],
 })
 export class FriendModule {}

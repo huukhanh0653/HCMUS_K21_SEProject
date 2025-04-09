@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Role } from './role.entity';
@@ -29,7 +33,7 @@ export class RoleService {
     const roleDto = plainToClass(RoleDto, data);
     const errors = await validate(roleDto);
     if (errors.length > 0) {
-      throw new Error(
+      throw new BadRequestException(
         `Validation failed: ${errors
           .map((e) =>
             e.constraints
@@ -43,13 +47,15 @@ export class RoleService {
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) throw new Error('Server not found');
+    if (!server) throw new NotFoundException('Server not found');
 
     const existingRole = await this.roleRepository.findOne({
       where: { server_id: serverId, name: data.name },
     });
     if (existingRole)
-      throw new Error('Role with this name already exists in the server');
+      throw new BadRequestException(
+        'Role with this name already exists in the server',
+      );
 
     const role = this.roleRepository.create({
       server_id: serverId,
@@ -80,7 +86,7 @@ export class RoleService {
     const roleDto = plainToClass(RoleDto, data);
     const errors = await validate(roleDto, { skipMissingProperties: true });
     if (errors.length > 0) {
-      throw new Error(
+      throw new BadRequestException(
         `Validation failed: ${errors
           .map((e) =>
             e.constraints
@@ -92,7 +98,7 @@ export class RoleService {
     }
 
     const role = await this.roleRepository.findOne({ where: { id: roleId } });
-    if (!role) throw new Error('Role not found');
+    if (!role) throw new NotFoundException('Role not found');
 
     await this.roleRepository.update(roleId, data);
 
@@ -118,30 +124,11 @@ export class RoleService {
       where: { id: roleId },
       relations: ['server'],
     });
-    if (!role) throw new Error('Role not found');
+    if (!role) throw new NotFoundException('Role not found');
     return role;
   }
 
   async getRolesByServer(serverId: string) {
-    const roles = await this.roleRepository.find({
-      where: { server_id: serverId },
-      relations: ['server'],
-    });
-
-    for (const role of roles) {
-      await this.esClient.index({
-        index: 'roles',
-        id: role.id,
-        body: {
-          server_id: serverId,
-          name: role.name,
-          color: role.color,
-          position: role.position,
-          is_default: role.is_default,
-        },
-      });
-    }
-
     const result = await this.esClient.search({
       index: 'roles',
       body: { query: { term: { server_id: serverId } } },
@@ -152,7 +139,7 @@ export class RoleService {
 
   async deleteRole(roleId: string) {
     const role = await this.roleRepository.findOne({ where: { id: roleId } });
-    if (!role) throw new Error('Role not found');
+    if (!role) throw new NotFoundException('Role not found');
 
     await this.roleRepository.delete(roleId);
     await this.esClient.delete({ index: 'roles', id: roleId });

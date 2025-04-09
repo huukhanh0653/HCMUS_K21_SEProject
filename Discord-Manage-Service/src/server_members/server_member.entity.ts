@@ -4,6 +4,8 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Server } from '../servers/server.entity';
 import { User } from '../users/user.entity';
@@ -23,14 +25,10 @@ export class ServerMember {
   @Column({ type: 'uuid', nullable: true })
   role_id: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   joined_at: Date;
 
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
+  @UpdateDateColumn()
   updated_at: Date;
 
   @ManyToOne(() => Server)

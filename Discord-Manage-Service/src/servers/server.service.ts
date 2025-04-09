@@ -56,8 +56,8 @@ export class ServerService {
       body: {
         name: server.name,
         owner_username: user.username,
-        created_at: server.created_at,
         server_pic: server.server_pic,
+        created_at: server.created_at,
       },
     });
 
