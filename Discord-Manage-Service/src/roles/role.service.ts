@@ -113,7 +113,6 @@ export class RoleService {
     return { message: 'Role updated successfully' };
   }
 
-  // Các phương thức khác giữ nguyên
   async getRole(roleId: string) {
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
@@ -172,7 +171,6 @@ export class RoleService {
     return { message: result.message };
   }
 
-  // Các gRPC method khác giữ nguyên
   @GrpcMethod('RoleService', 'GetRole')
   async getRoleGrpc(data: { role_id: string }) {
     const role = await this.getRole(data.role_id);

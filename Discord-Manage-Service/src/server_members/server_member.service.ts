@@ -96,7 +96,6 @@ export class ServerMemberService {
     };
   }
 
-  // Các phương thức khác giữ nguyên
   async removeMember(serverId: string, username: string) {
     const user = await this.userService.getUserByUsername(username);
     if (!user) throw new Error('User not found');
@@ -265,7 +264,6 @@ export class ServerMemberService {
     return { message: result.message };
   }
 
-  // Các gRPC method khác giữ nguyên
   @GrpcMethod('ServerMemberService', 'RemoveMember')
   async removeMemberGrpc(data: { server_id: string; username: string }) {
     const result = await this.removeMember(data.server_id, data.username);

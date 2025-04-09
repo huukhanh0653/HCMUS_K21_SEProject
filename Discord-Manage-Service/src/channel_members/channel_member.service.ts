@@ -87,7 +87,6 @@ export class ChannelMemberService {
     };
   }
 
-  // Các phương thức khác giữ nguyên
   async removeMember(
     channelId: string,
     username: string,
@@ -206,7 +205,6 @@ export class ChannelMemberService {
     return { message: result.message };
   }
 
-  // Các gRPC method khác giữ nguyên
   @GrpcMethod('ChannelMemberService', 'RemoveMember')
   async removeMemberGrpc(data: {
     channel_id: string;

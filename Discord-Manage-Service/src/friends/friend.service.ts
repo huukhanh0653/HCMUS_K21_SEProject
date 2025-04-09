@@ -61,7 +61,6 @@ export class FriendService {
     };
   }
 
-  // Các phương thức khác giữ nguyên từ trước
   async removeFriend(username: string, friendUsername: string) {
     const user = await this.userService.getUserByUsername(username);
     const friend = await this.userService.getUserByUsername(friendUsername);
@@ -157,7 +156,6 @@ export class FriendService {
     return { message: result.message };
   }
 
-  // Các gRPC method khác giữ nguyên
   @GrpcMethod('FriendService', 'RemoveFriend')
   async removeFriendGrpc(data: { username: string; friend_username: string }) {
     const result = await this.removeFriend(data.username, data.friend_username);

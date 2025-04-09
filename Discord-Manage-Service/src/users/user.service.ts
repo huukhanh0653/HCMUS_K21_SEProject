@@ -99,7 +99,6 @@ export class UserService {
     return { message: 'User updated successfully' };
   }
 
-  // Các phương thức khác giữ nguyên từ trước
   async getUserByUsername(username: string) {
     const user = await this.userRepository.findOne({ where: { username } });
     if (!user) throw new Error('User not found');
@@ -154,7 +153,6 @@ export class UserService {
     return { message: result.message };
   }
 
-  // Các gRPC method khác giữ nguyên
   @GrpcMethod('UserService', 'GetUserByUsername')
   async getUserByUsernameGrpc(data: { username: string }) {
     const user = await this.getUserByUsername(data.username);

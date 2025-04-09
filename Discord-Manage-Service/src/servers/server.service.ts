@@ -108,7 +108,6 @@ export class ServerService {
     return { message: 'Server updated successfully' };
   }
 
-  // Các phương thức khác giữ nguyên
   async getServers(username: string, query: string) {
     const user = await this.userService.getUserByUsername(username);
     if (!user) throw new Error('User not found');
@@ -167,7 +166,6 @@ export class ServerService {
     return { message: result.message };
   }
 
-  // Các gRPC method khác giữ nguyên
   @GrpcMethod('ServerService', 'GetServers')
   async getServersGrpc(data: { username: string; query: string }) {
     const servers = await this.getServers(data.username, data.query);

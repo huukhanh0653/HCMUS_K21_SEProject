@@ -140,7 +140,6 @@ export class ChannelService {
     return { message: 'Channel updated successfully' };
   }
 
-  // Các phương thức khác giữ nguyên
   async getChannels(username: string, serverId: string, query: string) {
     const user = await this.userService.getUserByUsername(username);
     if (!user) throw new Error('User not found');
@@ -222,7 +221,6 @@ export class ChannelService {
     return { message: result.message };
   }
 
-  // Các gRPC method khác giữ nguyên
   @GrpcMethod('ChannelService', 'GetChannels')
   async getChannelsGrpc(data: {
     username: string;
