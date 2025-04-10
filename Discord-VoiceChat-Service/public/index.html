@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voice Call - Socket.IO</title>
+</head>
+<body>
+  <h2>Socket.IO Voice Call</h2>
+  <button id="start">Start Call</button>
+  <audio id="remoteAudio" autoplay></audio>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const peer = new RTCPeerConnection();
+
+    peer.ontrack = (e) => {
+      document.getElementById("remoteAudio").srcObject = e.streams[0];
+    };
+
+    peer.onicecandidate = (e) => {
+      if (e.candidate) {
+        socket.emit("signal", { type: "ice", candidate: e.candidate });
+      }
+    };
+
+    socket.on("signal", async (data) => {
+      if (data.type === "offer") {
+        await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => peer.addTrack(track, stream));
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription(answer);
+        socket.emit("signal", { type: "answer", answer });
+      }
+
+      if (data.type === "answer") {
+        await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
+      }
+
+      if (data.type === "ice") {
+        try {
+          await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+        } catch (err) {
+          console.error("ICE error:", err);
+        }
+      }
+    });
+
+    document.getElementById("start").onclick = async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert("Your browser does not support getUserMedia. Try using Chrome or Firefox.");
+            return;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => peer.addTrack(track, stream));
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        socket.emit("signal", { type: "offer", offer });
+    };
+
+  </script>
+</body>
+</html>
