@@ -215,16 +215,6 @@ export default function MessageInput({
               </div>
             )}
           </div>
-
-          <button className="p-2 hover:bg-[#404249] rounded-lg">
-            <Gift size={20} className="text-gray-200" />
-          </button>
-          <button className="p-2 hover:bg-[#404249] rounded-lg">
-            <ImageIcon size={20} className="text-gray-200" />
-          </button>
-          <button className="p-2 hover:bg-[#404249] rounded-lg">
-            <Sticker size={20} className="text-gray-200" />
-          </button>
           <button className="p-2 hover:bg-[#404249] rounded-lg" onClick={() => {
             const message = getTextContent().trim();
             if (message !== "") {

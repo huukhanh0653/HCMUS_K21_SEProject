@@ -8,18 +8,34 @@ export default function UserPanel({ user, onProfileClick }) {
   const { isDarkMode } = useTheme();
 
   const [username, setUsername] = useState("Unknown");
+  const [avatarSrc, setAvatarSrc] = useState("https://via.placeholder.com/40");
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    } else if (user?.name) {
-      setUsername(user.name);
+    const storedUserString = localStorage.getItem("user");
+    if (storedUserString) {
+      try {
+        const storedUser = JSON.parse(storedUserString);
+        if (storedUser.username) {
+          setUsername(storedUser.username);
+        }
+        if (storedUser.avatar) {
+          setAvatarSrc(storedUser.avatar);
+        }
+      } catch (error) {
+        console.error("Error parsing stored user:", error);
+      }
+    } else if (user) {
+      // Nếu không có trong localStorage, dùng thông tin từ prop user (nếu có)
+      if (user.username) {
+        setUsername(user.username);
+      }
+      if (user.avatar) {
+        setAvatarSrc(user.avatar);
+      }
     }
   }, [user]);
 
-  const avatarSrc = user?.avatar || "https://via.placeholder.com/40";
-
+  // Hàm cắt bỏ chữ nếu text quá dài
   const truncateText = (text, maxLength) => {
     if (!text) return "";
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
@@ -34,9 +50,7 @@ export default function UserPanel({ user, onProfileClick }) {
       }`}
     >
       <div
-        className={`w-8 h-8 ${
-          isDarkMode ? "bg-[#36393f]" : "bg-gray-200"
-        } rounded-full cursor-pointer`}
+        className={`w-8 h-8 ${isDarkMode ? "bg-[#36393f]" : "bg-gray-200"} rounded-full cursor-pointer`}
         onClick={onProfileClick}
       >
         <img

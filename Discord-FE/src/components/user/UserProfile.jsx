@@ -8,6 +8,7 @@ import SampleAvt from "../../assets/sample_avatar.svg";
 import { getAuth, signOut } from "firebase/auth";
 
 import { User_API } from "../../../apiConfig";
+import StorageService from "../../service/StorageService";
 
 export default function UserProfile({ user, onClose }) {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -20,19 +21,29 @@ export default function UserProfile({ user, onClose }) {
 
   // Form states
   const [username, setUsername] = useState("");
-  const [avatar, setAvatar] = useState(user?.avatar || SampleAvt);
+  const [avatar, setAvatar] = useState(SampleAvt);
+  const [avatarFile, setAvatarFile] = useState(null);
   const [wallpaper, setWallpaper] = useState("");
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Lấy thông tin người dùng từ localStorage "user" theo cách tương tự UserPanel
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    } else if (user?.name) {
-      setUsername(user.name);
+    const storedUserStr = localStorage.getItem("user");
+    if (storedUserStr) {
+      try {
+        const storedUser = JSON.parse(storedUserStr);
+        if (storedUser.username) setUsername(storedUser.username);
+        if (storedUser.avatar) setAvatar(storedUser.avatar);
+      } catch (error) {
+        console.error("Error parsing stored user:", error);
+      }
+    } else if (user) {
+      // Nếu không có trong localStorage, sử dụng thông tin truyền qua props
+      if (user.username) setUsername(user.username);
+      if (user.avatar) setAvatar(user.avatar);
     }
   }, [user]);
 
@@ -84,13 +95,28 @@ export default function UserProfile({ user, onClose }) {
     }
 
     const userId = storedUser._id;
+    let avatarUrl = avatar; // sử dụng avatar hiện tại
+
+    // Nếu có file avatar mới, upload qua StorageService và lấy URL trả về
+    if (avatarFile) {
+      try {
+        const uploadData = await StorageService.uploadFile(avatarFile);
+        // Giả sử API trả về chuỗi có định dạng: 
+        // "File uploaded successfully: https://storage.googleapis.com/discord_clone/your-file.png"
+        avatarUrl = uploadData.url || "";
+      } catch (error) {
+        console.error("Avatar upload error:", error);
+        alert("Avatar upload failed. Please try again.");
+        return;
+      }
+    }
 
     const updatedUser = {
       username: username.trim(),
       email: storedUser.email,
       password: "",
       role: storedUser.role,
-      avatar: avatar || "",
+      avatar: avatarUrl,
     };
 
     try {
@@ -111,7 +137,6 @@ export default function UserProfile({ user, onClose }) {
 
       const newUserData = { ...storedUser, username: updatedUser.username, avatar: updatedUser.avatar };
       localStorage.setItem("user", JSON.stringify(newUserData));
-      localStorage.setItem("username", updatedUser.username);
 
       const usedUserList = JSON.parse(localStorage.getItem("used_user")) || [];
       const updatedUsedUserList = usedUserList.map((acc) =>
@@ -138,9 +163,11 @@ export default function UserProfile({ user, onClose }) {
     setShowChangePassword(false);
   };
 
+  // Khi chọn file avatar mới, lưu file vào state và cập nhật preview
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setAvatar(e.target.result);

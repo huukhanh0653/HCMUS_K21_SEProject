@@ -100,9 +100,9 @@ export default function Home({ user, onProfileClick }) {
 
   // Cấu hình mặc định cho channels (dành cho Server)
   const defaultChannels = [
-    { id: 1, name: "general", type: "text" },
-    { id: 2, name: "announcements", type: "text" },
-    { id: 3, name: "General", type: "voice" },
+    { id: 1, name: "generals", type: "text" },
+    { id: 2, name: "announcements", type: "public" },
+    { id: 3, name: "General", type: "text" },
     { id: 4, name: "Gaming", type: "voice" },
   ];
 

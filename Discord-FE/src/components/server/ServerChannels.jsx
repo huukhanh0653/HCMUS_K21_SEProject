@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown, Hash, Volume2 } from "lucide-react";
+import { ChevronDown, Hash, Volume2, Bell, Plus, Lock } from "lucide-react";
 import UserPanel from "../user/UserPanel";
 import MemberManagementModal from "./MemberManagementModal";
 import ChannelManagementModal from "./ChannelManagementModal";
@@ -16,15 +16,15 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
 
-  // Mock channels data
+  // Cập nhật dữ liệu channels có 3 loại: public, private và voice
   const [channels, setChannels] = useState([
-    { id: 1, name: "general", type: "text" },
-    { id: 2, name: "announcements", type: "text" },
-    { id: 3, name: "General", type: "voice" },
+    { id: 1, name: "general", type: "public" },
+    { id: 2, name: "announcements", type: "public" },
+    { id: 3, name: "random", type: "private" },
     { id: 4, name: "Gaming", type: "voice" },
   ]);
 
-  // Mock member data
+  // Dữ liệu member mẫu
   const members = [
     { id: 1, name: "Alice",   avatar: "https://i.pravatar.cc/50?img=1" },
     { id: 2, name: "Bob",     avatar: "https://i.pravatar.cc/50?img=2" },
@@ -35,12 +35,18 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
     { id: 7, name: "Khánh",   avatar: "https://i.pravatar.cc/50?img=7" },
   ];
 
-  // Khởi tạo channel text đầu tiên nếu chưa có channel nào được chọn
+  // Trạng thái cho notification của mỗi channel (mặc định bạn có thể set mặc định là "open" nếu cần)
+  const [channelNotifications, setChannelNotifications] = useState({});
+
+  // Trạng thái dropdown hiển thị notification (lưu channel id đang mở)
+  const [openNotificationDropdown, setOpenNotificationDropdown] = useState(null);
+
+  // Khởi tạo channel public/private đầu tiên nếu chưa có channel nào được chọn
   useEffect(() => {
     if (!selectedChannelId) {
-      const firstTextChannel = channels.find((channel) => channel.type === "text");
-      if (firstTextChannel) {
-        onChannelSelect(firstTextChannel);
+      const firstChannel = channels.find(channel => channel.type !== "voice");
+      if (firstChannel) {
+        onChannelSelect(firstChannel);
       }
     }
   }, [selectedChannelId, onChannelSelect, channels]);
@@ -69,16 +75,22 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
   const handleDeleteChannel = (channelId) => {
     setChannels(channels.filter(channel => channel.id !== channelId));
   };
-  
+
   const handleRenameChannel = (channelId, newName) => {
     setChannels(channels.map(channel =>
       channel.id === channelId ? { ...channel, name: newName } : channel
     ));
   };
-  
-  const handleCreateChannel = (newName) => {
-    const newChannel = { id: Date.now(), name: newName, type: "text" };
+
+  const handleCreateChannel = (newName, newType) => {
+    const newChannel = { id: Date.now(), name: newName, type: newType };
     setChannels([...channels, newChannel]);
+  };
+
+  const handleNotificationChange = (channelId, setting) => {
+    setChannelNotifications(prev => ({ ...prev, [channelId]: setting }));
+    setOpenNotificationDropdown(null);
+    console.log(`Channel ${channelId} notifications set to ${setting}`);
   };
 
   const getMenuButtonClasses = (option) => {
@@ -154,18 +166,53 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
       {/* Channels list */}
       <div className="flex-1 overflow-y-auto pt-2">
         {channels.map((channel) => (
-          <button
-            key={channel.id}
-            onClick={() => handleChannelClick(channel)}
-            className={`w-full px-2 py-1.5 flex items-center gap-2 ${
-              isDarkMode 
-                ? `text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""}`
-                : `text-gray-600 hover:bg-gray-100 hover:text-[#333333] ${selectedChannelId === channel.id ? "bg-[#1877F2] text-white" : ""}`
+          <div key={channel.id} className={`flex items-center justify-between px-2 py-1.5 gap-2
+            ${isDarkMode 
+              ? `text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""}`
+              : `text-gray-600 hover:bg-gray-100 hover:text-[#333333] ${selectedChannelId === channel.id ? "bg-[#1877F2] text-white" : ""}`
             }`}
           >
-            {channel.type === "text" ? <Hash size={20} /> : <Volume2 size={20} />}
-            <span className="text-sm font-medium">{channel.name}</span>
-          </button>
+            <button onClick={() => handleChannelClick(channel)} className="flex items-center gap-2 flex-1 text-left">
+              {channel.type === "voice" ? (
+                <Volume2 size={20} />
+              ) : channel.type === "private" ? (
+                <Lock size={20} />
+              ) : (
+                <Hash size={20} />
+              )}
+              <span className="text-sm font-medium">{channel.name}</span>
+            </button>
+            {channel.type !== "voice" && (
+              <div className="flex items-center gap-2">
+                {/* Notification bell */}
+                <div className="relative">
+                  <button onClick={() => setOpenNotificationDropdown(openNotificationDropdown === channel.id ? null : channel.id)}>
+                    <Bell size={16} className={`${isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-[#333333]"}`} />
+                  </button>
+                  {openNotificationDropdown === channel.id && (
+                    <div className={`absolute right-0 mt-1 w-32 rounded-md shadow-lg z-20
+                      ${isDarkMode ? "bg-[#2b2d31] border border-[#1e1f22]" : "bg-white border border-gray-300"}`}>
+                      <button onClick={() => handleNotificationChange(channel.id, "open")} className="block w-full text-left px-2 py-1 hover:bg-gray-200">
+                        {t("Mở")}
+                      </button>
+                      <button onClick={() => handleNotificationChange(channel.id, "mention")} className="block w-full text-left px-2 py-1 hover:bg-gray-200">
+                        {t("Chỉ khi nhắc")}
+                      </button>
+                      <button onClick={() => handleNotificationChange(channel.id, "off")} className="block w-full text-left px-2 py-1 hover:bg-gray-200">
+                        {t("Tắt")}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {/* Nếu channel là private thì thêm nút plus để thêm member */}
+                {channel.type === "private" && (
+                  <button onClick={() => console.log("Add member to private channel", channel.id)}>
+                    <Plus size={16} className={`${isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-[#333333]"}`} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </div>

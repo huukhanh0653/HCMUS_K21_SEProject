@@ -139,9 +139,6 @@ export default function FriendList() {
                 <p className={`text-sm ${isDarkMode ? "text-gray-500" : "text-gray-600"}`}>
                   {friend.email}
                 </p>
-                <p className={`text-sm ${friend.status === 'online' ? (isDarkMode ? "text-green-500" : "text-green-600") : "text-gray-500"}`}>
-                  {friend.status || 'offline'}
-                </p>
               </div>
             </div>
 
