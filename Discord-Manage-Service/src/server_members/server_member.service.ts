@@ -8,10 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServerMember } from './server_member.entity';
 import { Server } from '../servers/server.entity';
-import { UserService } from '../users/user.service';
 import { RoleService } from '../roles/role.service';
 import { Client } from '@elastic/elasticsearch';
-import { GrpcMethod } from '@nestjs/microservices';
 import { ServerMemberDto } from './server_member.dto';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
@@ -24,7 +22,6 @@ export class ServerMemberService {
     private serverMemberRepository: Repository<ServerMember>,
     @InjectRepository(Server)
     private serverRepository: Repository<Server>,
-    private userService: UserService,
     private roleService: RoleService,
   ) {
     this.esClient = new Client({
@@ -35,48 +32,50 @@ export class ServerMemberService {
 
   private readonly esClient: Client;
 
-  async addMember(serverId: string, username: string, data: ServerMemberDto) {
+  private user = {
+    id: '0000cf74-73b9-494f-90dd-81ca863bbc3c',
+    username: 'user7660',
+    email: 'user7660@example.dating',
+    password_hash:
+      '$2b$12$/fScO2Ie4/XNpbMZxa.BlO5p8c0c4v9lYw1HsdS1WNZKAENddcnxW',
+    profile_pic: null,
+    status: 'online',
+    created_at: '2021-06-06 10:57:21',
+    updated_at: '2021-06-06 10:57:21',
+    is_admin: false,
+  };
+
+  async addMember(server_id: string, username: string, data: ServerMemberDto) {
     const serverMemberDto = plainToClass(ServerMemberDto, data);
     const errors = await validate(serverMemberDto);
-    if (errors.length > 0) {
-      throw new BadRequestException(
-        `Validation failed: ${errors
-          .map((e) =>
-            e.constraints
-              ? Object.values(e.constraints).join(', ')
-              : 'Unknown error',
-          )
-          .join('; ')}`,
-      );
-    }
+    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
 
-    const user = await this.userService.getUserByUsername(username);
+    const user = this.user;
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new NotFoundException('Server not found');
+    if (!server) return { message: 'Server not found' };
     if (server.owner_id !== user.id)
-      throw new ForbiddenException('Only the owner can add members');
+      return { message: 'Only the owner can add members' };
 
     let role: Role | null = null;
-    if (data.role_id) {
-      role = await this.roleService.getRole(data.role_id);
-      if (!role) throw new NotFoundException('Role not found');
+    if (data.roleId) {
+      role = await this.roleService.getRole(data.roleId);
+      if (!role) return { message: 'Role not found' };
     }
 
-    const memberToAdd = await this.userService.getUserByUsername(data.username);
-    if (!memberToAdd) throw new NotFoundException('User to add not found');
+    const memberToAdd = this.user;
+    if (!memberToAdd) return { message: 'User to add not found' };
 
     const existingMember = await this.serverMemberRepository.findOne({
-      where: { server_id: serverId, user_id: memberToAdd.id },
+      where: { server_id: server_id, user_id: memberToAdd.id },
     });
-    if (existingMember)
-      throw new BadRequestException('User is already a member');
+    if (existingMember) return { message: 'User is already a member' };
 
     const member = this.serverMemberRepository.create({
-      server_id: serverId,
+      server_id: server_id,
       user_id: memberToAdd.id,
-      role_id: data.role_id,
+      role_id: data.roleId,
     });
 
     await this.serverMemberRepository.save(member);
@@ -85,7 +84,7 @@ export class ServerMemberService {
       index: 'server_members',
       id: member.id,
       body: {
-        server_id: serverId,
+        server_id: server_id,
         server_name: server.name,
         username: memberToAdd.username,
         role_name: role ? role.name : null,
@@ -100,24 +99,23 @@ export class ServerMemberService {
   }
 
   async removeMember(
-    serverId: string,
+    server_id: string,
     username: string,
     memberUsername: string,
   ) {
-    const user = await this.userService.getUserByUsername(username);
-    const memberToRemove =
-      await this.userService.getUserByUsername(memberUsername);
+    const user = this.user;
+    const memberToRemove = this.user;
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new NotFoundException('Server not found');
+    if (!server) return { message: 'Server not found' };
     if (server.owner_id !== user.id)
-      throw new ForbiddenException('Only the owner can remove members');
+      return { message: 'Only the owner can remove members' };
 
     const member = await this.serverMemberRepository.findOne({
-      where: { server_id: serverId, user_id: memberToRemove.id },
+      where: { server_id: server_id, user_id: memberToRemove.id },
     });
-    if (!member) throw new NotFoundException('User is not a member');
+    if (!member) return { message: 'User is not a member' };
 
     await this.serverMemberRepository.delete(member.id);
     await this.esClient.delete({ index: 'server_members', id: member.id });
@@ -125,7 +123,7 @@ export class ServerMemberService {
   }
 
   async updateMemberRole(
-    serverId: string,
+    server_id: string,
     username: string,
     data: ServerMemberDto,
   ) {
@@ -133,42 +131,30 @@ export class ServerMemberService {
     const errors = await validate(serverMemberDto, {
       skipMissingProperties: true,
     });
-    if (errors.length > 0) {
-      throw new BadRequestException(
-        `Validation failed: ${errors
-          .map((e) =>
-            e.constraints
-              ? Object.values(e.constraints).join(', ')
-              : 'Unknown error',
-          )
-          .join('; ')}`,
-      );
-    }
+    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
 
-    const user = await this.userService.getUserByUsername(username);
-    const memberToUpdate = await this.userService.getUserByUsername(
-      data.username,
-    );
+    const user = this.user;
+    const memberToUpdate = this.user;
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new NotFoundException('Server not found');
+    if (!server) return { message: 'Server not found' };
     if (server.owner_id !== user.id)
-      throw new ForbiddenException('Only the owner can update member roles');
+      return { message: 'Only the owner can update member roles' };
 
     let role: Role | null = null;
-    if (data.role_id) {
-      role = await this.roleService.getRole(data.role_id);
-      if (!role) throw new NotFoundException('Role not found');
+    if (data.roleId) {
+      role = await this.roleService.getRole(data.roleId);
+      if (!role) return { message: 'Role not found' };
     }
 
     const member = await this.serverMemberRepository.findOne({
-      where: { server_id: serverId, user_id: memberToUpdate.id },
+      where: { server_id: server_id, user_id: memberToUpdate.id },
     });
-    if (!member) throw new NotFoundException('User is not a member');
+    if (!member) return { message: 'User is not a member' };
 
     await this.serverMemberRepository.update(member.id, {
-      role_id: data.role_id,
+      role_id: data.roleId,
     });
 
     await this.esClient.update({
@@ -178,42 +164,40 @@ export class ServerMemberService {
     });
 
     return {
-      message: `Updated role of ${data.username}${role ? ` to ${role.name}` : ' (role removed)'}`,
+      message: `Updated role of ${data.memberUsername}${role ? ` to ${role.name}` : ' (role removed)'}`,
     };
   }
 
-  async getMembers(serverId: string, username: string) {
-    const user = await this.userService.getUserByUsername(username);
+  async getMembers(server_id: string, username: string) {
+    const user = this.user;
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new NotFoundException('Server not found');
-    if (server.owner_id !== user.id)
-      throw new ForbiddenException('Only the owner can view members');
+    if (!server) return [];
+    if (server.owner_id !== user.id) return [];
 
     const result = await this.esClient.search({
       index: 'server_members',
-      body: { query: { term: { server_id: serverId } } },
+      body: { query: { term: { server_id: server_id } } },
     });
 
     return result.hits.hits.map((hit: any) => hit._source);
   }
 
-  async searchMember(serverId: string, query: string, username: string) {
-    const user = await this.userService.getUserByUsername(username);
+  async searchMember(server_id: string, query: string, username: string) {
+    const user = this.user;
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new NotFoundException('Server not found');
-    if (server.owner_id !== user.id)
-      throw new ForbiddenException('Only the owner can search members');
+    if (!server) return [];
+    if (server.owner_id !== user.id) return [];
 
     const result = await this.esClient.search({
       index: 'server_members',
       body: {
         query: {
           bool: {
-            filter: [{ term: { server_id: serverId } }],
+            filter: [{ term: { server_id: server_id } }],
             must: [{ match_phrase_prefix: { username: query } }],
           },
         },
@@ -221,71 +205,6 @@ export class ServerMemberService {
     });
 
     const members = result.hits.hits.map((hit: any) => hit._source);
-    if (members.length === 0)
-      throw new NotFoundException('No members found matching the query');
     return members;
-  }
-
-  @GrpcMethod('ServerMemberService', 'AddMember')
-  async addMemberGrpc(data: any) {
-    const result = await this.addMember(data.server_id, data.username, data);
-    return { message: result.message };
-  }
-
-  @GrpcMethod('ServerMemberService', 'UpdateMemberRole')
-  async updateMemberRoleGrpc(data: any) {
-    const result = await this.updateMemberRole(
-      data.server_id,
-      data.username,
-      data,
-    );
-    return { message: result.message };
-  }
-
-  @GrpcMethod('ServerMemberService', 'RemoveMember')
-  async removeMemberGrpc(data: {
-    server_id: string;
-    username: string;
-    member_username: string;
-  }) {
-    const result = await this.removeMember(
-      data.server_id,
-      data.username,
-      data.member_username,
-    );
-    return { message: result.message };
-  }
-
-  @GrpcMethod('ServerMemberService', 'GetMembers')
-  async getMembersGrpc(data: { server_id: string; username: string }) {
-    const members = await this.getMembers(data.server_id, data.username);
-    return {
-      members: members.map((member: any) => this.mapMemberToInfo(member)),
-    };
-  }
-
-  @GrpcMethod('ServerMemberService', 'SearchMember')
-  async searchMemberGrpc(data: {
-    server_id: string;
-    username: string;
-    query: string;
-  }) {
-    const members = await this.searchMember(
-      data.server_id,
-      data.query,
-      data.username,
-    );
-    return {
-      members: members.map((member: any) => this.mapMemberToInfo(member)),
-    };
-  }
-
-  private mapMemberToInfo(member: any) {
-    return {
-      username: member.username,
-      role_name: member.role_name || '',
-      profile_pic: member.profile_pic || '',
-      joined_at: member.joined_at.toISOString(),
-    };
   }
 }

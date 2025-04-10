@@ -15,5 +15,5 @@ export class ServerDto {
   @IsOptional()
   @IsString()
   @IsUrl()
-  server_pic?: string;
+  serverPic?: string;
 }

@@ -11,43 +11,46 @@ service RoleService {
 }
 
 message CreateRoleRequest {
-  string server_id = 1;
+  string serverId = 1;
   string name = 2;
   string color = 3;
   int32 position = 4;
-  bool is_default = 5;
+  bool isDefault = 5;
 }
 
 message GetRoleRequest {
-  string role_id = 1;
+  string roleId = 1;
 }
 
 message GetRolesByServerRequest {
-  string server_id = 1;
+  string serverId = 1;
 }
 
 message UpdateRoleRequest {
-  string role_id = 1;
+  string roleId = 1;
   string name = 2;
   string color = 3;
   int32 position = 4;
-  bool is_default = 5;
+  bool isDefault = 5;
 }
 
 message DeleteRoleRequest {
-  string role_id = 1;
+  string roleId = 1;
 }
 
-message RoleResponse {
+message GetRoleResponse {
   string id = 1;
-  string server_id = 2;
+  string serverId = 2;
   string name = 3;
   string color = 4;
   int32 position = 5;
-  bool is_default = 6;
-  string message = 7;
+  bool isDefault = 6;
+}
+
+message RoleResponse {
+  string message = 1;
 }
 
 message RoleListResponse {
-  repeated RoleResponse roles = 1;
+  repeated GetRoleResponse roles = 1;
 }

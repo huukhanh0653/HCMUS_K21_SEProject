@@ -13,7 +13,7 @@ service ServerService {
 message CreateServerRequest {
   string username = 1;
   string name = 2;
-  string server_pic = 3;
+  string serverPic = 3;
 }
 
 message GetServersRequest {
@@ -26,26 +26,28 @@ message GetAllServersRequest {
 }
 
 message UpdateServerRequest {
-  string server_id = 1;
+  string serverId = 1;
   string username = 2;
   string name = 3;
-  string server_pic = 4;
+  string serverPic = 4;
 }
 
 message DeleteServerRequest {
-  string server_id = 1;
+  string serverId = 1;
   string username = 2;
 }
 
+message GetServerResponse {
+  string name = 1;
+  string ownerUsername = 2;
+  string createdAt = 3;
+  string serverPic = 4;
+}
+
 message ServerResponse {
-  string id = 1;
-  string name = 2;
-  string owner_id = 3;
-  string created_at = 4;
-  string server_pic = 5;
-  string message = 6;
+  string message = 1;
 }
 
 message ServerListResponse {
-  repeated ServerResponse servers = 1;
+  repeated GetServerResponse servers = 1;
 }
