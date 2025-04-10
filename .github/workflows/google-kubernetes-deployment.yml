@@ -14,12 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up GCloud CLI
-        uses: google-github-actions/setup-gcloud@v1
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
       - name: Get GKE credentials
         run: |
