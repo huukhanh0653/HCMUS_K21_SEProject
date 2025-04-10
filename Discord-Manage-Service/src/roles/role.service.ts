@@ -8,7 +8,6 @@ import { Repository } from 'typeorm';
 import { Role } from './role.entity';
 import { Server } from '../servers/server.entity';
 import { Client } from '@elastic/elasticsearch';
-import { GrpcMethod } from '@nestjs/microservices';
 import { RoleDto } from './role.dto';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
@@ -29,40 +28,28 @@ export class RoleService {
 
   private readonly esClient: Client;
 
-  async createRole(serverId: string, data: RoleDto) {
+  async createRole(server_id: string, data: RoleDto) {
     const roleDto = plainToClass(RoleDto, data);
     const errors = await validate(roleDto);
-    if (errors.length > 0) {
-      throw new BadRequestException(
-        `Validation failed: ${errors
-          .map((e) =>
-            e.constraints
-              ? Object.values(e.constraints).join(', ')
-              : 'Unknown error',
-          )
-          .join('; ')}`,
-      );
-    }
+    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
 
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new NotFoundException('Server not found');
+    if (!server) return { message: 'Server not found' };
 
     const existingRole = await this.roleRepository.findOne({
-      where: { server_id: serverId, name: data.name },
+      where: { server_id, name: data.name },
     });
     if (existingRole)
-      throw new BadRequestException(
-        'Role with this name already exists in the server',
-      );
+      return { message: 'Role with this name already exists in the server' };
 
     const role = this.roleRepository.create({
-      server_id: serverId,
+      server_id: server_id,
       name: data.name,
       color: data.color,
       position: data.position,
-      is_default: data.is_default || false,
+      is_default: data.isDefault || false,
     });
 
     await this.roleRepository.save(role);
@@ -71,7 +58,7 @@ export class RoleService {
       index: 'roles',
       id: role.id,
       body: {
-        server_id: serverId,
+        server_id: server_id,
         name: role.name,
         color: role.color,
         position: role.position,
@@ -79,26 +66,16 @@ export class RoleService {
       },
     });
 
-    return role;
+    return { message: 'Role created successfully' };
   }
 
   async updateRole(roleId: string, data: Partial<RoleDto>) {
     const roleDto = plainToClass(RoleDto, data);
     const errors = await validate(roleDto, { skipMissingProperties: true });
-    if (errors.length > 0) {
-      throw new BadRequestException(
-        `Validation failed: ${errors
-          .map((e) =>
-            e.constraints
-              ? Object.values(e.constraints).join(', ')
-              : 'Unknown error',
-          )
-          .join('; ')}`,
-      );
-    }
+    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
 
     const role = await this.roleRepository.findOne({ where: { id: roleId } });
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role) return { message: 'Role not found' };
 
     await this.roleRepository.update(roleId, data);
 
@@ -111,7 +88,7 @@ export class RoleService {
           color: data.color || role.color,
           position: data.position || role.position,
           is_default:
-            data.is_default !== undefined ? data.is_default : role.is_default,
+            data.isDefault !== undefined ? data.isDefault : role.is_default,
         },
       },
     });
@@ -124,14 +101,14 @@ export class RoleService {
       where: { id: roleId },
       relations: ['server'],
     });
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role) return null;
     return role;
   }
 
-  async getRolesByServer(serverId: string) {
+  async getRolesByServer(server_id: string) {
     const result = await this.esClient.search({
       index: 'roles',
-      body: { query: { term: { server_id: serverId } } },
+      body: { query: { term: { server_id: server_id } } },
     });
 
     return result.hits.hits.map((hit: any) => hit._source);
@@ -139,51 +116,10 @@ export class RoleService {
 
   async deleteRole(roleId: string) {
     const role = await this.roleRepository.findOne({ where: { id: roleId } });
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role) return { message: 'Role not found' };
 
     await this.roleRepository.delete(roleId);
     await this.esClient.delete({ index: 'roles', id: roleId });
     return { message: 'Role deleted successfully' };
-  }
-
-  @GrpcMethod('RoleService', 'CreateRole')
-  async createRoleGrpc(data: any) {
-    const role = await this.createRole(data.server_id, data);
-    return this.mapRoleToResponse(role);
-  }
-
-  @GrpcMethod('RoleService', 'UpdateRole')
-  async updateRoleGrpc(data: any) {
-    const result = await this.updateRole(data.role_id, data);
-    return { message: result.message };
-  }
-
-  @GrpcMethod('RoleService', 'GetRole')
-  async getRoleGrpc(data: { role_id: string }) {
-    const role = await this.getRole(data.role_id);
-    return this.mapRoleToResponse(role);
-  }
-
-  @GrpcMethod('RoleService', 'GetRolesByServer')
-  async getRolesByServerGrpc(data: { server_id: string }) {
-    const roles = await this.getRolesByServer(data.server_id);
-    return { roles: roles.map((role: any) => this.mapRoleToResponse(role)) };
-  }
-
-  @GrpcMethod('RoleService', 'DeleteRole')
-  async deleteRoleGrpc(data: { role_id: string }) {
-    const result = await this.deleteRole(data.role_id);
-    return { message: result.message };
-  }
-
-  private mapRoleToResponse(role: any) {
-    return {
-      id: role.id,
-      server_id: role.server_id,
-      name: role.name,
-      color: role.color || '',
-      position: role.position || 0,
-      is_default: role.is_default || false,
-    };
   }
 }
