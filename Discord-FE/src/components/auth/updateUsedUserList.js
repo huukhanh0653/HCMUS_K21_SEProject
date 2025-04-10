@@ -7,9 +7,9 @@ export const updateUsedUserList = (user, username, password) => {
 
   // Mã hóa password với AES
   const encryptedPassword = CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
-  console.log("🔐 Password để mã hóa:", password);
-  console.log("🔐 SECRET_KEY dùng để mã hóa:", SECRET_KEY);
-  console.log("🔐 Encrypted password lưu vào localStorage:", encryptedPassword);
+  // console.log("🔐 Password để mã hóa:", password);
+  // console.log("🔐 SECRET_KEY dùng để mã hóa:", SECRET_KEY);
+  // console.log("🔐 Encrypted password lưu vào localStorage:", encryptedPassword);
 
 
   const newUser = {
