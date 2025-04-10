@@ -51,11 +51,4 @@ public class NotificationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Notification not found");
         }
     }
-
-
-    @PostMapping("/migrate")
-    public ResponseEntity<String> migrateToMongoDB() {
-        notificationService.migrateToMongoDB();
-        return ResponseEntity.ok("Migration started.");
-    }
 }
