@@ -14,6 +14,8 @@ export default function MessageList({
   messagesEndRef,
 }) {
   const { i18n } = useTranslation();
+  const user = localStorage.getItem("user");
+  console.log(user.avatar)
 
   return (
     <div
@@ -63,7 +65,7 @@ export default function MessageList({
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden flex-shrink-0">
                     <img
-                      src={message.sender === "You" ? SampleAvt : friend.avatar || "/placeholder.svg"}
+                      src={message.sender === "You" ? user.avatar : friend.avatar || "/placeholder.svg"}
                       alt={message.sender}
                       className="w-full h-full object-cover"
                     />

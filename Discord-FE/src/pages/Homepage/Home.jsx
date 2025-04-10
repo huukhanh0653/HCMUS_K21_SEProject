@@ -84,12 +84,16 @@ const NotificationModal = lazy(() =>
 
 // Component không lazy
 import UserPanel from "../../components/user/UserPanel";
+import UserProfile from "../../components/user/UserProfile";
 
-export default function Home({ user, onProfileClick }) {
+export default function Home({ user }) {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // State để mở modal profile
+  const [ProfileModal, setProfileModal] = useState(false);
 
   // Thêm state cho Notification Modal
   const [showNotificationModal, setShowNotificationModal] = useState(false);
@@ -291,6 +295,9 @@ export default function Home({ user, onProfileClick }) {
     }
   }, [selectedServer, selectedChannel, activeTab, selectedFriendObj, navigate]);
 
+  // Hàm đóng modal UserProfile
+  const closeProfile = () => setProfileModal(false);
+
   return (
     <div
       className={`fixed inset-0 flex h-screen w-screen overflow-hidden ${
@@ -326,7 +333,7 @@ export default function Home({ user, onProfileClick }) {
               selectedChannelId={selectedChannel?.id}
             />
           </Suspense>
-          <UserPanel user={user} onProfileClick={onProfileClick} />
+          <UserPanel user={user} onProfileClick={() => setProfileModal(true)} />
         </div>
       ) : (
         <Suspense fallback={<div>Loading DM Sidebar...</div>}>
@@ -340,7 +347,7 @@ export default function Home({ user, onProfileClick }) {
             friends={friends}
             handleFriendAction={handleFriendAction}
             getStatusColor={getStatusColor}
-            onProfileClick={onProfileClick}
+            onProfileClick={() => setProfileModal(true)}
             user={user}
           />
         </Suspense>
@@ -359,6 +366,9 @@ export default function Home({ user, onProfileClick }) {
           }`}
         >
           <div
+            className={`h-12 min-h-[3rem] flex-shrink-0 border-b flex items-center px-4 cursor-pointer ${
+              isDarkMode ? "border-[#232428]" : "border-gray-300"
+            }`}
             onClick={() => {
               if (selectedFriendObj) {
                 onProfileClick(selectedFriendObj);
@@ -447,6 +457,18 @@ export default function Home({ user, onProfileClick }) {
           )}
         </Suspense>
       </div>
+
+      {/* Modal UserProfile (popup độc lập trong Home.jsx) */}
+      {ProfileModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={() => setProfileModal(false)}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <UserProfile user={user} onClose={() => setProfileModal(false)} />
+          </div>
+        </div>
+      )}
 
       {/* Friend profile modal */}
       <Suspense fallback={<div>Loading Friend Profile...</div>}>

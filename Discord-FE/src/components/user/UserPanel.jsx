@@ -1,5 +1,6 @@
+// UserPanel.jsx
 import { useEffect, useState } from "react";
-import { Mic, Headphones, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 
@@ -11,7 +12,8 @@ export default function UserPanel({ user, onProfileClick }) {
   const [avatarSrc, setAvatarSrc] = useState("https://via.placeholder.com/40");
 
   useEffect(() => {
-    const storedUserString = localStorage.getItem("user");
+    // Sử dụng key "user_info" để đọc thông tin người dùng từ localStorage
+    const storedUserString = localStorage.getItem("user_info");
     if (storedUserString) {
       try {
         const storedUser = JSON.parse(storedUserString);
@@ -51,7 +53,6 @@ export default function UserPanel({ user, onProfileClick }) {
     >
       <div
         className={`w-8 h-8 ${isDarkMode ? "bg-[#36393f]" : "bg-gray-200"} rounded-full cursor-pointer`}
-        onClick={onProfileClick}
       >
         <img
           src={avatarSrc}
@@ -66,7 +67,7 @@ export default function UserPanel({ user, onProfileClick }) {
           }`}
           title={username}
         >
-          {truncateText(username, 10)}
+          {truncateText(username, 15)}
         </div>
         <div
           className={`text-xs text-left ${
@@ -77,24 +78,9 @@ export default function UserPanel({ user, onProfileClick }) {
         </div>
       </div>
       <div className="flex gap-1">
-        <Mic
-          size={20}
-          className={`cursor-pointer ${
-            isDarkMode
-              ? "text-gray-400 hover:text-gray-200"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        />
-        <Headphones
-          size={20}
-          className={`cursor-pointer ${
-            isDarkMode
-              ? "text-gray-400 hover:text-gray-200"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        />
         <Settings
           size={20}
+          onClick={onProfileClick}
           className={`cursor-pointer ${
             isDarkMode
               ? "text-gray-400 hover:text-gray-200"

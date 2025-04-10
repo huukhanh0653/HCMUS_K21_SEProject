@@ -85,6 +85,7 @@ export default function ChannelManagementModal({ isOpen, onClose, channels, onDe
             >
               <option value="public">{t("Public")}</option>
               <option value="private">{t("Private")}</option>
+              <option value="voice">{t("Voice")}</option>
             </select>
             <button
               className="px-3 py-1 bg-green-600 hover:bg-green-500 text-white rounded-md"

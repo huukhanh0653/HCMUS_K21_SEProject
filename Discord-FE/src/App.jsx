@@ -18,7 +18,6 @@ import ChooseUsername from "./pages/Authentication/ChooseUsername";
 
 // Pages
 import Home from "./pages/Homepage/Home";
-import UserProfile from "./components/user/UserProfile";
 
 // Admin Pages
 import Admin from "./components/admin/Admin";
@@ -117,8 +116,7 @@ function AppContent() {
           element={
             <UserRoute>
               <>
-                <Home user={user} onProfileClick={toggleProfile} />
-                {showProfile && <UserProfile user={user} onClose={closeProfile} />}
+                <Home user={user} />
               </>
             </UserRoute>
           } 
