@@ -1,10 +1,6 @@
 package com.DiscordClone.NotificationService.repository;
 
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
-
 import com.DiscordClone.NotificationService.model.Notification;
+import org.springframework.data.repository.CrudRepository;
 
-@Repository
-public interface NotificationRepository extends CrudRepository<Notification, String> {
-}
+public interface NotificationRepository extends CrudRepository<Notification, String> {}
