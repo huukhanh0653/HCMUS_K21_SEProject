@@ -1,16 +1,17 @@
 // Home.jsx
-import React, { useEffect, lazy, Suspense } from "react";
+import React, { useEffect, lazy, Suspense, useState } from "react";
 import {
   Plus,
   Hash,
   Volume2,
   Users,
   UserPlus,
+  Bell // Import thêm icon Bell
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { User_API } from "../../../apiConfig";
 
 // Import các action từ homeSlice
@@ -32,7 +33,7 @@ import {
 // Import UserService để gọi api
 import UserService from "../../service/UserService";
 
-// Friends - Lazy load các component liên quan
+// Lazy load các component Friends, Server và NotificationModal (component modal notifications được tạo riêng)
 const DirectMessage = lazy(() =>
   import("../../components/friends/DirectMessage/DirectMessage")
 );
@@ -57,7 +58,6 @@ const DMSidebar = lazy(() =>
   import("../../components/friends/DMSidebar")
 );
 
-// Server - Lazy load các component liên quan
 const ServerList = lazy(() =>
   import("../../components/server/ServerList")
 );
@@ -74,6 +74,11 @@ const CreateServerModal = lazy(() =>
   import("../../components/server/CreateServerModal")
 );
 
+// Lazy load NotificationModal component mới
+const NotificationModal = lazy(() =>
+  import("../../components/user/NotificationModal")
+);
+
 // Component không lazy
 import UserPanel from "../../components/user/UserPanel";
 
@@ -81,9 +86,12 @@ export default function Home({ user, onProfileClick }) {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Khai báo navigate
+  const navigate = useNavigate();
 
-  // Lấy các state từ Redux (được khai báo trong homeSlice.js)
+  // Thêm state cho Notification Modal
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+
+  // Lấy các state từ Redux
   const {
     activeTab,
     selectedFriend,
@@ -222,13 +230,11 @@ export default function Home({ user, onProfileClick }) {
 
   const handleServerClick = (server) => {
     if (!server) {
-      // Nếu server là null, reset trạng thái server
       dispatch(setSelectedServer(null));
       dispatch(setActiveTab("server"));
       dispatch(setSelectedFriend(null));
       return;
     }
-    // Loại bỏ các thuộc tính không tuần tự hóa (ví dụ icon)
     const { icon, ...serializableServer } = server;
     dispatch(setSelectedServer(serializableServer));
     dispatch(setActiveTab("server"));
@@ -270,17 +276,9 @@ export default function Home({ user, onProfileClick }) {
     }
   };
 
-  const handleCloseModal = () => {
-    dispatch(setNewRequests([]));
-  };
-
-  // --- Routing tự động dựa trên nội dung chính ---
-  // Nếu đang chọn server & channel thì điều hướng đến URL /server/{serverId}/{channelId}
-  // Nếu đang ở DM (activeTab = "friend" và đã chọn friend) thì điều hướng đến /direct_message/{friendId}
-  // Còn lại vẫn giữ "/" cho trạng thái Home của DM sidebar.
+  // Routing tự động dựa trên nội dung chính
   useEffect(() => {
     if (selectedServer && selectedChannel) {
-      // Ước tính id của server từ selectedServer (_id hoặc id)
       const serverId = selectedServer._id || selectedServer.id;
       navigate(`/server/${serverId}/${selectedChannel.id}`, { replace: true });
     } else if (activeTab === "friend" && selectedFriendObj) {
@@ -297,6 +295,9 @@ export default function Home({ user, onProfileClick }) {
           ? "bg-[#313338] text-gray-100"
           : "bg-[#F8F9FA] text-[#333333]"
       }`}
+      onClick={() => {
+        // Có thể mở rộng xử lý các click ngoài toàn trang nếu cần
+      }}
     >
       {/* Left sidebar - Server list */}
       <Suspense fallback={<div>Loading Server List...</div>}>
@@ -309,7 +310,6 @@ export default function Home({ user, onProfileClick }) {
 
       {/* Channel/DM sidebar */}
       {selectedServer ? (
-        // Channel sidebar (Server Mode)
         <div
           className={`h-full w-60 flex flex-col ${
             isDarkMode ? "bg-[#2b2d31]" : "bg-white border-r border-gray-200"
@@ -326,7 +326,6 @@ export default function Home({ user, onProfileClick }) {
           <UserPanel user={user} onProfileClick={onProfileClick} />
         </div>
       ) : (
-        // DM sidebar (Home Mode)
         <Suspense fallback={<div>Loading DM Sidebar...</div>}>
           <DMSidebar
             isDarkMode={isDarkMode}
@@ -350,45 +349,60 @@ export default function Home({ user, onProfileClick }) {
           isDarkMode ? "bg-[#313338]" : "bg-[#F8F9FA]"
         }`}
       >
-        {/* Header */}
+        {/* Header với icon notification */}
         <div
-          className={`h-12 min-h-[3rem] flex-shrink-0 border-b flex items-center px-4 cursor-pointer ${
+          className={`h-12 min-h-[3rem] flex-shrink-0 border-b flex items-center px-4 justify-between cursor-pointer ${
             isDarkMode ? "border-[#232428]" : "border-gray-300"
           }`}
-          onClick={() => {
-            if (selectedFriendObj) {
-              onProfileClick(selectedFriendObj);
-            } else if (selectedServer && selectedChannel) {
-              console.log("Channel selected:", selectedChannel.name);
-            }
-          }}
         >
-          {selectedServer && selectedChannel ? (
-            <>
-              {selectedChannel.type === "text" ? (
-                <Hash size={20} className="text-gray-400 mr-2" />
-              ) : (
-                <Volume2 size={20} className="text-gray-400 mr-2" />
-              )}
-              <span className="font-semibold">{selectedChannel.name}</span>
-            </>
-          ) : selectedFriendObj ? (
-            <>
-              <div className="w-8 h-8 rounded-full mr-2 overflow-hidden bg-[#36393f]">
-                <img
-                  src={selectedFriendObj.avatar || "/placeholder.svg"}
-                  alt={selectedFriendObj.username}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <span className="font-semibold">{selectedFriendObj.username}</span>
-            </>
-          ) : (
-            <>
-              <Users size={20} className="text-gray-400 mr-2" />
-              <span className="font-semibold">{t("Friend")}</span>
-            </>
-          )}
+          <div
+            onClick={() => {
+              if (selectedFriendObj) {
+                onProfileClick(selectedFriendObj);
+              } else if (selectedServer && selectedChannel) {
+                console.log("Channel selected:", selectedChannel.name);
+              }
+            }}
+          >
+            {selectedServer && selectedChannel ? (
+              <>
+                {selectedChannel.type === "text" ? (
+                  <Hash size={20} className="text-gray-400 mr-2" />
+                ) : (
+                  <Volume2 size={20} className="text-gray-400 mr-2" />
+                )}
+                <span className="font-semibold">{selectedChannel.name}</span>
+              </>
+            ) : selectedFriendObj ? (
+              <>
+                <div className="w-8 h-8 rounded-full mr-2 overflow-hidden bg-[#36393f]">
+                  <img
+                    src={selectedFriendObj.avatar || "/placeholder.svg"}
+                    alt={selectedFriendObj.username}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="font-semibold">
+                  {selectedFriendObj.username}
+                </span>
+              </>
+            ) : (
+              <>
+                <Users size={20} className="text-gray-400 mr-2" />
+                <span className="font-semibold">{t("Friend")}</span>
+              </>
+            )}
+          </div>
+          {/* Icon chuông notification */}
+          <div
+            onClick={(e) => {
+              e.stopPropagation(); // Ngăn event bắn ra bên ngoài
+              setShowNotificationModal((prev) => !prev);
+            }}
+            className="cursor-pointer"
+          >
+            <Bell size={20} className="text-gray-400" />
+          </div>
         </div>
 
         {/* Main content */}
@@ -435,7 +449,9 @@ export default function Home({ user, onProfileClick }) {
       {/* Create server modal */}
       <Suspense fallback={<div>Loading Create Server Modal...</div>}>
         {showCreateServer && (
-          <CreateServerModal onClose={() => dispatch(setShowCreateServer(false))} />
+          <CreateServerModal
+            onClose={() => dispatch(setShowCreateServer(false))}
+          />
         )}
       </Suspense>
 
@@ -450,6 +466,18 @@ export default function Home({ user, onProfileClick }) {
           />
         )}
       </Suspense>
+
+      {/* Notification modal (Popup) với overlay để đóng khi click ngoài */}
+      {showNotificationModal && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowNotificationModal(false)}
+        >
+          <Suspense fallback={<div>Loading Notification Modal...</div>}>
+            <NotificationModal onClose={() => setShowNotificationModal(false)} />
+          </Suspense>
+        </div>
+      )}
     </div>
   );
 }
