@@ -43,9 +43,4 @@ public class NotificationService {
                 })
                 .orElseThrow(() -> new RuntimeException("Notification not found with ID: " + id));
     }
-
-    // Placeholder method for future MongoDB upload
-    public void migrateToMongoDB() {
-        // Future logic to migrate from Redis to MongoDB
-    }
 }
