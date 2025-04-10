@@ -55,7 +55,7 @@ export class ChannelService {
     });
     if (!server) return { message: 'Server not found' };
     if (server.owner_id !== user.id)
-      return { message: 'Only the owner can update the channel' };
+      return { message: 'Only the owner can create the channel' };
 
     const existingChannel = await this.channelRepository.findOne({
       where: { server_id, name: data.name },
