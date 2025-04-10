@@ -20,22 +20,25 @@ public class MongoMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void save(Message message) {
+    public Message save(Message message) {
         System.out.println("MongoMessageRepository save called with message: " + message);
         mongoRepository.save(new MessageDocument(message));
+        return message;
     }
 
     // String messageId, String senderId, String serverId, String channelId, String
     // contentText, List<String> attachments
 
-    @Override
-    public List<Message> findByChannel(String serverId, String channelId) {
+//    @Override
+//    public List<Message> findByChannel(String serverId, String channelId) {
+//
+//        System.out.println("MongoMessageRepository findByChannel called with serverId: " + serverId + ", channelId: " + channelId);
+//
+//        return mongoRepository.findByServerIdAndChannelId(serverId,channelId).stream()
+//                .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(), doc.getChannelId(),
+//                        new MessageContent(doc.getContent()), doc.getAttachments()))
+//                .collect(Collectors.toList());
+//    }
 
-        System.out.println("MongoMessageRepository findByChannel called with serverId: " + serverId + ", channelId: " + channelId);
 
-        return mongoRepository.findByServerIdAndChannelId(serverId,channelId).stream()
-                .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(), doc.getChannelId(),
-                        new MessageContent(doc.getContent()), doc.getAttachments()))
-                .collect(Collectors.toList());
-    }
 }

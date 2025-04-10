@@ -67,7 +67,11 @@ public class SendMessageUseCase {
     public Message execute(String senderId, String serverId, String channelId, String contentText,
                            List<String> attachments) {
         System.out.println("SendMessageUseCase execute called with senderId: " + senderId);
-        return execute(UUID.randomUUID().toString(), senderId, serverId, channelId, contentText, attachments);
+        MessageContent content = new MessageContent(contentText);
+        Message message = new Message(senderId, serverId, channelId, contentText,
+                attachments);
+        messageRepository.save(message);
+        return message;
     }
 
     /**
@@ -82,6 +86,9 @@ public class SendMessageUseCase {
 
     public Message execute(String senderId, String serverId, String channelId, String contentText) {
         System.out.println("SendMessageUseCase execute called with senderId: " + senderId);
-        return execute(UUID.randomUUID().toString(), senderId, serverId, channelId, contentText);
+        MessageContent content = new MessageContent(contentText);
+        Message message = new Message(senderId, serverId, channelId, contentText);
+        messageRepository.save(message);
+        return message;
     }
 }

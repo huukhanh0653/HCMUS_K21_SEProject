@@ -2,7 +2,6 @@ package com.discord.backend.demomessageddd.interfaceadapter.restful;
 
 import com.discord.backend.demomessageddd.application.usecase.SendMessageUseCase;
 import com.discord.backend.demomessageddd.domain.entity.Message;
-
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +30,8 @@ public class MessageController {
         messagingTemplate.convertAndSend(
                 "/topic/server/" + request.serverId() + "/channel/" + request.channelId(),
                 message);
-        System.out.println("Message sent: " + message);
+        System.out.println("Message sent: " + message.toString());
         return message;
     }
+
 }

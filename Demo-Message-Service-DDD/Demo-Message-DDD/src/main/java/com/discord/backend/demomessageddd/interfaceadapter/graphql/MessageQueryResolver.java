@@ -19,6 +19,7 @@ public class MessageQueryResolver {
 
     @QueryMapping
     public List<Message> messagesByChannel(@Argument String serverId, @Argument String channelId) {
-        return messageRepository.findByChannel(serverId, channelId);
+//        return messageRepository.findByChannel(serverId, channelId);
+        return null;
     }
 }

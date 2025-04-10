@@ -5,12 +5,16 @@ import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Getter;
 
 /**
  * Represents a message in the system.
  */
+
 @Document(collection = "messages")
+@Getter
 public class Message {
     private final String messageId;
     private final String senderId;
@@ -20,8 +24,9 @@ public class Message {
     private final MessageContent content;
     private final Instant timestamp;
 
-    public Message(String messageId, String senderId, String serverId, String channelId, MessageContent content,
-            List<String> attachments) {
+    public Message(String messageId, String senderId, String serverId,
+                   String channelId, MessageContent content,
+                   List<String> attachments) {
         this.senderId = senderId;
         this.channelId = channelId;
         this.serverId = serverId;
@@ -32,8 +37,8 @@ public class Message {
     }
 
     public Message(String senderId, String serverId, String channelId, String contentText,
-            List<String> attachments) {
-        this(UUID.randomUUID().toString(), senderId, serverId, channelId,new MessageContent(contentText), attachments);
+                   List<String> attachments) {
+        this(UUID.randomUUID().toString(), senderId, serverId, channelId, new MessageContent(contentText), attachments);
         System.out.println("Message constructor called with senderId: " + senderId);
     }
 
@@ -67,12 +72,11 @@ public class Message {
         return attachments;
     }
 
-    public String getContent() {
-        return content.getText();
+    public MessageContent getContent() {
+        return content;
     }
 
     public Instant getTimestamp() {
         return timestamp;
     }
-
 }
