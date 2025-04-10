@@ -21,5 +21,5 @@ export class RoleDto {
 
   @IsOptional()
   @IsBoolean()
-  is_default?: boolean;
+  isDefault?: boolean;
 }

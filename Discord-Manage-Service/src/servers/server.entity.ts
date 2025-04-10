@@ -6,7 +6,6 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { User } from '../users/user.entity';
 
 @Entity('servers')
 export class Server {
@@ -24,8 +23,4 @@ export class Server {
 
   @Column({ type: 'text', nullable: true })
   server_pic: string;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'owner_id' })
-  owner: User;
 }

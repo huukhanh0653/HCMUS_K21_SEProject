@@ -8,7 +8,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Server } from '../servers/server.entity';
-import { User } from '../users/user.entity';
 import { Role } from '../roles/role.entity';
 
 @Entity('server_members')
@@ -34,10 +33,6 @@ export class ServerMember {
   @ManyToOne(() => Server)
   @JoinColumn({ name: 'server_id' })
   server: Server;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_id' })
-  user: User;
 
   @ManyToOne(() => Role)
   @JoinColumn({ name: 'role_id' })

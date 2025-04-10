@@ -7,7 +7,6 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { Channel } from '../channels/channel.entity';
-import { User } from '../users/user.entity';
 
 @Entity('channel_members')
 export class ChannelMember {
@@ -26,8 +25,4 @@ export class ChannelMember {
   @ManyToOne(() => Channel)
   @JoinColumn({ name: 'channel_id' })
   channel: Channel;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_id' })
-  user: User;
 }
