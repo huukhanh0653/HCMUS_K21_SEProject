@@ -22,7 +22,6 @@ router.post('/sync-firebase', async (req, res) => {
   }
 });
 
-
 /**
  * @swagger
  * /api/users/firebase:
@@ -70,6 +69,8 @@ router.get('/firebase', async (req, res) => {
  *               role:
  *                 type: string
  *               avatar:
+ *                 type: string
+ *               background:
  *                 type: string
  *     responses:
  *       201:
@@ -201,6 +202,8 @@ router.get('/:id', async (req, res) => {
  *               role:
  *                 type: string
  *               avatar:
+ *                 type: string
+ *               background:
  *                 type: string
  *     responses:
  *       200:
