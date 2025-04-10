@@ -1,10 +1,8 @@
 // server.js
-const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 
-const app = express();
-const server = http.createServer(app);
+const server = http.createServer();
 const io = new Server(server, {
   cors: { origin: "*" }
 });
@@ -56,6 +54,7 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3000, '0.0.0.0', () => {
-    console.log("Server listening on http://0.0.0.0:3000");
-  });
+
+// Start the server
+const PORT = process.env.SERVER_PORT || 8086;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

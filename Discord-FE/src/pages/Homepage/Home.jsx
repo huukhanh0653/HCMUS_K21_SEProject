@@ -67,6 +67,9 @@ const ServerChannels = lazy(() =>
 const ServerChat = lazy(() =>
   import("../../components/server/ServerChat/ServerChat")
 );
+const VoiceChat = lazy(() =>
+  import("../../components/server/VoiceChat/VoiceChat")
+);
 const ServerMembers = lazy(() =>
   import("../../components/server/ServerMembers")
 );
@@ -395,8 +398,20 @@ export default function Home({ user, onProfileClick }) {
         <Suspense fallback={<div>Loading Main Content...</div>}>
           {selectedServer && selectedChannel ? (
             <div className="flex flex-1">
-              <ServerChat channel={selectedChannel} />
-              <ServerMembers />
+              {selectedChannel.type === "text" ? (
+                <>
+                  <ServerChat channel={selectedServer} />
+                  <ServerMembers />
+                </>
+              ): (
+                <>
+                  <VoiceChat 
+                    userId={currentUser._id || "Undefined"} 
+                    channel={selectedChannel.id} 
+                    onLeave={() => dispatch(setSelectedChannel(null))} 
+                  />
+                </>
+              )}
             </div>
           ) : activeTab === "friends" ? (
             <FriendList />

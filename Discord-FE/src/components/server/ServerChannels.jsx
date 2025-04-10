@@ -18,9 +18,9 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
 
   // Cập nhật dữ liệu channels có 3 loại: public, private và voice
   const [channels, setChannels] = useState([
-    { id: 1, name: "general", type: "public" },
-    { id: 2, name: "announcements", type: "public" },
-    { id: 3, name: "random", type: "private" },
+    { id: 1, name: "general", type: "text" },
+    { id: 2, name: "announcements", type: "text" },
+    { id: 3, name: "random", type: "text" },
     { id: 4, name: "Gaming", type: "voice" },
   ]);
 

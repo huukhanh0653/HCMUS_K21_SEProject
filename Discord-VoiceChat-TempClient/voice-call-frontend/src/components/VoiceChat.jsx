@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:3000"); // Replace with server IP if remote
+let socket; // Declare socket outside the component to allow reinitialization
 
 const VoiceChat = ({ userId, channel, onLeave }) => {
   const [users, setUsers] = useState([]);
@@ -12,6 +12,10 @@ const VoiceChat = ({ userId, channel, onLeave }) => {
 
   useEffect(() => {
     const join = async () => {
+      if (!socket || socket.disconnected) {
+        socket = io("http://localhost:8086"); // Reinitialize socket if disconnected
+      }
+
       localStream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
       socket.emit("join", { userId, channel });
     };
@@ -56,12 +60,16 @@ const VoiceChat = ({ userId, channel, onLeave }) => {
     return () => {
       // Clean up
       Object.values(peerConnections.current).forEach(pc => pc.close());
+      peerConnections.current = {}; // Reset peer connections
+      audioElements.current = {}; // Reset audio elements
       if (localStream.current) {
         localStream.current.getTracks().forEach(track => track.stop());
       }
-      socket.disconnect();
+      if (socket) {
+        socket.disconnect();
+      }
     };
-  }, []);
+  }, [channel, userId]);
 
   const connectToPeer = async (socketId, peerUserId, isInitiator) => {
     const pc = new RTCPeerConnection();
@@ -95,8 +103,12 @@ const VoiceChat = ({ userId, channel, onLeave }) => {
   };
 
   const handleLeave = () => {
-    socket.disconnect();
+    if (socket) {
+      socket.disconnect();
+    }
     Object.values(peerConnections.current).forEach(pc => pc.close());
+    peerConnections.current = {}; // Reset peer connections
+    audioElements.current = {}; // Reset audio elements
     if (localStream.current) localStream.current.getTracks().forEach(t => t.stop());
     onLeave();
   };
