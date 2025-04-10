@@ -6,6 +6,9 @@ import { useTranslation } from "react-i18next";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
+// Import UserService để gọi api
+import UserService from "../../service/UserService";
+
 const SignupForm = ({ onError, onSuccess }) => {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
@@ -33,16 +36,12 @@ const SignupForm = ({ onError, onSuccess }) => {
       const user = await signUpWithEmail(email, password);
       if (!user) throw new Error("User creation failed, no user data returned.");
 
-      await fetch("http://localhost:5001/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          username: username,
-          password,
-          phone,
-        }),
+      await UserService.createUser({
+        uid: user.uid,
+        email: user.email,
+        username,
+        password,
+        phone,
       });
 
       await signOut(getAuth());
@@ -58,7 +57,11 @@ const SignupForm = ({ onError, onSuccess }) => {
       <input
         type="text"
         placeholder={t("Username")}
-        className={`p-3 rounded-md border ${isDarkMode ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400" : "bg-white text-black border-gray-300 focus:border-gray-500"}`}
+        className={`p-3 rounded-md border ${
+          isDarkMode
+            ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
+            : "bg-white text-black border-gray-300 focus:border-gray-500"
+        }`}
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
@@ -66,7 +69,11 @@ const SignupForm = ({ onError, onSuccess }) => {
       <input
         type="email"
         placeholder="Email"
-        className={`p-3 rounded-md border ${isDarkMode ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400" : "bg-white text-black border-gray-300 focus:border-gray-500"}`}
+        className={`p-3 rounded-md border ${
+          isDarkMode
+            ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
+            : "bg-white text-black border-gray-300 focus:border-gray-500"
+        }`}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
@@ -74,7 +81,11 @@ const SignupForm = ({ onError, onSuccess }) => {
       <input
         type="tel"
         placeholder={t("Phone number")}
-        className={`p-3 rounded-md border ${isDarkMode ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400" : "bg-white text-black border-gray-300 focus:border-gray-500"}`}
+        className={`p-3 rounded-md border ${
+          isDarkMode
+            ? "bg-[#202225] text-white border-gray-700 focus:border-gray-400"
+            : "bg-white text-black border-gray-300 focus:border-gray-500"
+        }`}
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
       />
@@ -83,7 +94,9 @@ const SignupForm = ({ onError, onSuccess }) => {
         <input
           type={showPassword ? "text" : "password"}
           placeholder={t("Password")}
-          className={`p-3 w-full rounded-md border ${isDarkMode ? "bg-[#202225] text-white border-gray-700" : "bg-white text-black border-gray-300"}`}
+          className={`p-3 w-full rounded-md border ${
+            isDarkMode ? "bg-[#202225] text-white border-gray-700" : "bg-white text-black border-gray-300"
+          }`}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -93,7 +106,9 @@ const SignupForm = ({ onError, onSuccess }) => {
         <input
           type={showPassword ? "text" : "password"}
           placeholder={t("Confirm Password")}
-          className={`p-3 w-full rounded-md border ${isDarkMode ? "bg-[#202225] text-white border-gray-700" : "bg-white text-black border-gray-300"}`}
+          className={`p-3 w-full rounded-md border ${
+            isDarkMode ? "bg-[#202225] text-white border-gray-700" : "bg-white text-black border-gray-300"
+          }`}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
@@ -108,7 +123,9 @@ const SignupForm = ({ onError, onSuccess }) => {
 
       <button
         type="submit"
-        className={`font-bold py-2 rounded-md ${isDarkMode ? "bg-gray-600 hover:bg-gray-700 text-white" : "bg-[#0D6EFD] hover:bg-[#0056D2] text-white"}`}
+        className={`font-bold py-2 rounded-md ${
+          isDarkMode ? "bg-gray-600 hover:bg-gray-700 text-white" : "bg-[#0D6EFD] hover:bg-[#0056D2] text-white"
+        }`}
       >
         {t("Signup")}
       </button>

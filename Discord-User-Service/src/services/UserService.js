@@ -39,6 +39,8 @@ class UserService {
               password: null, // Handled by Firebase
               role: "user",
               avatar: user.photoURL || "",
+              background: user.photoURL || "",
+
             });
           } catch (createError) {
             console.error(`Failed to create user ${user.email}:`, createError);

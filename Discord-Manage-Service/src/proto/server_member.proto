@@ -11,29 +11,31 @@ service ServerMemberService {
 }
 
 message AddMemberRequest {
-  string server_id = 1;
+  string serverId = 1;
   string username = 2;
-  optional string role_id = 3;
+  string memberUsername = 3;
+  string roleId = 4;
 }
 
 message RemoveMemberRequest {
-  string server_id = 1;
+  string serverId = 1;
   string username = 2;
 }
 
 message UpdateMemberRoleRequest {
-  string server_id = 1;
+  string serverId = 1;
   string username = 2;
-  optional string role_id = 3;
+  string memberUsername = 3;
+  string roleId = 4;
 }
 
 message GetMembersRequest {
-  string server_id = 1;
+  string serverId = 1;
   string username = 2;
 }
 
 message SearchMemberRequest {
-  string server_id = 1;
+  string serverId = 1;
   string username = 2;
   string query = 3;
 }
@@ -48,7 +50,7 @@ message ServerMemberListResponse {
 
 message ServerMemberInfo {
   string username = 1;
-  string role_name = 2;
-  string profile_pic = 3;
-  string joined_at = 4;
+  string roleName = 2;
+  string profilePic = 3;
+  string joinedAt = 4;
 }

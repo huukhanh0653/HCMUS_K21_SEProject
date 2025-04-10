@@ -1,154 +1,190 @@
-import { useState, useEffect } from "react"
+// Home.jsx
+import React, { useEffect, lazy, Suspense } from "react";
 import {
   Plus,
-  Mic,
-  Headphones,
-  Settings,
-  MessageSquare,
+  Hash,
+  Volume2,
   Users,
-  Gamepad2,
-  TreePine,
-  Bell as BellIcon, // Đã sửa BellIcon
-  Ghost,
-  Sword,
-  Crown,
-  Rocket,
-  Hash, 
-  Volume2, // Thêm nếu cần
   UserPlus,
-} from "lucide-react"
-
-// Friends 
-import DirectMessage from "../../components/friends/DirectMessage/DirectMessage"
-import FriendsView from "../../components/friends/FriendsView"
-import FriendContextMenu from "../../components/friends/FriendContextMenu"
-import FriendProfile from "../../components/friends/FriendProfile"
-import AddFriend from "../../components/friends/AddFriend"
-import FriendRequests from "../../components/friends/FriendRequests"
-import FriendList from "../../components/friends/FriendList"
-
-// Server
-import ServerChannels from "../../components/server/ServerChannels"
-import ServerChat from "../../components/server/ServerChat/ServerChat"
-import ServerMembers from "../../components/server/ServerMembers"
-import CreateServerModal from "../../components/server/CreateServerModal"
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useTheme } from '../../components/layout/ThemeProvider';
-import UserPanel from "../../components/user/UserPanel"
+import { useTheme } from "../../components/layout/ThemeProvider";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { User_API } from "../../../apiConfig";
+
+// Import các action từ homeSlice
+import {
+  setActiveTab,
+  setSelectedFriend,
+  setFriends,
+  setShowProfile,
+  setSelectedProfileFriend,
+  setSelectedServer,
+  setSelectedChannel,
+  setShowCreateServer,
+  setShowAddFriend,
+  setPendingRequests,
+  setPrevRequests,
+  setNewRequests,
+} from "../../redux/homeSlice";
+
+// Import UserService để gọi api
+import UserService from "../../service/UserService";
+
+// Friends - Lazy load các component liên quan
+const DirectMessage = lazy(() =>
+  import("../../components/friends/DirectMessage/DirectMessage")
+);
+const FriendsView = lazy(() =>
+  import("../../components/friends/FriendsView")
+);
+const FriendContextMenu = lazy(() =>
+  import("../../components/friends/FriendContextMenu")
+);
+const FriendProfile = lazy(() =>
+  import("../../components/friends/FriendProfile")
+);
+const AddFriend = lazy(() => import("../../components/friends/AddFriend"));
+const FriendRequests = lazy(() =>
+  import("../../components/friends/FriendRequests")
+);
+const FriendList = lazy(() => import("../../components/friends/FriendList"));
+const FriendRequestModal = lazy(() =>
+  import("../../components/friends/FriendRequestModal")
+);
+const DMSidebar = lazy(() =>
+  import("../../components/friends/DMSidebar")
+);
+
+// Server - Lazy load các component liên quan
+const ServerList = lazy(() =>
+  import("../../components/server/ServerList")
+);
+const ServerChannels = lazy(() =>
+  import("../../components/server/ServerChannels")
+);
+const ServerChat = lazy(() =>
+  import("../../components/server/ServerChat/ServerChat")
+);
+const ServerMembers = lazy(() =>
+  import("../../components/server/ServerMembers")
+);
+const CreateServerModal = lazy(() =>
+  import("../../components/server/CreateServerModal")
+);
+
+// Component không lazy
+import UserPanel from "../../components/user/UserPanel";
 
 export default function Home({ user, onProfileClick }) {
-  // Dark mode & Light mode toggle
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState("friends");
-  const [selectedFriend, setSelectedFriend] = useState(null);
-  const [friends, setFriends] = useState([]); // <-- Lấy dữ liệu từ API
-  const [showProfile, setShowProfile] = useState(false);
-  const [selectedProfileFriend, setSelectedProfileFriend] = useState(null);
-  const [selectedServer, setSelectedServer] = useState(null);
-  const [selectedChannel, setSelectedChannel] = useState(null);
-  const [showCreateServer, setShowCreateServer] = useState(false);
-  // Quản lý hiển thị màn hình Add Friend
-  const [showAddFriend, setShowAddFriend] = useState(false);
-  // Danh sách yêu cầu kết bạn (dùng cho 2 mục: modal thông báo & FriendRequests component)
-  const [pendingRequests, setPendingRequests] = useState([]);
-  // Để so sánh dữ liệu fetch
-  const [initialFetched, setInitialFetched] = useState(false);
-  const [prevRequests, setPrevRequests] = useState([]);
-  // Chứa danh sách yêu cầu mới (khác với lần fetch trước)
-  const [newRequests, setNewRequests] = useState([]);
+  const dispatch = useDispatch();
+  const navigate = useNavigate(); // Khai báo navigate
 
-  // Default channels for servers
+  // Lấy các state từ Redux (được khai báo trong homeSlice.js)
+  const {
+    activeTab,
+    selectedFriend,
+    friends,
+    showProfile,
+    selectedProfileFriend,
+    selectedServer,
+    selectedChannel,
+    showCreateServer,
+    showAddFriend,
+    pendingRequests,
+    newRequests,
+  } = useSelector((state) => state.home);
+
+  // Cấu hình mặc định cho channels (dành cho Server)
   const defaultChannels = [
-    { id: 1, name: "general", type: "text" },
-    { id: 2, name: "announcements", type: "text" },
-    { id: 3, name: "General", type: "voice" },
+    { id: 1, name: "generals", type: "text" },
+    { id: 2, name: "announcements", type: "public" },
+    { id: 3, name: "General", type: "text" },
     { id: 4, name: "Gaming", type: "voice" },
   ];
 
-  // Mock messages data
   const mockMessages = {
-    "Levii": [
+    Levii: [
       {
         id: 1,
         sender: "Levii",
         content: "Hey there!",
-        timestamp: new Date("2025-03-22T08:09:00").getTime()
+        timestamp: new Date("2025-03-22T08:09:00").getTime(),
       },
       {
         id: 2,
         sender: "You",
         content: "Hi Levii!",
-        timestamp: new Date("2025-03-22T08:09:00").getTime()
-      }
+        timestamp: new Date("2025-03-22T08:09:00").getTime(),
+      },
     ],
-    "Dolphin": [
+    Dolphin: [
       {
         id: 1,
         sender: "Dolphin",
         content: "How's it going?",
-        timestamp: new Date("2025-03-22T14:30:00").getTime()
-      }
-    ]    
-    // Add more mock messages...
+        timestamp: new Date("2025-03-22T14:30:00").getTime(),
+      },
+    ],
+    // Thêm các tin nhắn mẫu nếu cần
   };
 
-  // Server list data
-  const servers = [
-    { icon: TreePine, color: "#3ba55c", label: "Nature Gaming" },
-    { icon: Gamepad2, color: "#5865f2", label: "Gaming Hub" },
-    { icon: BellIcon, color: "#faa61a", label: "Sports Club" },
-    { icon: Ghost, color: "#ed4245", label: "Ghost Gaming" },
-    { icon: Sword, color: "#9b59b6", label: "RPG Community" },
-    { icon: Crown, color: "#f1c40f", label: "Royal Gaming" },
-    { icon: Rocket, color: "#e91e63", label: "Space Station" },
-  ];
-
-  // Save user info to local
+  // Lưu thông tin user vào localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem("user_info", JSON.stringify(user));
     }
   }, [user]);
+  const currentUser = JSON.parse(localStorage.getItem("user")) || {};
 
-  // Fetch friends data from API
+  // Fetch dữ liệu bạn bè và yêu cầu kết bạn khi component mount
   useEffect(() => {
+    if (!currentUser._id) return;
+
     const fetchFriends = async () => {
       try {
-        const response = await fetch("http://localhost:8081/api/friendships/67e58b59171f9075a48afe76", {
-          headers: { accept: "application/json" }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          // Chuyển đổi mỗi friend: dùng username thay cho name và thêm status mặc định
-          const transformed = data.map(friend => ({
-            _id: friend._id,
-            username: friend.username,
-            email: friend.email,
-            avatar: friend.avatar,
-            status: "online" // Thay đổi tùy theo logic của bạn
-          }));
-          setFriends(transformed);
-        } else {
-          console.error("Failed to fetch friends data");
-        }
+        const data = await UserService.getFriends(currentUser._id);
+        const transformed = data.map((friend) => ({
+          _id: friend._id,
+          username: friend.username,
+          email: friend.email,
+          avatar: friend.avatar,
+          status: "Offline",
+        }));
+        dispatch(setFriends(transformed));
       } catch (error) {
-        console.error("Error fetching friends data:", error);
+        console.error("Failed to fetch friends data");
+      }
+    };
+
+    const fetchRequests = async () => {
+      try {
+        const data = await UserService.getFriendRequests(currentUser._id);
+        dispatch(setPrevRequests(data));
+        dispatch(setPendingRequests(data));
+      } catch (error) {
+        dispatch(setPendingRequests([]));
       }
     };
 
     fetchFriends();
-  }, []);
+    fetchRequests();
+  }, [currentUser._id, dispatch]);
 
-  // Auto-select the first channel when a server is selected
+  // Tự động chọn channel text đầu tiên khi chọn server
   useEffect(() => {
     if (selectedServer && !selectedChannel) {
-      const firstTextChannel = defaultChannels.find((channel) => channel.type === "text");
+      const firstTextChannel = defaultChannels.find(
+        (channel) => channel.type === "text"
+      );
       if (firstTextChannel) {
-        setSelectedChannel(firstTextChannel);
+        dispatch(setSelectedChannel(firstTextChannel));
       }
     }
-  }, [selectedServer, selectedChannel]);
+  }, [selectedServer, selectedChannel, dispatch]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -163,7 +199,6 @@ export default function Home({ user, onProfileClick }) {
     }
   };
 
-  // Lấy friend object từ selectedFriend
   const selectedFriendObj = selectedFriend
     ? friends.find((f) => f.username === selectedFriend)
     : null;
@@ -171,8 +206,8 @@ export default function Home({ user, onProfileClick }) {
   const handleFriendAction = (action, friend) => {
     switch (action) {
       case "profile":
-        setSelectedProfileFriend(friend);
-        setShowProfile(true);
+        dispatch(setSelectedProfileFriend(friend));
+        dispatch(setShowProfile(true));
         break;
       case "unfriend":
         console.log(`Unfriend ${friend.username}`);
@@ -180,319 +215,150 @@ export default function Home({ user, onProfileClick }) {
       case "block":
         console.log(`Block ${friend.username}`);
         break;
+      default:
+        break;
     }
   };
 
   const handleServerClick = (server) => {
-    setSelectedServer(server);
-    setSelectedFriend(null); 
-    const firstTextChannel = defaultChannels.find((channel) => channel.type === "text");
+    if (!server) {
+      // Nếu server là null, reset trạng thái server
+      dispatch(setSelectedServer(null));
+      dispatch(setActiveTab("server"));
+      dispatch(setSelectedFriend(null));
+      return;
+    }
+    // Loại bỏ các thuộc tính không tuần tự hóa (ví dụ icon)
+    const { icon, ...serializableServer } = server;
+    dispatch(setSelectedServer(serializableServer));
+    dispatch(setActiveTab("server"));
+    dispatch(setSelectedFriend(null));
+    const firstTextChannel = defaultChannels.find(
+      (channel) => channel.type === "text"
+    );
     if (firstTextChannel) {
-      setSelectedChannel(firstTextChannel);
+      dispatch(setSelectedChannel(firstTextChannel));
     }
   };
 
-  // Handle channel selection
   const handleChannelSelect = (channel) => {
-    setSelectedChannel(channel);
+    dispatch(setSelectedChannel(channel));
   };
 
-  // ============================
-  // ======= FRIEND REQUESTS ==
-  // ============================
-  const currentUserFromStorage = JSON.parse(localStorage.getItem("user")) || {};
-
-  useEffect(() => {
-    const fetchRequests = async () => {
-      console.log("Fetching friend requests in Home...");
-      if (!currentUserFromStorage._id) return; // Nếu chưa có userID thì thoát
-
-      try {
-        const response = await fetch(
-          `http://localhost:8081/api/friendships/requests/${currentUserFromStorage._id}`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          if (!initialFetched) {
-            // Lần fetch đầu tiên
-            setInitialFetched(true);
-            setPrevRequests(data);
-            setPendingRequests(data);
-          } else {
-            // So sánh dữ liệu mới với dữ liệu đã có
-            const diff = data.filter(
-              (req) => !prevRequests.some((prev) => prev._id === req._id)
-            );
-            if (diff.length > 0) {
-              setNewRequests(diff);
-            }
-            setPendingRequests(data);
-            setPrevRequests(data);
-          }
-        } else {
-          setPendingRequests([]);
-        }
-      } catch (error) {
-        console.error("Error fetching friend requests:", error);
-      }
-    };
-
-    // Gọi ngay khi component mount
-    fetchRequests();
-
-    // Lặp lại mỗi 5 giây
-    const interval = setInterval(fetchRequests, 5000);
-    return () => clearInterval(interval);
-  }, [currentUserFromStorage._id, initialFetched, prevRequests]);
-
-  // Xử lý Đồng ý kết bạn
+  // Xử lý friend request
   const handleAcceptRequest = async (requestID) => {
     try {
-      await fetch("http://localhost:8081/api/friendships/request/accept", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ requestID })
-      });
-      // Xóa request đó khỏi pendingRequests và newRequests nếu có
-      setPendingRequests((prev) => prev.filter((req) => req._id !== requestID));
-      setNewRequests((prev) => prev.filter((req) => req._id !== requestID));
+      await UserService.acceptFriendRequest(requestID);
+      dispatch(
+        setPendingRequests(pendingRequests.filter((req) => req._id !== requestID))
+      );
+      dispatch(setNewRequests(newRequests.filter((req) => req._id !== requestID)));
     } catch (error) {
       console.error("Error accepting request:", error);
     }
   };
 
-  // Xử lý Từ chối kết bạn
   const handleDeclineRequest = async (requestID) => {
     try {
-      await fetch("http://localhost:8081/api/friendships/request/decline", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ requestID })
-      });
-      // Xóa request khỏi pendingRequests và newRequests nếu có
-      setPendingRequests((prev) => prev.filter((req) => req._id !== requestID));
-      setNewRequests((prev) => prev.filter((req) => req._id !== requestID));
+      await UserService.declineFriendRequest(requestID);
+      dispatch(
+        setPendingRequests(pendingRequests.filter((req) => req._id !== requestID))
+      );
+      dispatch(setNewRequests(newRequests.filter((req) => req._id !== requestID)));
     } catch (error) {
       console.error("Error declining request:", error);
     }
   };
 
-  // Xử lý đóng modal hiển thị lời mời kết bạn
   const handleCloseModal = () => {
-    setNewRequests([]);
+    dispatch(setNewRequests([]));
   };
 
+  // --- Routing tự động dựa trên nội dung chính ---
+  // Nếu đang chọn server & channel thì điều hướng đến URL /server/{serverId}/{channelId}
+  // Nếu đang ở DM (activeTab = "friend" và đã chọn friend) thì điều hướng đến /direct_message/{friendId}
+  // Còn lại vẫn giữ "/" cho trạng thái Home của DM sidebar.
+  useEffect(() => {
+    if (selectedServer && selectedChannel) {
+      // Ước tính id của server từ selectedServer (_id hoặc id)
+      const serverId = selectedServer._id || selectedServer.id;
+      navigate(`/server/${serverId}/${selectedChannel.id}`, { replace: true });
+    } else if (activeTab === "friend" && selectedFriendObj) {
+      navigate(`/direct_message/${selectedFriendObj._id}`, { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  }, [selectedServer, selectedChannel, activeTab, selectedFriendObj, navigate]);
+
   return (
-    <div className="fixed inset-0 flex h-screen w-screen overflow-hidden bg-[#313338] text-gray-100">
+    <div
+      className={`fixed inset-0 flex h-screen w-screen overflow-hidden ${
+        isDarkMode
+          ? "bg-[#313338] text-gray-100"
+          : "bg-[#F8F9FA] text-[#333333]"
+      }`}
+    >
       {/* Left sidebar - Server list */}
-      <div className="h-full w-[72px] bg-[#1e1f22] flex flex-col items-center pt-3 gap-2">
-        {/* Discord DM Button */}
-        <div
-          className="w-12 h-12 bg-[#5865f2] rounded-full flex items-center justify-center mb-2 cursor-pointer hover:rounded-2xl transition-all duration-200 ease-linear"
-          onClick={() => {
-            setSelectedServer(null);
-            setSelectedChannel(null);
-          }}
-        >
-          <MessageSquare className="text-white" size={24} />
-        </div>
-        <div className="w-12 h-[2px] bg-[#35363c] rounded-full mb-2"></div>
-
-        {/* Server icons */}
-        <div className="flex flex-col gap-2 items-center max-h-[calc(100vh-120px)] overflow-y-auto scrollbar-hide">
-          {servers.map((server, index) => (
-            <div
-              key={index}
-              className={`group relative w-12 h-12 rounded-full hover:rounded-2xl transition-all duration-200 ease-linear flex items-center justify-center cursor-pointer ${
-                selectedServer?.label === server.label ? "rounded-2xl" : ""
-              }`}
-              style={{ backgroundColor: server.color }}
-              onClick={() => handleServerClick(server)}
-            >
-              <server.icon className="text-white" size={24} />
-              <div className="absolute left-0 w-1 h-0 bg-white rounded-r-full group-hover:h-5 transition-all duration-200 -translate-x-2"></div>
-              <div className="absolute left-full ml-4 px-3 py-2 bg-black rounded-md text-white text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                {server.label}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="w-12 h-[2px] bg-[#35363c] rounded-full my-2"></div>
-        <div
-          className="w-12 h-12 bg-[#36393f] hover:bg-[#3ba55d] rounded-full hover:rounded-2xl transition-all duration-200 ease-linear flex items-center justify-center cursor-pointer group mb-2"
-          onClick={() => setShowCreateServer(true)}
-        >
-          <Plus className="text-[#3ba55d] group-hover:text-white transition-colors" size={24} />
-        </div>
-      </div>
+      <Suspense fallback={<div>Loading Server List...</div>}>
+        <ServerList
+          selectedServer={selectedServer}
+          onServerClick={handleServerClick}
+          onShowCreateServer={() => dispatch(setShowCreateServer(true))}
+        />
+      </Suspense>
 
       {/* Channel/DM sidebar */}
       {selectedServer ? (
-        <div className="h-full w-60 bg-[#2b2d31] flex flex-col">
-          <ServerChannels
-            server={selectedServer}
-            onChannelSelect={handleChannelSelect}
-            onProfileClick={onProfileClick}
-            selectedChannelId={selectedChannel?.id}
-          />
-          {/* User panel */}
-          <UserPanel user={user} onProfileClick={onProfileClick} />
-        </div>      
-      ) : (
-        <div className="h-full w-60 bg-[#2b2d31] flex flex-col">
-          <div className="p-3">
-            <div className="bg-[#1e1f22] rounded-md flex items-center px-2">
-              <input
-                type="text"
-                placeholder={t('Find or start a conversation')}
-                className="bg-transparent border-none text-sm py-1 w-full focus:outline-none text-gray-300"
-              />
-            </div>
-          </div>
-
-          <div className="px-2 mb-2">
-            <div className="flex flex-col items-start gap-2 mb-2">
-              <button
-                className={`w-full px-2 py-1 rounded text-left ${
-                  activeTab === "friends"
-                    ? isDarkMode
-                      ? "bg-[#5865f2] text-white"
-                      : "bg-blue-500 text-white"
-                    : isDarkMode
-                    ? "text-gray-400 hover:bg-[#35373c]"
-                    : "text-gray-700 hover:bg-gray-200"
-                }`}
-                onClick={() => {
-                  setActiveTab("friends");
-                  setSelectedFriend(null);
-                  setShowAddFriend(false);
-                }}
-              >
-                {t('Friends')}
-              </button>
-
-              <button
-                className={`w-full px-2 py-1 rounded text-left ${
-                  activeTab === "online"
-                    ? isDarkMode
-                      ? "bg-[#5865f2] text-white"
-                      : "bg-blue-500 text-white"
-                    : isDarkMode
-                    ? "text-gray-400 hover:bg-[#35373c]"
-                    : "text-gray-700 hover:bg-gray-200"
-                }`}
-                onClick={() => {
-                  setActiveTab("online");
-                  setShowAddFriend(false);
-                }}
-              >
-                {t('Online')}
-              </button>
-
-              <button
-                className={`w-full px-2 py-1 rounded text-left ${
-                  activeTab === "friend_requests"
-                    ? isDarkMode
-                      ? "bg-[#5865f2] text-white"
-                      : "bg-blue-500 text-white"
-                    : isDarkMode
-                    ? "text-gray-400 hover:bg-[#35373c]"
-                    : "text-gray-700 hover:bg-gray-200"
-                }`}
-                onClick={() => {
-                  setActiveTab("friend_requests");
-                  setShowAddFriend(false);
-                }}
-              >
-                {t('Friend requests')}
-                {pendingRequests.length > 0 && (
-                  <span className="ml-2 bg-red-500 rounded-full px-2 py-0.5 text-xs">
-                    {pendingRequests.length}
-                  </span>
-                )}
-              </button>
-
-              <button
-                className={`w-full px-2 py-1 rounded text-left flex items-center gap-2 ${
-                  activeTab === "addfriend"
-                    ? isDarkMode 
-                      ? "bg-green-600 text-white" 
-                      : "bg-green-500 text-black"
-                    : isDarkMode 
-                      ? "text-gray-400 hover:bg-[#35373c]"
-                      : "text-gray-700 hover:bg-gray-200"
-                }`}
-                onClick={() => {
-                  setActiveTab("addfriend");
-                  setShowAddFriend(true);
-                  setSelectedFriend(null);
-                }}
-              >
-                <UserPlus size={16} /> {t("Add friend")}
-              </button>
-            </div>
-          </div>
-
-          <div className="px-2 text-xs text-gray-400 font-semibold flex items-center justify-between">
-            <span>{t('Direct Messages')}</span>
-            <Plus size={16} className="cursor-pointer" />
-          </div>
-
-          {/* Friends list */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="px-2 py-1">
-              {friends.map((friend, index) => (
-                <FriendContextMenu key={index} friend={friend} onAction={handleFriendAction}>
-                  <div
-                    className={`flex items-center gap-2 p-1 rounded hover:bg-[#35373c] cursor-pointer ${
-                      selectedFriend === friend.username ? "bg-[#35373c]" : ""
-                    }`}
-                    onClick={() => {
-                      setSelectedFriend(friend.username);
-                      setShowAddFriend(false);
-                      setActiveTab("friends");
-                    }}
-                  >
-                    <div className="relative">
-                      <div className="w-8 h-8 bg-[#36393f] rounded-full flex-shrink-0 overflow-hidden">
-                        <img
-                          src={friend.avatar || "/placeholder.svg"}
-                          alt={friend.username}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div
-                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#2b2d31] ${getStatusColor(friend.status)}`}
-                      ></div>
-                    </div>
-                    <span className="text-gray-300">{friend.username}</span>
-                  </div>
-                </FriendContextMenu>
-              ))}
-            </div>
-          </div>
-
-          {/* User panel */}
+        // Channel sidebar (Server Mode)
+        <div
+          className={`h-full w-60 flex flex-col ${
+            isDarkMode ? "bg-[#2b2d31]" : "bg-white border-r border-gray-200"
+          }`}
+        >
+          <Suspense fallback={<div>Loading Channels...</div>}>
+            <ServerChannels
+              server={selectedServer}
+              onChannelSelect={handleChannelSelect}
+              onProfileClick={onProfileClick}
+              selectedChannelId={selectedChannel?.id}
+            />
+          </Suspense>
           <UserPanel user={user} onProfileClick={onProfileClick} />
         </div>
+      ) : (
+        // DM sidebar (Home Mode)
+        <Suspense fallback={<div>Loading DM Sidebar...</div>}>
+          <DMSidebar
+            isDarkMode={isDarkMode}
+            activeTab={activeTab}
+            setActiveTab={(tab) => dispatch(setActiveTab(tab))}
+            setShowAddFriend={(show) => dispatch(setShowAddFriend(show))}
+            selectedFriend={selectedFriend}
+            setSelectedFriend={(friend) => dispatch(setSelectedFriend(friend))}
+            friends={friends}
+            handleFriendAction={handleFriendAction}
+            getStatusColor={getStatusColor}
+            onProfileClick={onProfileClick}
+            user={user}
+          />
+        </Suspense>
       )}
 
       {/* Main content area */}
-      <div className="flex-1 h-full flex flex-col bg-[#313338]">
+      <div
+        className={`flex-1 h-full flex flex-col ${
+          isDarkMode ? "bg-[#313338]" : "bg-[#F8F9FA]"
+        }`}
+      >
         {/* Header */}
         <div
-          className="h-12 min-h-[3rem] flex-shrink-0 border-b border-[#232428] flex items-center px-4 cursor-pointer"
+          className={`h-12 min-h-[3rem] flex-shrink-0 border-b flex items-center px-4 cursor-pointer ${
+            isDarkMode ? "border-[#232428]" : "border-gray-300"
+          }`}
           onClick={() => {
             if (selectedFriendObj) {
-              // Khi có bạn bè được chọn, khi chạm vào sẽ gọi hàm onProfileClick
               onProfileClick(selectedFriendObj);
             } else if (selectedServer && selectedChannel) {
-              // Bạn có thể thêm xử lý riêng cho server/channel nếu cần
               console.log("Channel selected:", selectedChannel.name);
             }
           }}
@@ -506,13 +372,13 @@ export default function Home({ user, onProfileClick }) {
               )}
               <span className="font-semibold">{selectedChannel.name}</span>
             </>
-          )  : selectedFriendObj ? (
+          ) : selectedFriendObj ? (
             <>
-              <div className="w-8 h-8 bg-[#36393f] rounded-full mr-2 overflow-hidden">
+              <div className="w-8 h-8 rounded-full mr-2 overflow-hidden bg-[#36393f]">
                 <img
                   src={selectedFriendObj.avatar || "/placeholder.svg"}
                   alt={selectedFriendObj.username}
-                  className="w-full h-full rounded-full object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <span className="font-semibold">{selectedFriendObj.username}</span>
@@ -520,79 +386,70 @@ export default function Home({ user, onProfileClick }) {
           ) : (
             <>
               <Users size={20} className="text-gray-400 mr-2" />
-              <span className="font-semibold">{t('Friend')}</span>
+              <span className="font-semibold">{t("Friend")}</span>
             </>
           )}
         </div>
+
         {/* Main content */}
-        {selectedServer && selectedChannel ? (
-          <div className="flex flex-1">
-            <ServerChat channel={selectedChannel} />
-            <ServerMembers />
-          </div>
-        ) : activeTab === "friends" ? (
-          <FriendList />
-        ) : activeTab === "addfriend" ? (
-          <AddFriend />
-        ) : activeTab === "friend_requests" ? (
-          <FriendRequests
-            friendRequests={pendingRequests}
-            onAccept={handleAcceptRequest}
-            onDecline={handleDeclineRequest}
-          />
-        ) : selectedFriendObj ? (
-          <DirectMessage friend={selectedFriendObj} messages={mockMessages[selectedFriend] || []} />
-        ) : (
-          <FriendsView />
-        )}
+        <Suspense fallback={<div>Loading Main Content...</div>}>
+          {selectedServer && selectedChannel ? (
+            <div className="flex flex-1">
+              <ServerChat channel={selectedChannel} />
+              <ServerMembers />
+            </div>
+          ) : activeTab === "friends" ? (
+            <FriendList />
+          ) : activeTab === "addfriend" ? (
+            <AddFriend />
+          ) : activeTab === "friend_requests" ? (
+            <FriendRequests
+              friendRequests={pendingRequests}
+              onAccept={handleAcceptRequest}
+              onDecline={handleDeclineRequest}
+            />
+          ) : activeTab === "friend" && selectedFriendObj ? (
+            <DirectMessage
+              friend={selectedFriendObj}
+              messages={mockMessages[selectedFriend] || []}
+            />
+          ) : (
+            <FriendsView />
+          )}
+        </Suspense>
       </div>
 
       {/* Friend profile modal */}
-      {showProfile && selectedProfileFriend && (
-        <FriendProfile
-          friend={selectedProfileFriend}
-          onClose={() => {
-            setShowProfile(false);
-            setSelectedProfileFriend(null);
-          }}
-        />
-      )}
+      <Suspense fallback={<div>Loading Friend Profile...</div>}>
+        {showProfile && selectedProfileFriend && (
+          <FriendProfile
+            friend={selectedProfileFriend}
+            onClose={() => {
+              dispatch(setShowProfile(false));
+              dispatch(setSelectedProfileFriend(null));
+            }}
+          />
+        )}
+      </Suspense>
 
       {/* Create server modal */}
-      {showCreateServer && <CreateServerModal onClose={() => setShowCreateServer(false)} />}
+      <Suspense fallback={<div>Loading Create Server Modal...</div>}>
+        {showCreateServer && (
+          <CreateServerModal onClose={() => dispatch(setShowCreateServer(false))} />
+        )}
+      </Suspense>
 
-      {/* ============= MODAL hiển thị lời mời kết bạn (chỉ hiển thị nếu có yêu cầu mới) ============= */}
-      {newRequests.length > 0 && activeTab !== "friend_requests" && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white text-black rounded p-6 w-[300px] text-center relative">
-            {/* Nút tắt modal */}
-            <button
-              onClick={handleCloseModal}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-            >
-              X
-            </button>
-            <h3 className="text-lg font-semibold mb-2">
-              {newRequests[0].sender?.username} muốn kết bạn với bạn
-            </h3>
-            <div className="flex justify-center gap-4 mt-4">
-              <button
-                onClick={() => handleAcceptRequest(newRequests[0]._id)}
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-              >
-                Đồng ý
-              </button>
-              <button
-                onClick={() => handleDeclineRequest(newRequests[0]._id)}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Từ chối
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* ============= End Modal ============= */}
+      {/* Friend request modal */}
+      <Suspense fallback={<div>Loading Friend Request Modal...</div>}>
+        {newRequests.length > 0 && activeTab !== "friend_requests" && (
+          <FriendRequestModal
+            requests={newRequests}
+            onAccept={handleAcceptRequest}
+            onDecline={handleDeclineRequest}
+            onClose={() => dispatch(setNewRequests([]))}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

@@ -113,7 +113,7 @@ function AppContent() {
 
         {/* Protected User Routes */}
         <Route 
-          path="/" 
+          path="/*" 
           element={
             <UserRoute>
               <>

@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Server } from './server.entity';
-import { UserService } from '../users/user.service';
 import { Client } from '@elastic/elasticsearch';
-import { GrpcMethod } from '@nestjs/microservices';
 import { ServerDto } from './server.dto';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
@@ -14,7 +12,6 @@ export class ServerService {
   constructor(
     @InjectRepository(Server)
     private serverRepository: Repository<Server>,
-    private userService: UserService,
   ) {
     this.esClient = new Client({
       node: process.env.ELASTIC_NODE,
@@ -24,28 +21,31 @@ export class ServerService {
 
   private readonly esClient: Client;
 
-  async createServer(data: ServerDto, username: string) {
+  private user = {
+    id: '0000cf74-73b9-494f-90dd-81ca863bbc3c',
+    username: 'user7660',
+    email: 'user7660@example.dating',
+    password_hash:
+      '$2b$12$/fScO2Ie4/XNpbMZxa.BlO5p8c0c4v9lYw1HsdS1WNZKAENddcnxW',
+    profile_pic: null,
+    status: 'online',
+    created_at: '2021-06-06 10:57:21',
+    updated_at: '2021-06-06 10:57:21',
+    is_admin: false,
+  };
+
+  async createServer(username: string, data: ServerDto) {
     const serverDto = plainToClass(ServerDto, data);
     const errors = await validate(serverDto);
-    if (errors.length > 0) {
-      throw new Error(
-        `Validation failed: ${errors
-          .map((e) =>
-            e.constraints
-              ? Object.values(e.constraints).join(', ')
-              : 'Unknown error',
-          )
-          .join('; ')}`,
-      );
-    }
+    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
 
-    const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
+    const user = this.user;
+    if (!user) return { message: 'User not found' };
 
     const server = this.serverRepository.create({
       name: data.name,
       owner_id: user.id,
-      server_pic: data.server_pic,
+      server_pic: data.serverPic,
     });
 
     await this.serverRepository.save(server);
@@ -61,57 +61,46 @@ export class ServerService {
       },
     });
 
-    return server;
+    return { message: 'Server created successfully' };
   }
 
   async updateServer(
-    serverId: string,
-    data: Partial<ServerDto>,
+    server_id: string,
     username: string,
+    data: Partial<ServerDto>,
   ) {
     const serverDto = plainToClass(ServerDto, data);
     const errors = await validate(serverDto, { skipMissingProperties: true });
-    if (errors.length > 0) {
-      throw new Error(
-        `Validation failed: ${errors
-          .map((e) =>
-            e.constraints
-              ? Object.values(e.constraints).join(', ')
-              : 'Unknown error',
-          )
-          .join('; ')}`,
-      );
-    }
+    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
 
-    const user = await this.userService.getUserByUsername(username);
+    const user = this.user;
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new Error('Server not found');
+    if (!server) return { message: 'Server not found' };
     if (server.owner_id !== user.id)
-      throw new Error('Only the owner can update the server');
+      return { message: 'Only the owner can update the server' };
 
     const updatedData = {
       name: data.name || server.name,
       server_pic:
-        data.server_pic !== undefined ? data.server_pic : server.server_pic,
+        data.serverPic !== undefined ? data.serverPic : server.server_pic,
     };
 
-    await this.serverRepository.update(serverId, updatedData);
+    await this.serverRepository.update(server_id, updatedData);
 
     await this.esClient.update({
       index: 'servers',
-      id: serverId,
+      id: server_id,
       body: { doc: updatedData },
     });
 
     return { message: 'Server updated successfully' };
   }
 
-  // Các phương thức khác giữ nguyên
   async getServers(username: string, query: string) {
-    const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
+    const user = this.user;
+    if (!user) return [];
 
     const result = await this.esClient.search({
       index: 'servers',
@@ -126,77 +115,35 @@ export class ServerService {
     });
 
     const servers = result.hits.hits.map((hit: any) => hit._source);
-    if (servers.length === 0) throw new Error('No servers found');
     return servers;
   }
 
   async getAllServers(username: string) {
-    const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
+    const user = this.user;
+    if (!user) return [];
 
     const result = await this.esClient.search({
       index: 'servers',
       body: { query: { term: { owner_username: username } } },
     });
-    return result.hits.hits.map((hit: any) => hit._source);
+
+    const servers = result.hits.hits.map((hit: any) => hit._source);
+    return servers;
   }
 
-  async deleteServer(serverId: string, username: string) {
-    const user = await this.userService.getUserByUsername(username);
+  async deleteServer(server_id: string, username: string) {
+    const user = this.user;
+    if (!user) return { message: 'User not found' };
+
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new Error('Server not found');
+    if (!server) return { message: 'Server not found' };
     if (server.owner_id !== user.id)
-      throw new Error('Only the owner can delete the server');
+      return { message: 'Only the owner can delete the server' };
 
-    await this.serverRepository.delete(serverId);
-    await this.esClient.delete({ index: 'servers', id: serverId });
+    await this.serverRepository.delete(server_id);
+    await this.esClient.delete({ index: 'servers', id: server_id });
     return { message: 'Server deleted successfully' };
-  }
-
-  @GrpcMethod('ServerService', 'CreateServer')
-  async createServerGrpc(data: any) {
-    const server = await this.createServer(data, data.username);
-    return this.mapServerToResponse(server);
-  }
-
-  @GrpcMethod('ServerService', 'UpdateServer')
-  async updateServerGrpc(data: any) {
-    const result = await this.updateServer(data.server_id, data, data.username);
-    return { message: result.message };
-  }
-
-  // Các gRPC method khác giữ nguyên
-  @GrpcMethod('ServerService', 'GetServers')
-  async getServersGrpc(data: { username: string; query: string }) {
-    const servers = await this.getServers(data.username, data.query);
-    return {
-      servers: servers.map((server: any) => this.mapServerToResponse(server)),
-    };
-  }
-
-  @GrpcMethod('ServerService', 'GetAllServers')
-  async getAllServersGrpc(data: { username: string }) {
-    const servers = await this.getAllServers(data.username);
-    return {
-      servers: servers.map((server: any) => this.mapServerToResponse(server)),
-    };
-  }
-
-  @GrpcMethod('ServerService', 'DeleteServer')
-  async deleteServerGrpc(data: { server_id: string; username: string }) {
-    const result = await this.deleteServer(data.server_id, data.username);
-    return { message: result.message };
-  }
-
-  private mapServerToResponse(server: any) {
-    return {
-      id: server.id,
-      name: server.name,
-      owner_id: server.owner_id,
-      created_at: server.created_at.toISOString(),
-      server_pic: server.server_pic || '',
-    };
   }
 }

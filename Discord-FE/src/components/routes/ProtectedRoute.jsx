@@ -1,11 +1,12 @@
 import { Navigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { useEffect, useState } from "react";
+import { User_API } from "../../../apiConfig";
 
 // Fetch user role from backend
 const checkUserRole = async (email) => {
   try {
-    const response = await fetch(`http://localhost:5001/users/email/${email}`);
+    const response = await fetch(`${User_API}/api/users/email/${email}`);
     if (!response.ok) throw new Error("User not found");
     const userData = await response.json();
     return userData.role; // Returns "admin" or "user"

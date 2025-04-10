@@ -1,12 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Channel } from './channel.entity';
 import { Server } from '../servers/server.entity';
-import { UserService } from '../users/user.service';
 import { ChannelMemberService } from '../channel_members/channel_member.service';
 import { Client } from '@elastic/elasticsearch';
-import { GrpcMethod } from '@nestjs/microservices';
 import { ChannelDto } from './channel.dto';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
@@ -18,7 +21,6 @@ export class ChannelService {
     private channelRepository: Repository<Channel>,
     @InjectRepository(Server)
     private serverRepository: Repository<Server>,
-    private userService: UserService,
     private channelMemberService: ChannelMemberService,
   ) {
     this.esClient = new Client({
@@ -29,56 +31,54 @@ export class ChannelService {
 
   private readonly esClient: Client;
 
-  async createChannel(serverId: string, data: ChannelDto, username: string) {
+  private user = {
+    id: '0000cf74-73b9-494f-90dd-81ca863bbc3c',
+    username: 'user7660',
+    email: 'user7660@example.dating',
+    password_hash:
+      '$2b$12$/fScO2Ie4/XNpbMZxa.BlO5p8c0c4v9lYw1HsdS1WNZKAENddcnxW',
+    profile_pic: null,
+    status: 'online',
+    created_at: '2021-06-06 10:57:21',
+    updated_at: '2021-06-06 10:57:21',
+    is_admin: false,
+  };
+
+  async createChannel(server_id: string, username: string, data: ChannelDto) {
     const channelDto = plainToClass(ChannelDto, data);
     const errors = await validate(channelDto);
-    if (errors.length > 0) {
-      throw new Error(
-        `Validation failed: ${errors
-          .map((e) =>
-            e.constraints
-              ? Object.values(e.constraints).join(', ')
-              : 'Unknown error',
-          )
-          .join('; ')}`,
-      );
-    }
+    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
 
-    const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
+    const user = this.user;
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new Error('Server not found');
-
+    if (!server) return { message: 'Server not found' };
     if (server.owner_id !== user.id)
-      throw new Error('Only the owner can create channels');
+      return { message: 'Only the owner can create the channel' };
 
     const existingChannel = await this.channelRepository.findOne({
-      where: { server_id: serverId, name: data.name },
+      where: { server_id, name: data.name },
     });
     if (existingChannel)
-      throw new Error('Channel with this name already exists in the server');
+      return { message: 'Channel with this name already exists in the server' };
 
     const channel = this.channelRepository.create({
-      server_id: serverId,
+      server_id: server_id,
       name: data.name,
-      type: data.type,
-      is_private: data.is_private,
+      type: data.type || 'text',
+      is_private: data.isPrivate || false,
     });
 
     await this.channelRepository.save(channel);
 
-    await this.channelMemberService.addMember(channel.id, username, {
-      username: user.username,
-    });
+    await this.channelMemberService.addMember(channel.id, username, username);
 
     await this.esClient.index({
       index: 'channels',
       id: channel.id,
       body: {
-        server_id: serverId,
+        server_id: server_id,
         server_name: server.name,
         name: channel.name,
         type: channel.type,
@@ -88,7 +88,7 @@ export class ChannelService {
       },
     });
 
-    return channel;
+    return { message: 'Channel created successfully' };
   }
 
   async updateChannel(
@@ -98,35 +98,22 @@ export class ChannelService {
   ) {
     const channelDto = plainToClass(ChannelDto, data);
     const errors = await validate(channelDto, { skipMissingProperties: true });
-    if (errors.length > 0) {
-      throw new Error(
-        `Validation failed: ${errors
-          .map((e) =>
-            e.constraints
-              ? Object.values(e.constraints).join(', ')
-              : 'Unknown error',
-          )
-          .join('; ')}`,
-      );
-    }
+    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
 
-    const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
+    const user = this.user;
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['server'],
     });
-    if (!channel) throw new Error('Channel not found');
-
+    if (!channel) return { message: 'Channel not found' };
     if (channel.server.owner_id !== user.id)
-      throw new Error('Only the owner can update the channel');
+      return { message: 'Only the owner can update the channel' };
 
     const updatedData = {
       name: data.name || channel.name,
       type: data.type || channel.type,
       is_private:
-        data.is_private !== undefined ? data.is_private : channel.is_private,
+        data.isPrivate !== undefined ? data.isPrivate : channel.is_private,
     };
 
     await this.channelRepository.update(channelId, updatedData);
@@ -140,15 +127,14 @@ export class ChannelService {
     return { message: 'Channel updated successfully' };
   }
 
-  // Các phương thức khác giữ nguyên
-  async getChannels(username: string, serverId: string, query: string) {
-    const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
+  async getChannels(username: string, server_id: string, query: string) {
+    const user = this.user;
+    if (!user) return [];
 
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new Error('Server not found');
+    if (!server) return [];
 
     const result = await this.esClient.search({
       index: 'channels',
@@ -156,118 +142,46 @@ export class ChannelService {
         query: {
           bool: {
             filter: [{ term: { server_id: server.id } }],
-            must: [{ query_string: { query: `*${query}*`, fields: ['name'] } }],
+            must: [{ match_phrase_prefix: { name: query } }],
           },
         },
       },
     });
 
     const channels = result.hits.hits.map((hit: any) => hit._source);
-    if (channels.length === 0) throw new Error('No channels found');
     return channels;
   }
 
-  async getChannelsByServer(serverId: string, username: string) {
-    const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
+  async getChannelsByServer(server_id: string, username: string) {
+    const user = this.user;
+    if (!user) return [];
 
     const server = await this.serverRepository.findOne({
-      where: { id: serverId },
+      where: { id: server_id },
     });
-    if (!server) throw new Error('Server not found');
+    if (!server) return [];
 
     const result = await this.esClient.search({
       index: 'channels',
       body: { query: { term: { server_id: server.id } } },
     });
 
-    return result.hits.hits.map((hit: any) => hit._source);
+    const channels = result.hits.hits.map((hit: any) => hit._source);
+    return channels;
   }
 
   async deleteChannel(channelId: string, username: string) {
-    const user = await this.userService.getUserByUsername(username);
-    if (!user) throw new Error('User not found');
-
+    const user = this.user;
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['server'],
     });
-    if (!channel) throw new Error('Channel not found');
-
+    if (!channel) return { message: 'Channel not found' };
     if (channel.server.owner_id !== user.id)
-      throw new Error('Only the owner can delete the channel');
+      return { message: 'Only the owner can delete the channel' };
 
     await this.channelRepository.delete(channelId);
     await this.esClient.delete({ index: 'channels', id: channelId });
     return { message: 'Channel deleted successfully' };
-  }
-
-  @GrpcMethod('ChannelService', 'CreateChannel')
-  async createChannelGrpc(data: any) {
-    const channel = await this.createChannel(
-      data.server_id,
-      data,
-      data.username,
-    );
-    return this.mapChannelToResponse(channel);
-  }
-
-  @GrpcMethod('ChannelService', 'UpdateChannel')
-  async updateChannelGrpc(data: any) {
-    const result = await this.updateChannel(
-      data.channel_id,
-      data,
-      data.username,
-    );
-    return { message: result.message };
-  }
-
-  // Các gRPC method khác giữ nguyên
-  @GrpcMethod('ChannelService', 'GetChannels')
-  async getChannelsGrpc(data: {
-    username: string;
-    server_id: string;
-    query: string;
-  }) {
-    const channels = await this.getChannels(
-      data.username,
-      data.server_id,
-      data.query,
-    );
-    return {
-      channels: channels.map((channel: any) =>
-        this.mapChannelToResponse(channel),
-      ),
-    };
-  }
-
-  @GrpcMethod('ChannelService', 'GetChannelsByServer')
-  async getChannelsByServerGrpc(data: { server_id: string; username: string }) {
-    const channels = await this.getChannelsByServer(
-      data.server_id,
-      data.username,
-    );
-    return {
-      channels: channels.map((channel: any) =>
-        this.mapChannelToResponse(channel),
-      ),
-    };
-  }
-
-  @GrpcMethod('ChannelService', 'DeleteChannel')
-  async deleteChannelGrpc(data: { channel_id: string; username: string }) {
-    const result = await this.deleteChannel(data.channel_id, data.username);
-    return { message: result.message };
-  }
-
-  private mapChannelToResponse(channel: any) {
-    return {
-      id: channel.id,
-      server_id: channel.server_id,
-      name: channel.name,
-      type: channel.type || '',
-      created_at: channel.created_at.toISOString(),
-      is_private: channel.is_private || false,
-    };
   }
 }

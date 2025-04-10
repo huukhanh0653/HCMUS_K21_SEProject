@@ -1,20 +1,21 @@
-import { useState } from "react"
-import { MoreVertical, Plus } from "lucide-react"
-import { useNavigate } from "react-router-dom"
-import { useTheme } from "../../components/layout/ThemeProvider"
-import Logo from "../../assets/echochat_logo.svg"
-
+import { useState } from "react";
+import { MoreVertical, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../components/layout/ThemeProvider";
+import Logo from "../../assets/echochat_logo.svg";
 import CryptoJS from "crypto-js";
 import { signInWithEmail } from "../../firebase";
 
 // Background images
-import DarkBackground from "../../assets/darkmode_background.jpg"
-import LightBackground from "../../assets/whitemode_background.jpg"
+import DarkBackground from "../../assets/darkmode_background.jpg";
+import LightBackground from "../../assets/whitemode_background.jpg";
+// Import UserService để gọi api
+import UserService from "../../service/UserService";
 
 export default function UsedAccounts() {
-  const [showDropdown, setShowDropdown] = useState(null)
-  const { isDarkMode } = useTheme()
-  const navigate = useNavigate()
+  const [showDropdown, setShowDropdown] = useState(null);
+  const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
 
   const storedAccounts = JSON.parse(localStorage.getItem("used_user")) || [];
   const [accounts, setAccounts] = useState(storedAccounts);
@@ -22,29 +23,24 @@ export default function UsedAccounts() {
 
   const handleLogin = async (account) => {
     console.log(`Logging in with account ${account.email}`);
-  
+
     const email = account.email;
-  
-    // 🔓 Giải mã password AES
+
+    // Giải mã password AES
     const bytes = CryptoJS.AES.decrypt(account.encryptedPassword, SECRET_KEY);
     const password = bytes.toString(CryptoJS.enc.Utf8);
-  
+
     try {
       const user = await signInWithEmail(email, password);
-  
-      await fetch("http://localhost:5001/users/sync-firebase", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, email: user.email }),
-      });
-  
-      const res = await fetch(`http://localhost:5001/users/email/${email}`);
-      const response = await res.json();
-  
+
+      // Sử dụng UserService thay cho fetch trực tiếp
+      await UserService.syncFirebaseUser(user.uid, user.email);
+      const response = await UserService.getUserByEmail(email);
+
       localStorage.setItem("email", response.email);
       localStorage.setItem("username", response.username);
       localStorage.setItem("user", JSON.stringify(response));
-  
+
       navigate("/");
     } catch (err) {
       console.error("❌ Đăng nhập thất bại:" + err.message);
@@ -52,16 +48,16 @@ export default function UsedAccounts() {
   };
 
   const toggleDropdown = (accountId) => {
-    setShowDropdown(showDropdown === accountId ? null : accountId)
-  }
+    setShowDropdown(showDropdown === accountId ? null : accountId);
+  };
 
   const handleRemoveAccount = (emailToRemove) => {
-    const updatedAccounts = accounts.filter(acc => acc.email !== emailToRemove);
+    const updatedAccounts = accounts.filter((acc) => acc.email !== emailToRemove);
     localStorage.setItem("used_user", JSON.stringify(updatedAccounts));
     setAccounts(updatedAccounts);
     setShowDropdown(null);
-  };  
-  
+  };
+
   return (
     <div
       className="flex flex-col items-center min-h-screen w-full py-10"
@@ -132,7 +128,7 @@ export default function UsedAccounts() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleLogin(account)} // ✅ truyền object account
+                  onClick={() => handleLogin(account)}
                   className="px-3 py-1 rounded text-sm"
                   style={{
                     background: isDarkMode ? "#4E5058" : "#007BFF",
@@ -183,5 +179,5 @@ export default function UsedAccounts() {
         </button>
       </div>
     </div>
-  )
+  );
 }
