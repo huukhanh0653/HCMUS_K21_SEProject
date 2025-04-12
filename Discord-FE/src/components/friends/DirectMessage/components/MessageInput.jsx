@@ -78,11 +78,13 @@ export default function MessageInput({
     }
   };
 
-  // Hàm chèn emoji vào nội dung soạn
+  // Hàm chèn emoji vào nội dung soạn:
+  // Bây giờ emoji là một đối tượng với các trường { unicode, name, type, url }
+  // Nên ta chỉ nối trường unicode vào messageInput
   const handleEmojiSelect = (emoji) => {
-    setMessageInput((prev) => prev + emoji);
+    setMessageInput((prev) => prev + emoji.unicode);
     setShowEmojiMenu(false);
-    // Focusing lại textarea sau khi chọn emoji (nếu cần)
+    // Tập trung lại vào textarea sau khi chọn emoji (nếu cần)
     if (inputRef?.current) {
       inputRef.current.focus();
     }
@@ -134,10 +136,7 @@ export default function MessageInput({
             }}
           />
 
-          <button
-            className={sendButtonClass}
-            onClick={handleSendClick}
-          >
+          <button className={sendButtonClass} onClick={handleSendClick}>
             {/* Khi bấm nút này, thay vì chỉ gửi tin nhắn, ta hiện menu emoji */}
             <SmilePlus
               size={20}

@@ -13,7 +13,8 @@ export default function UserPanel({ user, onProfileClick }) {
 
   useEffect(() => {
     // Sử dụng key "user_info" để đọc thông tin người dùng từ localStorage
-    const storedUserString = localStorage.getItem("user_info");
+    const storedUserString = localStorage.getItem("user");
+    const storedUser_InfoString = localStorage.getItem("user_info");
     if (storedUserString) {
       try {
         const storedUser = JSON.parse(storedUserString);
@@ -26,10 +27,23 @@ export default function UserPanel({ user, onProfileClick }) {
       } catch (error) {
         console.error("Error parsing stored user:", error);
       }
+    } else if (storedUser_InfoString) {
+      console.log("No localStorage user found, checking user_info...");
+      try {
+        const storedUser = JSON.parse(storedUser_InfoString);
+        if (storedUser.name) {
+          setUsername(storedUser.name);
+        }
+        if (storedUser.avatar) {
+          setAvatarSrc(storedUser.avatar);
+        }
+      } catch (error) {
+        console.error("Error parsing stored user:", error);
+      }
     } else if (user) {
       // Nếu không có trong localStorage, dùng thông tin từ prop user (nếu có)
-      if (user.username) {
-        setUsername(user.username);
+      if (user.name) {
+        setUsername(user.name);
       }
       if (user.avatar) {
         setAvatarSrc(user.avatar);
