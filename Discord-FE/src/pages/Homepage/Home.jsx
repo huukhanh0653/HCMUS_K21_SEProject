@@ -329,7 +329,7 @@ export default function Home({ user }) {
             <ServerChannels
               server={selectedServer}
               onChannelSelect={handleChannelSelect}
-              onProfileClick={onProfileClick}
+              onProfileClick={() => setProfileModal(true)}
               selectedChannelId={selectedChannel?.id}
             />
           </Suspense>
