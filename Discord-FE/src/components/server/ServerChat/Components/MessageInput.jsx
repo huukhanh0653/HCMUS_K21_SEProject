@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Gift, ImageIcon, Sticker, SmilePlus } from "lucide-react";
+import { SmilePlus } from "lucide-react";
 import UploadFile from "../../../friends/DirectMessage/components/UploadFile";
 import ShowFile from "../../../friends/DirectMessage/components/ShowFile";
+import StorageService from "../../../../service/StorageService";
 
 const SAMPLE_USERS = [
   { id: 1, name: "TanPhat", username: "tanphat" },
@@ -20,7 +21,6 @@ export default function MessageInput({
   const [showMentions, setShowMentions] = useState(false);
   const [mentionUsers, setMentionUsers] = useState(SAMPLE_USERS);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
-  const [showUpload, setShowUpload] = useState(false);
   const [showFile, setShowFile] = useState([]);
   const [uploadedUrls, setUploadedUrls] = useState([]);
 
@@ -88,38 +88,18 @@ export default function MessageInput({
     handleInput();
   };
 
-  const uploadToGCS = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("http://localhost:8080/api/storage/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error("Upload failed: " + errorText);
-      }
-
-      const data = await response.text();
-      const fileUrl = data.split(": ")[1];
-      setUploadedUrls((prev) => [...prev, fileUrl]);
-      return fileUrl;
-    } catch (error) {
-      console.error("Upload error:", error);
-      return null;
-    }
-  };
-
   const handleFileSelect = async (file) => {
     setShowFile((prev) => [...prev, file]);
-    const fileUrl = await uploadToGCS(file);
-    if (!fileUrl) {
-      console.warn("File upload failed");
+    try {
+      const result = await StorageService.uploadFile(file);
+      if (result?.url) {
+        setUploadedUrls((prev) => [...prev, result.url]);
+      } else {
+        console.warn("No URL returned after upload");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
     }
-    setShowUpload(false);
   };
 
   const handleRemoveFile = (fileName) => {
@@ -140,9 +120,9 @@ export default function MessageInput({
       }
     } else if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      const message = getTextContent().trim();
-      if (message !== "") {
-        onSend(message);
+      const fullMessage = prepareMessage();
+      if (fullMessage) {
+        onSend(fullMessage);
         editorRef.current.innerHTML = "";
         onChange("");
         setShowFile([]);
@@ -151,7 +131,19 @@ export default function MessageInput({
     }
   };
 
-  const handleSendClick = () => {
+  const prepareMessage = () => {
+    const messageText = getTextContent().trim();
+    if (messageText === "" && uploadedUrls.length === 0) return null;
+  
+    return {
+      sender: { id: 1 }, // Hoặc truyền `sender` từ props nếu có
+      content: messageText,
+      file: uploadedUrls,
+    };
+  };
+  
+  
+  const sendMessage = () => {
     const message = getTextContent().trim();
     if (message !== "") {
       onSend(message);
@@ -161,6 +153,18 @@ export default function MessageInput({
       setUploadedUrls([]);
     }
   };
+
+  const handleSendClick = () => {
+    const fullMessage = prepareMessage();
+    if (fullMessage) {
+      onSend(fullMessage);
+      editorRef.current.innerHTML = "";
+      onChange("");
+      setShowFile([]);
+      setUploadedUrls([]);
+    }
+  };
+  
 
   useEffect(() => {
     if (editorRef.current && value === "") {
@@ -215,14 +219,11 @@ export default function MessageInput({
               </div>
             )}
           </div>
-          <button className="p-2 hover:bg-[#404249] rounded-lg" onClick={() => {
-            const message = getTextContent().trim();
-            if (message !== "") {
-              onSend(message);
-              editorRef.current.innerHTML = "";
-              onChange("");
-            }
-          }}>
+
+          <button
+            className="p-2 hover:bg-[#404249] rounded-lg"
+            onClick={handleSendClick}
+          >
             <SmilePlus size={20} className="text-gray-200" />
           </button>
         </div>
