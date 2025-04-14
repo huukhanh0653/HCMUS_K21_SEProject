@@ -43,7 +43,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   // Admin trying to access user routes → Redirect to admin dashboard
   if (requiredRole === "user" && role === "admin") {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   // User trying to access admin routes → Redirect to homepage
@@ -87,7 +87,7 @@ export const RedirectIfAuthenticated = ({ children }) => {
 
   // If already logged in, redirect to respective dashboard
   if (user) {
-    return <Navigate to={role === "admin" ? "/admin/dashboard" : "/"} replace />;
+    return <Navigate to={role === "admin" ? "/admin" : "/"} replace />;
   }
 
   return children;
