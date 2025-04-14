@@ -170,7 +170,7 @@ export default function ServerChat({ channel }) {
   };
 
   return (
-    <div className="flex-1 flex flex-col relative">
+    <div className="flex flex-col h-full min-h-0 relative">
       <MessageList
         messages={messages}
         username={username}

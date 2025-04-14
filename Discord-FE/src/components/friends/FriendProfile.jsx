@@ -41,9 +41,9 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
         <div className="relative h-60">
           {/* Banner */}
           <div className={`${isDarkMode ? "h-40 bg-[#9b84b7]" : "h-40 bg-gray-300"}`}>
-            {friend.wallpaper && (
+            {friend.background && (
               <img
-                src={friend.wallpaper || "/placeholder.svg"}
+                src={friend.background || "/placeholder.svg"}
                 alt="Profile Banner"
                 className="w-full h-full object-cover"
               />

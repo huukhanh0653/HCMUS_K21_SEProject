@@ -1,4 +1,3 @@
-// VoiceChat.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { Mic, MicOff, PhoneCall } from "lucide-react";
 import VoiceChatService from "../../../services/VoiceChatService";
@@ -7,10 +6,10 @@ import VoiceChatService from "../../../services/VoiceChatService";
  * Component VoiceChat sẽ join vào kênh voice theo channel được cung cấp
  * và hiển thị danh sách người dùng trong kênh, với giao diện điều khiển
  * cho user hiện tại (bật/tắt mic, cúp máy).
- * 
+ *
  * Nếu không truyền prop user, component sẽ lấy user hiện tại từ localStorage.
  * (Lưu ý: Home.jsx sử dụng key "user_info" để lưu user.)
- * 
+ *
  * @param {object} props 
  *   - user: (optional) object của user hiện tại.
  *   - channel: đối tượng channel (ít nhất có thuộc tính id)
@@ -59,9 +58,9 @@ const VoiceChat = ({ user, channel, onLeave }) => {
       voiceChatService.current = new VoiceChatService();
       voiceChatService.current.onUsersChange = updateUsers;
       voiceChatService.current.onUserJoin = (newUser) => {
-        setUsers(prev => {
+        setUsers((prev) => {
           const transformedUser = transformUser(newUser);
-          if (!prev.some(u => u._id === transformedUser._id)) {
+          if (!prev.some((u) => u._id === transformedUser._id)) {
             return [...prev, transformedUser];
           }
           return prev;
