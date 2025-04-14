@@ -1,4 +1,3 @@
-// ServerChannels.jsx
 import { useEffect, useState, useRef } from "react";
 import { ChevronDown, Hash, Volume2, Bell, Plus, Lock } from "lucide-react";
 import UserPanel from "../user/UserPanel";
@@ -10,7 +9,7 @@ import VoiceChat from "./VoiceChat/VoiceChat";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 
-export default function ServerChannels({ server, onChannelSelect, onProfileClick, selectedChannelId }) {
+export default function ServerChannels({ server, channels, onChannelSelect, onProfileClick, selectedChannelId }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
@@ -22,13 +21,6 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
 
-  // Dữ liệu channels mẫu với các loại: text và voice.
-  const [channels, setChannels] = useState([
-    { id: 1, name: "general", type: "text", isPrivate: false },
-    { id: 2, name: "announcements", type: "text", isPrivate: false },
-    { id: 3, name: "random", type: "text", isPrivate: true },
-    { id: 4, name: "Gaming", type: "voice", isPrivate: false },
-  ]);
 
   // Tạo mảng thành viên mẫu với 20 người dùng.
   const serverMembers = [
@@ -73,18 +65,19 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
   // State để lưu channel voice mà user đã join.
   const [joinedVoiceChannelId, setJoinedVoiceChannelId] = useState(null);
 
-  // Khi bấm vào channel: nếu là voice => chỉ cập nhật state nội bộ, không thay đổi selectedChannel;
-  // nếu là text thì update selectedChannel và xoá trạng thái voice.
+  // Khi bấm vào channel:
   const handleChannelClick = (channel) => {
     if (channel.type === "voice") {
+      // Nếu click vào channel voice, chỉ cập nhật state voice.
       setJoinedVoiceChannelId(channel.id);
+      // Không gọi onChannelSelect để không thay đổi selectedChannel cho text.
     } else {
       onChannelSelect(channel);
-      setJoinedVoiceChannelId(null);
+      // Không reset joinedVoiceChannelId để voice chat vẫn được giữ.
     }
   };
 
-  // Callback khi rời kênh voice từ VoiceChat.
+  // Callback khi người dùng rời channel voice từ VoiceChat.
   const handleLeaveVoiceChannel = () => {
     setJoinedVoiceChannelId(null);
   };
@@ -224,13 +217,21 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
       <div className="flex-1 overflow-y-auto pt-2">
         {sortedChannels.map((channel) => (
           <div key={channel.id}>
-            <div className={`flex items-center justify-between px-2 py-1.5 gap-2
-              ${isDarkMode 
-                ? `text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""}`
-                : `text-gray-600 hover:bg-gray-100 hover:text-[#333333] ${selectedChannelId === channel.id ? "bg-[#1877F2] text-white" : ""}`
+            <div
+              className={`flex items-center justify-between px-2 py-1.5 gap-2 ${
+                isDarkMode
+                  ? `text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${
+                      selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""
+                    }`
+                  : `text-gray-600 hover:bg-gray-100 hover:text-[#333333] ${
+                      selectedChannelId === channel.id ? "bg-[#1877F2] text-white" : ""
+                    }`
               }`}
             >
-              <button onClick={() => handleChannelClick(channel)} className="flex items-center gap-2 flex-1 text-left">
+              <button
+                onClick={() => handleChannelClick(channel)}
+                className="flex items-center gap-2 flex-1 text-left"
+              >
                 {channel.type === "voice" ? (
                   <Volume2 size={20} />
                 ) : channel.type === "text" && channel.isPrivate ? (
@@ -244,18 +245,52 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
                 <div className="flex items-center gap-2">
                   {/* Notification bell */}
                   <div className="relative">
-                    <button onClick={() => setOpenNotificationDropdown(openNotificationDropdown === channel.id ? null : channel.id)}>
-                      <Bell size={16} className={`${isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-[#333333]"}`} />
+                    <button
+                      onClick={() =>
+                        setOpenNotificationDropdown(
+                          openNotificationDropdown === channel.id ? null : channel.id
+                        )
+                      }
+                    >
+                      <Bell
+                        size={16}
+                        className={`${
+                          isDarkMode
+                            ? "text-gray-400 hover:text-white"
+                            : "text-gray-500 hover:text-[#333333]"
+                        }`}
+                      />
                     </button>
                     {openNotificationDropdown === channel.id && (
-                      <div className={`absolute right-0 mt-1 w-32 rounded-md shadow-lg z-20 ${isDarkMode ? "bg-[#2b2d31] border border-[#1e1f22]" : "bg-white border border-gray-300"}`}>
-                        <button onClick={() => handleNotificationChange(channel.id, "open")} className="block w-full text-left px-2 py-1 hover:bg-gray-200">
+                      <div
+                        className={`absolute right-0 mt-1 w-32 rounded-md shadow-lg z-20 ${
+                          isDarkMode
+                            ? "bg-[#2b2d31] border border-[#1e1f22]"
+                            : "bg-white border border-gray-300"
+                        }`}
+                      >
+                        <button
+                          onClick={() =>
+                            handleNotificationChange(channel.id, "open")
+                          }
+                          className="block w-full text-left px-2 py-1 hover:bg-gray-200"
+                        >
                           {t("Mở")}
                         </button>
-                        <button onClick={() => handleNotificationChange(channel.id, "mention")} className="block w-full text-left px-2 py-1 hover:bg-gray-200">
+                        <button
+                          onClick={() =>
+                            handleNotificationChange(channel.id, "mention")
+                          }
+                          className="block w-full text-left px-2 py-1 hover:bg-gray-200"
+                        >
                           {t("Chỉ khi nhắc")}
                         </button>
-                        <button onClick={() => handleNotificationChange(channel.id, "off")} className="block w-full text-left px-2 py-1 hover:bg-gray-200">
+                        <button
+                          onClick={() =>
+                            handleNotificationChange(channel.id, "off")
+                          }
+                          className="block w-full text-left px-2 py-1 hover:bg-gray-200"
+                        >
                           {t("Tắt")}
                         </button>
                       </div>
@@ -263,11 +298,20 @@ export default function ServerChannels({ server, onChannelSelect, onProfileClick
                   </div>
                   {/* Nút plus hiển thị modal thêm thành viên nếu channel là private */}
                   {channel.type === "text" && channel.isPrivate && (
-                    <button onClick={() => {
-                      setSelectedPrivateChannel(channel);
-                      setIsAddMemberModalOpen(true);
-                    }}>
-                      <Plus size={16} className={`${isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-[#333333]"}`} />
+                    <button
+                      onClick={() => {
+                        setSelectedPrivateChannel(channel);
+                        setIsAddMemberModalOpen(true);
+                      }}
+                    >
+                      <Plus
+                        size={16}
+                        className={`${
+                          isDarkMode
+                            ? "text-gray-400 hover:text-white"
+                            : "text-gray-500 hover:text-[#333333]"
+                        }`}
+                      />
                     </button>
                   )}
                 </div>

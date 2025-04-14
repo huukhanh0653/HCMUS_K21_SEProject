@@ -14,8 +14,8 @@ export default function MessageList({
   messagesEndRef,
 }) {
   const { i18n } = useTranslation();
-  const user = localStorage.getItem("user");
-  console.log(user.avatar)
+  const user = JSON.parse(localStorage.getItem("user"));
+  console.log(user)
 
   return (
     <div

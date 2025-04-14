@@ -156,6 +156,7 @@ export default function UserProfile({ user, onClose }) {
 
       const newUserData = { ...storedUser, username: updatedUser.username, avatar: updatedUser.avatar, background: updatedUser.background };
       localStorage.setItem("user", JSON.stringify(newUserData));
+      window.dispatchEvent(new Event("userUpdated"));
 
       const usedUserList = JSON.parse(localStorage.getItem("used_user")) || [];
       const updatedUsedUserList = usedUserList.map((acc) =>

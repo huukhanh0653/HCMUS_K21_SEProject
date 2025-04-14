@@ -20,6 +20,8 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const user = JSON.parse(localStorage.getItem("user"));
+
   const handleSendMessage = () => {
     if (!messageInput.trim() || !friend) return;
     const newMessage = {
@@ -53,7 +55,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
     <div className="flex flex-col h-full min-h-0 relative">
       <MessageList
         messages={messages}
-        username="You"
+        user={user}
         editingMessageId={editingMessageId}
         editedContent={editedContent}
         setEditedContent={setEditedContent}

@@ -11,45 +11,49 @@ export default function UserPanel({ user, onProfileClick }) {
   const [username, setUsername] = useState("Unknown");
   const [avatarSrc, setAvatarSrc] = useState("https://via.placeholder.com/40");
 
-  useEffect(() => {
-    // Sử dụng key "user_info" để đọc thông tin người dùng từ localStorage
+  const updateUserInfo = () => {
+    // Cố gắng đọc thông tin từ localStorage ("user" hoặc "user_info")
     const storedUserString = localStorage.getItem("user");
     const storedUser_InfoString = localStorage.getItem("user_info");
+
     if (storedUserString) {
       try {
         const storedUser = JSON.parse(storedUserString);
-        if (storedUser.username) {
-          setUsername(storedUser.username);
-        }
-        if (storedUser.avatar) {
-          setAvatarSrc(storedUser.avatar);
-        }
+        setUsername(storedUser.username || "Unknown");
+        setAvatarSrc(storedUser.avatar || "https://via.placeholder.com/40");
       } catch (error) {
         console.error("Error parsing stored user:", error);
       }
     } else if (storedUser_InfoString) {
-      console.log("No localStorage user found, checking user_info...");
       try {
         const storedUser = JSON.parse(storedUser_InfoString);
-        if (storedUser.name) {
-          setUsername(storedUser.name);
-        }
-        if (storedUser.avatar) {
-          setAvatarSrc(storedUser.avatar);
-        }
+        setUsername(storedUser.name || "Unknown");
+        setAvatarSrc(storedUser.avatar || "https://via.placeholder.com/40");
       } catch (error) {
-        console.error("Error parsing stored user:", error);
+        console.error("Error parsing stored user_info:", error);
       }
     } else if (user) {
-      // Nếu không có trong localStorage, dùng thông tin từ prop user (nếu có)
-      if (user.name) {
-        setUsername(user.name);
-      }
-      if (user.avatar) {
-        setAvatarSrc(user.avatar);
-      }
+      // Nếu không có trong localStorage, sử dụng thông tin truyền qua props
+      setUsername(user.name || "Unknown");
+      setAvatarSrc(user.avatar || "https://via.placeholder.com/40");
     }
+  };
+
+  // Ban đầu, cập nhật thông tin
+  useEffect(() => {
+    updateUserInfo();
   }, [user]);
+
+  // Lắng nghe custom event "userUpdated"
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      updateUserInfo();
+    };
+    window.addEventListener("userUpdated", handleUserUpdate);
+    return () => {
+      window.removeEventListener("userUpdated", handleUserUpdate);
+    };
+  }, []);
 
   // Hàm cắt bỏ chữ nếu text quá dài
   const truncateText = (text, maxLength) => {
