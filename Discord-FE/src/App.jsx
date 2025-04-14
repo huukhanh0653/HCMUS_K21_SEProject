@@ -10,6 +10,7 @@ import {
   UserRoute,
   RedirectIfAuthenticated,
 } from "./components/routes/ProtectedRoute";
+import UserService from "./service/UserService";
 
 // Authentication
 import Login from "./pages/Authentication/Login";
@@ -41,16 +42,25 @@ function AppContent() {
   const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const fetchUserData = async (firebaseUser) => {
       if (firebaseUser) {
+        const response = await UserService.getUserByEmail(firebaseUser.email);
+        localStorage.setItem("user", JSON.stringify(response));
         setUser({
-          name: firebaseUser.email || "Người dùng",
-          avatar: firebaseUser.photoURL || "https://via.placeholder.com/150",
+          name: response.username || firebaseUser.email,
+          avatar:
+            response.avatar ||
+            firebaseUser.photoURL ||
+            "https://via.placeholder.com/150",
         });
       } else {
         setUser(null);
       }
+    };
+
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      fetchUserData(firebaseUser);
     });
 
     return () => unsubscribe();
