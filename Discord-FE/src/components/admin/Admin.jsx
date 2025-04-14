@@ -1,11 +1,8 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
 
 export default function Admin() {
-  const location = useLocation();
-  const isDashboard = location.pathname.startsWith("/admin/dashboard");
-
   return (
     <div className="flex flex-col min-h-screen w-full lg:flex-row">
       <AdminSidebar className="w-full lg:w-1/4" />

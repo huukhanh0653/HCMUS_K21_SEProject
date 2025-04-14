@@ -1,33 +1,40 @@
 import { Button } from "../ui/button";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { MenuIcon } from "lucide-react";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink } from "../ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+} from "../ui/breadcrumb";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import { useState } from "react";
-import { getAuth, signOut } from "firebase/auth"; // Firebase auth
+import { getAuth, signOut } from "firebase/auth";
 import { useTranslation } from "react-i18next";
+import adminAvatar from "../../assets/admin-avatar.png";
+
 export default function AdminHeader() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   // Handle Logout
   const handleLogout = async () => {
-      const auth = getAuth();
-      try {
-        await signOut(auth);
-        console.log("User logged out");
-        navigate("/login"); // Redirect to login page
-      } catch (error) {
-        console.error("Logout failed:", error.message);
-      }
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      console.log("User logged out");
+      navigate("/login"); // Redirect to login page
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
   };
 
   return (
@@ -47,7 +54,9 @@ export default function AdminHeader() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink to="#" className="cursor-pointer text-2xl">Admin</BreadcrumbLink>
+                <BreadcrumbLink to="#" className="cursor-pointer text-2xl">
+                  {t("Admin")}
+                </BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -58,7 +67,7 @@ export default function AdminHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <img
-                  src="/placeholder.svg"
+                  src={adminAvatar}
                   width="32"
                   height="32"
                   className="rounded-full"
@@ -70,16 +79,29 @@ export default function AdminHeader() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>John Doe</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/admin/account/profile")}>{t('Profile')}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/admin/account/settings")}>{t('Settings')}</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate("/admin/account/profile")}
+              >
+                {t("Profile")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate("/admin/account/settings")}
+              >
+                {t("Settings")}
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>{t('Logout')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
+                {t("Logout")}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </header>
 
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
     </>
   );
 }
