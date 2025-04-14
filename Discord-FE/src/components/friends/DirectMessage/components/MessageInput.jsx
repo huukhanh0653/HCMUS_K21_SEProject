@@ -110,7 +110,7 @@ export default function MessageInput({
 
   const EmojiButtonClass = isDarkMode
     ? "p-2 hover:bg-[#404249] rounded-lg"
-    : "p-2 bg-[#2866B7FF] text-white rounded-lg shadow-sm hover:bg-[#1960CAFF] transition duration-200";;  
+    : "p-2 bg-[#2866B7FF] text-white rounded-lg shadow-sm hover:bg-[#0D6EFD] transition duration-200";;  
 
   return (
     <div className={`absolute bottom-0 left-0 right-0 ${containerClass} border border-gray-400 rounded-lg p-2`}>
