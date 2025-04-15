@@ -2,11 +2,15 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider, useTheme } from "./components/layout/ThemeProvider";
 import { LanguageProvider } from "./components/layout/LanguageProvider";
-import { useTranslation } from "react-i18next";
 import { useLanguage } from "./components/layout/LanguageProvider";
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { AdminRoute, UserRoute, RedirectIfAuthenticated } from "./components/routes/ProtectedRoute";
+import {
+  AdminRoute,
+  UserRoute,
+  RedirectIfAuthenticated,
+} from "./components/routes/ProtectedRoute";
+import UserService from "./service/UserService";
 
 // Authentication
 import Login from "./pages/Authentication/Login";
@@ -18,7 +22,6 @@ import ChooseUsername from "./pages/Authentication/ChooseUsername";
 
 // Pages
 import Home from "./pages/Homepage/Home";
-import UserProfile from "./components/user/UserProfile";
 
 // Admin Pages
 import Admin from "./components/admin/Admin";
@@ -28,27 +31,36 @@ import ServerManagement from "./components/admin/Servers/Servers";
 import AdminSettings from "./components/admin/AdminSettings/AdminSettings";
 import AccountProfile from "./components/admin/Account/AccountProfile";
 import AdminAccountSettings from "./components/admin/Account/AccountSettings";
+import { Toaster } from "react-hot-toast";
 
 // App Content Component
 function AppContent() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
-  const { t } = useTranslation();
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const fetchUserData = async (firebaseUser) => {
       if (firebaseUser) {
+        const response = await UserService.getUserByEmail(firebaseUser.email);
+        localStorage.setItem("user", JSON.stringify(response));
         setUser({
-          name: firebaseUser.email || "Người dùng",
-          avatar: firebaseUser.photoURL || "https://via.placeholder.com/150",
+          name: response.username || firebaseUser.email,
+          avatar:
+            response.avatar ||
+            firebaseUser.photoURL ||
+            "https://via.placeholder.com/150",
         });
       } else {
         setUser(null);
       }
+    };
+
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      fetchUserData(firebaseUser);
     });
 
     return () => unsubscribe();
@@ -57,7 +69,14 @@ function AppContent() {
   // Show theme toggle only on specific pages
   const shouldShowThemeToggle =
     location.pathname.startsWith("/admin") ||
-    ["/login", "/signup", "/forgot-password", "/admin/login", "/used-accounts", "/choose-username"].includes(location.pathname);
+    [
+      "/login",
+      "/signup",
+      "/forgot-password",
+      "/admin/login",
+      "/used-accounts",
+      "/choose-username",
+    ].includes(location.pathname);
   // Toggle profile visibility
   const toggleProfile = () => setShowProfile(!showProfile);
   const closeProfile = () => setShowProfile(false);
@@ -85,55 +104,56 @@ function AppContent() {
       {/* Routes */}
       <Routes>
         {/* Public Routes (Prevent logged-in users from accessing) */}
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
             <RedirectIfAuthenticated>
               <Login />
             </RedirectIfAuthenticated>
-          } 
+          }
         />
-        <Route 
-          path="/signup" 
+        <Route
+          path="/signup"
           element={
             <RedirectIfAuthenticated>
               <Signup />
             </RedirectIfAuthenticated>
-          } 
+          }
         />
         <Route path="/used-accounts" element={<UsedAccounts />} />
         <Route path="/choose-username" element={<ChooseUsername />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/admin/login"
-         element={
-          <RedirectIfAuthenticated>
-            <AdminLogin />
-          </RedirectIfAuthenticated>
-         } />
+        <Route
+          path="/admin/login"
+          element={
+            <RedirectIfAuthenticated>
+              <AdminLogin />
+            </RedirectIfAuthenticated>
+          }
+        />
 
         {/* Protected User Routes */}
-        <Route 
-          path="/*" 
+        <Route
+          path="/*"
           element={
             <UserRoute>
               <>
-                <Home user={user} onProfileClick={toggleProfile} />
-                {showProfile && <UserProfile user={user} onClose={closeProfile} />}
+                <Home user={user} />
               </>
             </UserRoute>
-          } 
+          }
         />
 
         {/* Protected Admin Routes */}
-        <Route 
-          path="/admin" 
+        <Route
+          path="/admin"
           element={
             <AdminRoute>
               <Admin />
             </AdminRoute>
           }
         >
-          <Route path="dashboard" element={<AdminPanel />} />
+          <Route path="" element={<AdminPanel />} />
           <Route path="member" element={<Member />} />
           <Route path="server" element={<ServerManagement />} />
           <Route path="setting" element={<AdminSettings />} />
@@ -151,6 +171,7 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
         <LanguageProvider>
+          <Toaster position="top-right" reverseOrder={false} />
           <AppContent />
         </LanguageProvider>
       </ThemeProvider>

@@ -19,10 +19,15 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Configure kubectl
+      - name: Get GKE credentials
         run: |
-          gcloud container clusters get-credentials autopilot-cluster-1 --region us-central1
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_ZONE }}
 
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Deploy Redis Cluster via Helm
+        run: bash ./k8s/deploy-redis.sh
       - name: Deploy to GKE
         run: |
           cd ./CI-CD/Kubenetes && kubectl apply -f .

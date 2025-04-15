@@ -15,9 +15,13 @@ const fetchMoreMessages = (data) => {
 };
 
 // Hàm gửi tin nhắn
-const sendMessage = (message) => {
-  socket.emit("sendMessage", message);
+const sendMessage = (message, callback) => {
+  socket.emit("sendMessage", message, (response) => {
+    console.log("Server ack:", response);
+    if (callback) callback(response);
+  });
 };
+
 
 // Hàm xóa tin nhắn
 const deleteMessage = (channel_id, message_id) => {

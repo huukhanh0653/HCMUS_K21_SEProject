@@ -1,14 +1,18 @@
 # Build stage
-FROM maven:3.8.6-eclipse-temurin-17 AS build
+FROM maven:3.8.6-eclipse-temurin-17 AS builder
 WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src ./src
-RUN mvn package -DskipTests
+RUN mvn clean package -DskipTests
 
-# Run stage
-FROM eclipse-temurin:17-jre-alpine
+# Runtime stage
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8085
+COPY --from=builder /app/target/*.jar app.jar
+
+# Redis config (password injected at runtime)
+ENV SPRING_REDIS_CLUSTER_NODES="34.30.20.102:6379,35.224.133.162:6379,34.29.228.136:6379"
+
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,161 +1,110 @@
 "use client";
 
-import { MoreHorizontal, ArrowUpDown } from "lucide-react"
-import { EditMemberForm, WorkHistoryDetail, TerminateMemberForm } from "./Member";
-import { Button } from "../../ui/button"
-import { PopupModal } from "../../ui/modal"
+import { ArrowUpDown, Ban } from "lucide-react";
+import { Button } from "../../ui/button";
 import React from "react";
-import { AlertDialogComponent } from "./Alert-Dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../../ui/dropdown-menu"
-
-import { formattedDate } from "../../../lib/utils";
 import { useTranslation } from "react-i18next";
+import defaultAvatar from "../../../assets/discord-logo.png";
+import toast from "react-hot-toast";
 
-
-export const columns = () => {
-  const {t} = useTranslation();
+export const columns = ({ onDelete }) => {
+  const { t } = useTranslation();
   return [
     {
-      accessorKey: "MaNV",
-      header: ({ column }) => {
-        return (
-          <Button 
-            variant="ghost"
-            className="flex items-center justify-start pl-0" // Loại bỏ padding trái và căn nội dung sang trái
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            
-          >
-            <span className="pr-0 text-foreground">{t('User ID')}</span>
-            <ArrowUpDown className="ml-2 h-4 w-4 text-foreground" />
-          </Button>
-        )
-      },
-    },
-    {
-      accessorKey: "HoTen",
-      header: t('Full Name'),
-    },
-    {
-      accessorKey: "NgaySinh",
-      header: ({ column }) => {
-        return (
-          <Button 
-            variant="ghost"
-            className="flex items-center justify-start pl-0" // Loại bỏ padding trái và căn nội dung sang trái
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <span className="pr-0 text-foreground">{t("Date of birth")}</span>
-            <ArrowUpDown className="ml-2 h-4 w-4 text-foreground"/>
-          </Button>
-        )
-      },
-      cell: ({ row }) => formattedDate(row.original.NgaySinh),
-    },
-    {
-      accessorKey: "NgayVaoDiscord",
-      enableResizing: false,
-      size: 200,
-      header: ({ column }) => {
-        return (
-          <Button 
-            variant="ghost"
-            className="flex items-center justify-start pl-0" // Loại bỏ padding trái và căn nội dung sang trái
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <span className="pr-0 text-foreground">{t('EchoChat join date')}</span>
-            <ArrowUpDown className="ml-2 h-4 w-4 text-foreground"/>
-          </Button>
-        )
-      },
-      cell: ({ row }) => formattedDate(row.original.NgayVaoLam),
-    },
-    {
-      accessorKey: "Username",
-      header: t('Username'),
-    },
-    {
-      accessorKey: "MaBP",
-      header: ({ column }) => {
-        return (
-          <Button 
-            variant="ghost"
-            className="flex items-center justify-start pl-0" // Loại bỏ padding trái và căn nội dung sang trái
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <span className="pr-0 text-foreground">{t('Roles')}</span>
-            <ArrowUpDown className="ml-2 h-4 w-4 text-foreground"/>
-          </Button>
-        )
-      },
-    },
-    {
-    id: "actions",
-    cell: ({ row }) => {
-      const [editOpen, setEditOpen] = React.useState(false)
-      const [terminateOpen, setTerminateOpen] = React.useState(false)
-      const [workHistoryOpen, setWorkHistoryOpen] = React.useState(false)
-      const [reviewOpen, setReviewOpen] = React.useState(false)
-      const [review, setReview] = React.useState(0);
-
-      return (
-        <>
-        <PopupModal
-          open={editOpen}
-          setOpen={setEditOpen}
-          props={{title:t("Edit user info"), description:t("Enter user info")}}
-          formComponent={EditMemberForm}
-          Member = {row.original}
+      accessorKey: "num",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex items-center justify-start px-1 text-xs sm:text-sm"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-        </PopupModal>  
-        <PopupModal
-          open={workHistoryOpen}
-          setOpen={setWorkHistoryOpen}
-          props={{title:t("Browsing history"), description:t("Details about user browsing history")}}
-          formComponent={WorkHistoryDetail}
-          MemberID = {row.original.MaNV}
-          MemberDepartment = {row.original.MaBP}
+          <span className="pr-0 text-foreground">{t("Num")}</span>
+          <ArrowUpDown className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:w-4 text-foreground" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <span className="text-xs sm:text-sm pl-1">{row.original.num}</span> // Sử dụng num từ dữ liệu
+      ),
+    },
+    {
+      accessorKey: "username",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex items-center justify-start px-1 text-xs sm:text-sm"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-        </PopupModal> 
-
-        <AlertDialogComponent 
-          open= {reviewOpen} 
-          setOpen={setReviewOpen} 
-          func={() => {}}
-          title={t('User score')} 
-          description={`${t("User's score is:")} ${review}`} 
+          <span className="pr-0 text-foreground">{t("Username")}</span>
+          <ArrowUpDown className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:w-4 text-foreground" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <span
+          className="text-xs sm:text-sm truncate pl-1 max-w-[120px] sm:max-w-[200px] block"
+          title={row.original.displayName}
+        >
+          {row.original.displayName}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "email",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="items-center justify-start px-1 text-xs sm:text-sm hidden sm:flex"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          <span className="pr-0 text-foreground">{t("Email")}</span>
+          <ArrowUpDown className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:w-4 text-foreground" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <span
+          className="text-xs sm:text-sm truncate pl-1 max-w-[120px] sm:max-w-[200px] block"
+          title={row.original.email}
+        >
+          {row.original.email}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "avatar",
+      header: () => (
+        <span className="text-xs sm:text-sm hidden md:block">
+          {t("Avatar")}
+        </span>
+      ),
+      cell: ({ row }) => (
+        <img
+          src={row.original.photoURL || defaultAvatar}
+          alt="Avatar"
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hidden md:block border border-gray-200"
+        />
+      ),
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const member = row.original;
+        return (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => {
+              try {
+                onDelete(member.uid);
+              } catch (error) {
+                toast.error(t("Failed to delete member"));
+              }
+            }}
+            className="p-1 sm:p-2"
+            title={t("Delete member")}
           >
-        </AlertDialogComponent>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">{t('Open menu')}</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{t("Feature")}</DropdownMenuLabel>
-            <DropdownMenuItem onClick= {() => setWorkHistoryOpen(true)}>
-              {t("View browsing history")}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick= {() => setEditOpen(true)}>
-              {t("Edit infor")}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick= {() => setReviewOpen(true)}>
-              {t("Rating score")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        </>
-      )
-    }},
+            <Ban className="h-3 sm:h-4 w-3 sm:w-4" />
+          </Button>
+        );
+      },
+    },
   ];
-}
+};

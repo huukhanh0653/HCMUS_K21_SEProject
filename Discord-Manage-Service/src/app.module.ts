@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './users/user.module';
-import { FriendModule } from './friends/friend.module';
 import { ServerModule } from './servers/server.module';
 import { RoleModule } from './roles/role.module';
 import { ServerMemberModule } from './server_members/server_member.module';
@@ -20,8 +18,6 @@ dotenv.config();
       synchronize: true,
       ssl: { rejectUnauthorized: false },
     }),
-    UserModule,
-    FriendModule,
     ServerModule,
     RoleModule,
     ServerMemberModule,

@@ -41,9 +41,9 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
         <div className="relative h-60">
           {/* Banner */}
           <div className={`${isDarkMode ? "h-40 bg-[#9b84b7]" : "h-40 bg-gray-300"}`}>
-            {friend.wallpaper && (
+            {friend.background && (
               <img
-                src={friend.wallpaper || "/placeholder.svg"}
+                src={friend.background || "/placeholder.svg"}
                 alt="Profile Banner"
                 className="w-full h-full object-cover"
               />
@@ -65,7 +65,7 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
             >
               <img
                 src={friend.avatar || "/placeholder.svg?height=120&width=120"}
-                alt={friend.name}
+                alt={friend.username}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -79,9 +79,15 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
                   ? "bg-red-500"
                   : "bg-gray-500"
               }`}
-            ></div>
+            >
+              
+            </div>
           </div>
 
+          <div>
+              {friend.username}
+          </div>
+          
           {/* Action buttons */}
           <div className="absolute right-4 bottom-4 flex gap-2">
             <button
@@ -112,17 +118,6 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
                 {t('Add Friend')}
               </button>
             )}
-            <button
-              onClick={() => handleAction("block")}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-                isDarkMode
-                  ? "bg-[#2b2d31] hover:bg-[#ed4245] hover:text-white text-[#ed4245]"
-                  : "bg-white border border-red-500 hover:bg-red-500 hover:text-white text-red-500"
-              }`}
-            >
-              <Ban size={20} />
-              {t('Block')}
-            </button>
           </div>
         </div>
 

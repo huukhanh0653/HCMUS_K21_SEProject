@@ -1,7 +1,6 @@
-const express = require('express');
-const UserService = require('../services/UserService');
+const express = require("express");
+const UserService = require("../services/UserService");
 const router = express.Router();
-
 
 /**
  * @swagger
@@ -13,7 +12,7 @@ const router = express.Router();
  *       200:
  *         description: Firebase users synced successfully
  */
-router.post('/sync-firebase', async (req, res) => {
+router.post("/sync-firebase", async (req, res) => {
   try {
     const result = await UserService.syncFirebaseUsers();
     res.json(result);
@@ -21,7 +20,6 @@ router.post('/sync-firebase', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 /**
  * @swagger
@@ -33,7 +31,7 @@ router.post('/sync-firebase', async (req, res) => {
  *       200:
  *         description: A list of users from Firebase Authentication
  */
-router.get('/firebase', async (req, res) => {
+router.get("/firebase", async (req, res) => {
   try {
     const users = await UserService.getAllFirebaseUsers();
     res.json(users);
@@ -71,14 +69,22 @@ router.get('/firebase', async (req, res) => {
  *                 type: string
  *               avatar:
  *                 type: string
+ *               background:
+ *                 type: string
  *     responses:
  *       201:
  *         description: User created successfully
  */
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { username, email, password, role, avatar } = req.body;
-    const user = await UserService.createUser(username, email, password, role, avatar);
+    const user = await UserService.createUser(
+      username,
+      email,
+      password,
+      role,
+      avatar
+    );
     res.status(201).json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -104,10 +110,10 @@ router.post('/', async (req, res) => {
  *       404:
  *         description: User not found
  */
-router.get('/email/:email', async (req, res) => {
+router.get("/email/:email", async (req, res) => {
   try {
     const user = await UserService.getUserByEmail(req.params.email);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -133,10 +139,10 @@ router.get('/email/:email', async (req, res) => {
  *       404:
  *         description: User not found
  */
-router.get('/username/:username', async (req, res) => {
+router.get("/username/:username", async (req, res) => {
   try {
     const user = await UserService.getUserByEmail(req.params.username);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -162,10 +168,10 @@ router.get('/username/:username', async (req, res) => {
  *       404:
  *         description: User not found
  */
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const user = await UserService.getUserById(req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -202,16 +208,18 @@ router.get('/:id', async (req, res) => {
  *                 type: string
  *               avatar:
  *                 type: string
+ *               background:
+ *                 type: string
  *     responses:
  *       200:
  *         description: User updated successfully
  *       404:
  *         description: User not found
  */
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const user = await UserService.updateUser(req.params.id, req.body);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -237,11 +245,11 @@ router.put('/:id', async (req, res) => {
  *       404:
  *         description: User not found
  */
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const user = await UserService.deleteUser(req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ message: 'User deleted successfully' });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

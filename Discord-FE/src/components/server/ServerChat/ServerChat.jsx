@@ -136,17 +136,22 @@ export default function ServerChat({ channel }) {
 
   const handleSendMessage = () => {
     if (!messageInput.trim()) return;
+    console.log("Sending message:", messageInput);
     const newMessage = {
-      channel_id: channel.id,
-      sender_id: username,
+      channelId: channel.id,    // sửa key ở đây
+      sender: username,         // sửa key ở đây
       content: messageInput,
       timestamp: Date.now(),
       attachments: [],
     };
-    MessageService.sendMessage(newMessage);
+    MessageService.sendMessage(newMessage, (ack) => {
+      console.log("Server ack:", ack);
+      // Nếu server xác nhận, bạn có thể xử lý gì đó (ví dụ: thêm tin nhắn vào state nếu cần)
+    });
     setMessageInput("");
     if (inputRef.current) inputRef.current.style.height = "40px";
   };
+  
 
   const handleDeleteMessage = (id) => {
     MessageService.deleteMessage(channel.id, id);
@@ -170,7 +175,7 @@ export default function ServerChat({ channel }) {
   };
 
   return (
-    <div className="flex-1 flex flex-col relative">
+    <div className="flex flex-col h-full min-h-0 relative">
       <MessageList
         messages={messages}
         username={username}

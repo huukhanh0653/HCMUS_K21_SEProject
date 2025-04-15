@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { X, Edit, Trash2, Plus, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
+
 export default function ChannelManagementModal({ isOpen, onClose, channels, onDeleteChannel, onRenameChannel, onCreateChannel }) {
   const [editingChannelId, setEditingChannelId] = useState(null);
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [editedName, setEditedName] = useState("");
   const [newChannelName, setNewChannelName] = useState("");
+  const [newChannelType, setNewChannelType] = useState("public"); // trạng thái lựa chọn channel mới
   const [isAdding, setIsAdding] = useState(false);
 
   if (!isOpen) return null;
@@ -32,7 +34,7 @@ export default function ChannelManagementModal({ isOpen, onClose, channels, onDe
                   className="bg-[#2b2d31] text-white px-2 py-1 rounded-md flex-1 focus:outline-none"
                 />
               ) : (
-                <span className="text-white">{channel.name}</span>
+                <span className="text-white">{channel.name} ({channel.type})</span>
               )}
 
               <div className="flex items-center gap-2">
@@ -68,20 +70,30 @@ export default function ChannelManagementModal({ isOpen, onClose, channels, onDe
 
         {/* Tạo kênh mới */}
         {isAdding ? (
-          <div className="mt-4 flex items-center gap-2">
+          <div className="mt-4 flex flex-col gap-2">
             <input
               type="text"
               placeholder={t("Enter channel name")}
               value={newChannelName}
               onChange={(e) => setNewChannelName(e.target.value)}
-              className="flex-1 bg-[#3b3e45] text-white px-2 py-1 rounded-md focus:outline-none"
+              className="bg-[#3b3e45] text-white px-2 py-1 rounded-md focus:outline-none"
             />
+            <select
+              value={newChannelType}
+              onChange={(e) => setNewChannelType(e.target.value)}
+              className="bg-[#3b3e45] text-white px-2 py-1 rounded-md focus:outline-none"
+            >
+              <option value="public">{t("Public")}</option>
+              <option value="private">{t("Private")}</option>
+              <option value="voice">{t("Voice")}</option>
+            </select>
             <button
               className="px-3 py-1 bg-green-600 hover:bg-green-500 text-white rounded-md"
               onClick={() => {
                 if (newChannelName.trim()) {
-                  onCreateChannel(newChannelName);
+                  onCreateChannel(newChannelName, newChannelType);
                   setNewChannelName("");
+                  setNewChannelType("public");
                   setIsAdding(false);
                 }
               }}

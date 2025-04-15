@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Gift, ImageIcon, Sticker, SmilePlus } from "lucide-react";
+import { SmilePlus } from "lucide-react";
 import UploadFile from "../../../friends/DirectMessage/components/UploadFile";
 import ShowFile from "../../../friends/DirectMessage/components/ShowFile";
+import StorageService from "../../../../service/StorageService";
+import EmojiMenu from "../../../EmojiMenu";
+import { useTheme } from "../../../layout/ThemeProvider";
 
 const SAMPLE_USERS = [
   { id: 1, name: "TanPhat", username: "tanphat" },
@@ -17,12 +20,15 @@ export default function MessageInput({
   channelName,
 }) {
   const editorRef = useRef(null);
+  const { isDarkMode } = useTheme();
   const [showMentions, setShowMentions] = useState(false);
   const [mentionUsers, setMentionUsers] = useState(SAMPLE_USERS);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
-  const [showUpload, setShowUpload] = useState(false);
   const [showFile, setShowFile] = useState([]);
   const [uploadedUrls, setUploadedUrls] = useState([]);
+
+  // State để điều khiển hiển thị menu emoji
+  const [showEmojiMenu, setShowEmojiMenu] = useState(false);
 
   const getTextContent = () => {
     return editorRef.current?.innerText || "";
@@ -38,7 +44,6 @@ export default function MessageInput({
     if (lastAtSymbol !== -1) {
       const textAfterAt = newValue.slice(lastAtSymbol + 1);
       const wordAfterAt = textAfterAt.split(" ")[0];
-
       const hasSpace = textAfterAt.includes(" ");
       if (hasSpace || !sel || !sel.anchorNode || sel.anchorNode.parentNode?.contentEditable === "false") {
         setShowMentions(false);
@@ -88,38 +93,18 @@ export default function MessageInput({
     handleInput();
   };
 
-  const uploadToGCS = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("http://localhost:8080/api/storage/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error("Upload failed: " + errorText);
-      }
-
-      const data = await response.text();
-      const fileUrl = data.split(": ")[1];
-      setUploadedUrls((prev) => [...prev, fileUrl]);
-      return fileUrl;
-    } catch (error) {
-      console.error("Upload error:", error);
-      return null;
-    }
-  };
-
   const handleFileSelect = async (file) => {
     setShowFile((prev) => [...prev, file]);
-    const fileUrl = await uploadToGCS(file);
-    if (!fileUrl) {
-      console.warn("File upload failed");
+    try {
+      const result = await StorageService.uploadFile(file);
+      if (result?.url) {
+        setUploadedUrls((prev) => [...prev, result.url]);
+      } else {
+        console.warn("No URL returned after upload");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
     }
-    setShowUpload(false);
   };
 
   const handleRemoveFile = (fileName) => {
@@ -140,9 +125,9 @@ export default function MessageInput({
       }
     } else if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      const message = getTextContent().trim();
-      if (message !== "") {
-        onSend(message);
+      const fullMessage = prepareMessage();
+      if (fullMessage) {
+        onSend(fullMessage);
         editorRef.current.innerHTML = "";
         onChange("");
         setShowFile([]);
@@ -151,14 +136,37 @@ export default function MessageInput({
     }
   };
 
+  const prepareMessage = () => {
+    const messageText = getTextContent().trim();
+    if (messageText === "" && uploadedUrls.length === 0) return null;
+    return {
+      sender: { id: 1 },
+      content: messageText,
+      file: uploadedUrls,
+    };
+  };
+
   const handleSendClick = () => {
-    const message = getTextContent().trim();
-    if (message !== "") {
-      onSend(message);
+    const fullMessage = prepareMessage();
+    if (fullMessage) {
+      onSend(fullMessage);
       editorRef.current.innerHTML = "";
       onChange("");
       setShowFile([]);
       setUploadedUrls([]);
+    }
+  };
+
+  // Hàm chèn emoji vào nội dung soạn
+  const handleEmojiSelect = (emoji) => {
+    // Append emoji unicode to the existing message content (value)
+    const newMessage = value + emoji.unicode;
+    console.log(newMessage);  
+    onChange(newMessage);
+    setShowEmojiMenu(false);
+    // Refocus the contentEditable div using editorRef
+    if (editorRef.current) {
+      editorRef.current.focus();
     }
   };
 
@@ -168,8 +176,21 @@ export default function MessageInput({
     }
   }, [value]);
 
+  // Các biến class CSS theo UI (Dark/Light)
+  const containerClass = isDarkMode
+    ? "bg-[#383a40] text-gray-100"
+    : "bg-[#F8F9FA] text-[#333333] shadow-md border border-gray-200";
+    
+  const inputAreaClass = isDarkMode
+    ? "w-full min-h-[40px] max-h-[120px] overflow-y-auto px-4 py-2 text-gray-100 focus:outline-none resize-none text-left whitespace-pre-wrap break-words"
+    : "w-full min-h-[40px] max-h-[120px] overflow-y-auto px-4 py-2 text-[#333333] placeholder-gray-500 focus:outline-none resize-none text-left whitespace-pre-wrap break-words shadow-sm transition-all";
+
+  const EmojiButtonClass = isDarkMode
+    ? "p-2 hover:bg-[#404249] rounded-lg"
+    : "p-2 bg-[#2866B7FF] text-white rounded-lg shadow-sm hover:bg-[#1960CAFF] transition duration-200";
+
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-[#383a40] rounded-lg p-2">
+    <div className={`absolute bottom-0 left-0 right-0 ${containerClass} border border-gray-400 rounded-lg p-2`}>
       <div className="flex flex-col">
         <ShowFile
           files={showFile}
@@ -191,8 +212,8 @@ export default function MessageInput({
               contentEditable
               onInput={handleInput}
               onKeyDown={handleKeyDown}
-              className="w-full min-h-[40px] max-h-[120px] overflow-y-auto px-4 py-2 text-gray-100 focus:outline-none resize-none text-left whitespace-pre-wrap break-words"
-              style={{ caretColor: "white" }}
+              className={inputAreaClass}
+              style={{ caretColor: isDarkMode ? "white" : "black" }}
             />
             {showMentions && (
               <div
@@ -216,25 +237,23 @@ export default function MessageInput({
             )}
           </div>
 
-          <button className="p-2 hover:bg-[#404249] rounded-lg">
-            <Gift size={20} className="text-gray-200" />
+          <button className={EmojiButtonClass} onClick={handleSendClick}>
+            {/* Nút này để mở menu emoji */}
+            <SmilePlus
+              size={20}
+              className="text-gray-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowEmojiMenu((prev) => !prev);
+              }}
+            />
           </button>
-          <button className="p-2 hover:bg-[#404249] rounded-lg">
-            <ImageIcon size={20} className="text-gray-200" />
-          </button>
-          <button className="p-2 hover:bg-[#404249] rounded-lg">
-            <Sticker size={20} className="text-gray-200" />
-          </button>
-          <button className="p-2 hover:bg-[#404249] rounded-lg" onClick={() => {
-            const message = getTextContent().trim();
-            if (message !== "") {
-              onSend(message);
-              editorRef.current.innerHTML = "";
-              onChange("");
-            }
-          }}>
-            <SmilePlus size={20} className="text-gray-200" />
-          </button>
+
+          {/* Hiển thị menu emoji khi chọn */}
+          {showEmojiMenu && (
+            <EmojiMenu onSelect={handleEmojiSelect} onClose={() => setShowEmojiMenu(false)} />
+          )}      
+
         </div>
       </div>
     </div>

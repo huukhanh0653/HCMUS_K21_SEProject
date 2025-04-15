@@ -1,5 +1,6 @@
+// UserPanel.jsx
 import { useEffect, useState } from "react";
-import { Mic, Headphones, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 
@@ -8,18 +9,53 @@ export default function UserPanel({ user, onProfileClick }) {
   const { isDarkMode } = useTheme();
 
   const [username, setUsername] = useState("Unknown");
+  const [avatarSrc, setAvatarSrc] = useState("https://via.placeholder.com/40");
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    } else if (user?.name) {
-      setUsername(user.name);
+  const updateUserInfo = () => {
+    // Cố gắng đọc thông tin từ localStorage ("user" hoặc "user_info")
+    const storedUserString = localStorage.getItem("user");
+    const storedUser_InfoString = localStorage.getItem("user_info");
+
+    if (storedUserString) {
+      try {
+        const storedUser = JSON.parse(storedUserString);
+        setUsername(storedUser.username || "Unknown");
+        setAvatarSrc(storedUser.avatar || "https://via.placeholder.com/40");
+      } catch (error) {
+        console.error("Error parsing stored user:", error);
+      }
+    } else if (storedUser_InfoString) {
+      try {
+        const storedUser = JSON.parse(storedUser_InfoString);
+        setUsername(storedUser.name || "Unknown");
+        setAvatarSrc(storedUser.avatar || "https://via.placeholder.com/40");
+      } catch (error) {
+        console.error("Error parsing stored user_info:", error);
+      }
+    } else if (user) {
+      // Nếu không có trong localStorage, sử dụng thông tin truyền qua props
+      setUsername(user.name || "Unknown");
+      setAvatarSrc(user.avatar || "https://via.placeholder.com/40");
     }
+  };
+
+  // Ban đầu, cập nhật thông tin
+  useEffect(() => {
+    updateUserInfo();
   }, [user]);
 
-  const avatarSrc = user?.avatar || "https://via.placeholder.com/40";
+  // Lắng nghe custom event "userUpdated"
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      updateUserInfo();
+    };
+    window.addEventListener("userUpdated", handleUserUpdate);
+    return () => {
+      window.removeEventListener("userUpdated", handleUserUpdate);
+    };
+  }, []);
 
+  // Hàm cắt bỏ chữ nếu text quá dài
   const truncateText = (text, maxLength) => {
     if (!text) return "";
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
@@ -34,10 +70,7 @@ export default function UserPanel({ user, onProfileClick }) {
       }`}
     >
       <div
-        className={`w-8 h-8 ${
-          isDarkMode ? "bg-[#36393f]" : "bg-gray-200"
-        } rounded-full cursor-pointer`}
-        onClick={onProfileClick}
+        className={`w-8 h-8 ${isDarkMode ? "bg-[#36393f]" : "bg-gray-200"} rounded-full cursor-pointer`}
       >
         <img
           src={avatarSrc}
@@ -52,7 +85,7 @@ export default function UserPanel({ user, onProfileClick }) {
           }`}
           title={username}
         >
-          {truncateText(username, 10)}
+          {truncateText(username, 15)}
         </div>
         <div
           className={`text-xs text-left ${
@@ -63,24 +96,9 @@ export default function UserPanel({ user, onProfileClick }) {
         </div>
       </div>
       <div className="flex gap-1">
-        <Mic
-          size={20}
-          className={`cursor-pointer ${
-            isDarkMode
-              ? "text-gray-400 hover:text-gray-200"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        />
-        <Headphones
-          size={20}
-          className={`cursor-pointer ${
-            isDarkMode
-              ? "text-gray-400 hover:text-gray-200"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        />
         <Settings
           size={20}
+          onClick={onProfileClick}
           className={`cursor-pointer ${
             isDarkMode
               ? "text-gray-400 hover:text-gray-200"

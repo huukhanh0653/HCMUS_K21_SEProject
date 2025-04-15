@@ -10,24 +10,24 @@ service ChannelMemberService {
 }
 
 message AddMemberRequest {
-  string channel_id = 1;
+  string channelId = 1;
   string username = 2;
-  string member_username = 3;
+  string memberUsername = 3;
 }
 
 message RemoveMemberRequest {
-  string channel_id = 1;
+  string channelId = 1;
   string username = 2;
-  string member_username = 3;
+  string memberUsername = 3;
 }
 
 message GetMembersRequest {
-  string channel_id = 1;
+  string channelId = 1;
   string username = 2;
 }
 
 message SearchMemberRequest {
-  string channel_id = 1;
+  string channelId = 1;
   string username = 2;
   string query = 3;
 }
@@ -42,6 +42,6 @@ message ChannelMemberListResponse {
 
 message ChannelMemberInfo {
   string username = 1;
-  string profile_pic = 2;
-  string created_at = 3;
+  string profilePic = 2;
+  string createdAt = 3;
 }

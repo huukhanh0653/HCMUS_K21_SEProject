@@ -11,5 +11,5 @@ export class ChannelDto {
 
   @IsOptional()
   @IsBoolean()
-  is_private?: boolean;
+  isPrivate?: boolean;
 }
