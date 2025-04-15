@@ -5,26 +5,23 @@ import { useTranslation } from "react-i18next";
 import MessageList from "./Components/MessageList";
 import MessageInput from "./Components/MessageInput";
 
-// Import MessageService để gọi api và socket
-import MessageService from "../../../services/MessageService";
+// Import hàm connectMessageService từ newMessageService.js
+import { connectMessageService } from "../../../services/newMessageService";
 
 export default function ServerChat({ channel }) {
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editedContent, setEditedContent] = useState("");
+  
   const messagesWrapperRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const beforeRef = useRef(null);
-  const [isFetching, setIsFetching] = useState(true);
-  const [hasMoreMessages, setHasMoreMessages] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isPrepending, setIsPrepending] = useState(false);
-  const limit = 20;
+  const stompClientRef = useRef(null);
+  
   const { t } = useTranslation();
 
-  // User info
+  // Lấy thông tin người dùng từ localStorage (user_info và username)
   const [storedUser, setStoredUser] = useState(null);
   const [storedUsername, setStoredUsername] = useState(null);
   useEffect(() => {
@@ -41,120 +38,66 @@ export default function ServerChat({ channel }) {
     if (usernameData) setStoredUsername(usernameData);
   }, []);
   const username = storedUsername || storedUser?.name || "User";
-  const avatarSrc = storedUser?.avatar || "https://via.placeholder.com/40";
+  // Sử dụng ảnh mẫu cục bộ thay vì URL via.placeholder.com (để tránh lỗi DNS)
+  const avatarSrc = storedUser?.avatar || SampleAvt;
 
-  const loadMessages = (lastTimestamp = null) => {
-    setIsLoadingMore(true);
-    setIsPrepending(true);
-    MessageService.fetchMoreMessages({
-      channel_id: channel.id,
-      limit: limit,
-      lastTimestamp: new Date(lastTimestamp).getTime() || Date.now(),
-    });
-  };
-
-  const handleScroll = () => {
-    const container = messagesWrapperRef.current;
-    if (!container || isLoadingMore || !hasMoreMessages) return;
-    if (container.scrollTop === 0) {
-      const oldest = messages[0];
-      if (oldest) {
-        beforeRef.current = oldest.timestamp;
-        loadMessages(oldest.timestamp);
-      }
-    }
-  };
-
-  useEffect(() => {
-    const container = messagesWrapperRef.current;
-    if (!container) return;
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [messages, isLoadingMore]);
-
+  // Kết nối với dịch vụ tin nhắn sử dụng newMessageService để subscribe nhận tin nhắn từ backend
   useEffect(() => {
     if (!channel?.id) return;
+    const serverId = channel.serverId || "default";
 
-    MessageService.joinChannel(channel.id);
-    loadMessages();
+    // Gọi hàm kết nối và truyền vào stompClientRef, setMessages, serverId và channel.id
+    const disconnect = connectMessageService(stompClientRef, setMessages, serverId, channel.id);
 
-    MessageService.onMoreMessages((moreMessages) => {
-      const container = messagesWrapperRef.current;
-      const previousScrollHeight = container.scrollHeight;
-      const previousScrollTop = container.scrollTop;
-
-      if (moreMessages.length < limit) setHasMoreMessages(false);
-
-      setMessages((prev) =>
-        beforeRef.current ? [...moreMessages, ...prev] : [...moreMessages]
-      );
-
-      setTimeout(() => {
-        const newScrollHeight = container.scrollHeight;
-        container.scrollTop = newScrollHeight - (previousScrollHeight - previousScrollTop);
-        setIsPrepending(false);
-      }, 0);
-
-      setIsLoadingMore(false);
-    });
-
-    MessageService.onReceiveMessage((newMessage) => {
-      const container = messagesWrapperRef.current;
-      const isNearBottom =
-        container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-
-      setMessages((prev) => [...prev, newMessage]);
-      if (isNearBottom) {
-        setTimeout(() => {
-          container.scrollTop = container.scrollHeight;
-        }, 0);
-      }
-    });
-
-    MessageService.onMessageUpdated((data) => {
-      setMessages((prev) =>
-        prev.map((msg) => (msg.message_id === data.message_id ? data : msg))
-      );
-    });
-
-    MessageService.onMessageDeleted((data) => {
-      setMessages((prev) =>
-        prev.filter((msg) => msg.message_id !== data.message_id)
-      );
-    });
-
+    // Cleanup: ngắt kết nối khi channel thay đổi hoặc component unmount
     return () => {
-      MessageService.offAllListeners();
+      disconnect();
     };
-  }, [channel.id]);
+  }, [channel?.id, channel?.serverId]);
 
+  // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
-    if (!isPrepending) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages, isPrepending]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  const handleSendMessage = () => {
+  // Hàm gửi tin nhắn qua API (POST)
+  const handleSendMessage = async () => {
     if (!messageInput.trim()) return;
-    console.log("Sending message:", messageInput);
-    const newMessage = {
-      channelId: channel.id,    // sửa key ở đây
-      sender: username,         // sửa key ở đây
+    const serverId = channel.serverId || "default";
+    const payload = {
+      messageId: "msg-" + Date.now(), // Tạo id dựa trên timestamp
+      senderId: storedUser?.id || "unknown", // Nếu không có thông tin user, để "unknown"
+      serverId: serverId,
+      channelId: "general", // Hoặc lấy từ channel.id nếu cần
       content: messageInput,
-      timestamp: Date.now(),
-      attachments: [],
+      attachments: [] // Nếu có file đính kèm, cập nhật mảng này
     };
-    MessageService.sendMessage(newMessage, (ack) => {
-      console.log("Server ack:", ack);
-      // Nếu server xác nhận, bạn có thể xử lý gì đó (ví dụ: thêm tin nhắn vào state nếu cần)
-    });
+
+    try {
+      // Lưu ý: Sử dụng URL tương đối "/messages" để nhờ proxy (nếu bạn đã cấu hình proxy trong vite.config.ts)
+      const response = await fetch("/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to send message:", errorText);
+      } else {
+        console.log("Message sent successfully");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+
     setMessageInput("");
     if (inputRef.current) inputRef.current.style.height = "40px";
   };
-  
 
+  // Các hàm xử lý xoá & chỉnh sửa tin nhắn (nếu cần)
   const handleDeleteMessage = (id) => {
-    MessageService.deleteMessage(channel.id, id);
+    // Ví dụ: xoá tin nhắn khỏi state (và có thể gọi API xoá tin nhắn nếu cần)
+    setMessages((prev) => prev.filter((msg) => msg.message_id !== id));
   };
 
   const handleEditMessage = (id, content) => {
@@ -164,12 +107,12 @@ export default function ServerChat({ channel }) {
 
   const handleSaveEdit = (id) => {
     if (!editedContent.trim()) return;
-    MessageService.editMessage({
-      channel_id: channel.id,
-      message_id: id,
-      content: editedContent,
-      attachments: [],
-    });
+    // Ví dụ: cập nhật tin nhắn trong state (và có thể gọi API chỉnh sửa tin nhắn)
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.message_id === id ? { ...msg, content: editedContent } : msg
+      )
+    );
     setEditingMessageId(null);
     setEditedContent("");
   };

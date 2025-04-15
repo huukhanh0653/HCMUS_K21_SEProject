@@ -2,6 +2,7 @@
   "name": "discord-fe",
   "private": true,
   "version": "0.0.0",
+  "proxy": "http://localhost:8089",
   "type": "module",
   "scripts": {
     "start": "vite",
@@ -43,6 +44,8 @@
     "recharts": "^2.15.1",
     "redux": "^5.0.1",
     "socket.io-client": "^4.8.1",
+    "sockjs-client": "^1.6.1",
+    "stompjs": "^2.3.3",
     "sweetalert2": "^11.17.2",
     "tailwind-merge": "^3.0.1",
     "tailwind-scrollbar-hide": "^2.0.0",
