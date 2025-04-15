@@ -1,4 +1,4 @@
-package com.discord.backend.demomessageddd.interfaceadapter.graphql;
+package com.discord.backend.demomessageddd.interfaceadapter.controller.graphql;
 
 import com.discord.backend.demomessageddd.domain.entity.Message;
 import com.discord.backend.demomessageddd.domain.repository.MessageRepository;

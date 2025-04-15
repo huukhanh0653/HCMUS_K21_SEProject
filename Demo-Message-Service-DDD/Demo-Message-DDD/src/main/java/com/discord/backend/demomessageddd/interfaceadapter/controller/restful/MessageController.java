@@ -1,7 +1,8 @@
-package com.discord.backend.demomessageddd.interfaceadapter.restful;
+package com.discord.backend.demomessageddd.interfaceadapter.controller.restful;
 
 import com.discord.backend.demomessageddd.application.service.SendMessageUseCase;
 import com.discord.backend.demomessageddd.domain.entity.Message;
+import com.discord.backend.demomessageddd.interfaceadapter.DTO.SendMessageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 

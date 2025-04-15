@@ -16,14 +16,13 @@ public class MessageContent {
         if (text == null || text.trim().isEmpty()) {
             throw new IllegalArgumentException("Message content cannot be empty");
         }
-        if (text.length() > 1000) {
+        if (text.length() > 5000) {
             throw new IllegalArgumentException("Message content is too long");
         }
         this.text = text;
     }
 
     public String getText() {
-        System.out.println("MessageContent getText called");
         return text;
     }
 
