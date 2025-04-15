@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { SmilePlus } from "lucide-react";
 import UploadFile from "../../../friends/DirectMessage/components/UploadFile";
 import ShowFile from "../../../friends/DirectMessage/components/ShowFile";
-import StorageService from "../../../../service/StorageService";
+import StorageService from "../../../../services/StorageService";
 import EmojiMenu from "../../../EmojiMenu";
 import { useTheme } from "../../../layout/ThemeProvider";
 

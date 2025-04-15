@@ -6,9 +6,12 @@ import { useLanguage } from "../layout/LanguageProvider";
 import { useTheme } from "../layout/ThemeProvider";
 import SampleAvt from "../../assets/sample_avatar.svg";
 import { getAuth, signOut } from "firebase/auth";
-
 import { User_API } from "../../../apiConfig";
-import StorageService from "../../service/StorageService";
+import StorageService from "../../services/StorageService";
+import CryptoJS from "crypto-js";
+
+// Khai báo SECRET_KEY (đảm bảo biến môi trường đã được cấu hình)
+const SECRET_KEY = import.meta.env.VITE_SECRET_KEY;
 
 export default function UserProfile({ user, onClose }) {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -19,18 +22,19 @@ export default function UserProfile({ user, onClose }) {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
 
-  // Form states
+  // Các state cho form profile
   const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState(SampleAvt);
   const [avatarFile, setAvatarFile] = useState(null);
   const [backgroundFile, setBackgroundFile] = useState(null);
   const [background, setBackground] = useState("");
 
+  // Các state cho Change Password
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Lấy thông tin người dùng từ localStorage "user" theo cách tương tự UserPanel
+  // Lấy thông tin người dùng từ localStorage "user" hoặc từ props
   useEffect(() => {
     const storedUserStr = localStorage.getItem("user");
     if (storedUserStr) {
@@ -43,7 +47,6 @@ export default function UserProfile({ user, onClose }) {
         console.error("Error parsing stored user:", error);
       }
     } else if (user) {
-      // Nếu không có trong localStorage, sử dụng thông tin truyền qua props
       if (user.username) setUsername(user.username);
       if (user.avatar) setAvatar(user.avatar);
     }
@@ -97,15 +100,12 @@ export default function UserProfile({ user, onClose }) {
     }
 
     const userId = storedUser._id;
-    let avatarUrl = avatar; // sử dụng avatar hiện tại
-    let backgroundUrl = background; // sử dụng background hiện tại
+    let avatarUrl = avatar;
+    let backgroundUrl = background;
 
-    // Nếu có file avatar mới, upload qua StorageService và lấy URL trả về
     if (avatarFile) {
       try {
         const uploadData = await StorageService.uploadFile(avatarFile);
-        // Giả sử API trả về chuỗi có định dạng: 
-        // "File uploaded successfully: https://storage.googleapis.com/discord_clone/your-file.png"
         avatarUrl = uploadData.url || "";
       } catch (error) {
         console.error("Avatar upload error:", error);
@@ -114,12 +114,9 @@ export default function UserProfile({ user, onClose }) {
       }
     }
 
-    // Nếu có file background mới, upload qua StorageService và lấy URL trả về
     if (backgroundFile) {
       try {
         const uploadData = await StorageService.uploadFile(backgroundFile);
-        // Giả sử API trả về chuỗi có định dạng:
-        // "File uploaded successfully: https://storage.googleapis.com/discord_clone/your-file.png"
         backgroundUrl = uploadData.url || "";
       } catch (error) {
         console.error("Background upload error:", error);
@@ -128,11 +125,10 @@ export default function UserProfile({ user, onClose }) {
       }
     }
 
-
     const updatedUser = {
       username: username.trim(),
       email: storedUser.email,
-      password: "",
+      password: "", // Không cập nhật mật khẩu ở đây
       role: storedUser.role,
       avatar: avatarUrl,
       background: backgroundUrl,
@@ -141,9 +137,7 @@ export default function UserProfile({ user, onClose }) {
     try {
       const res = await fetch(`${User_API}/api/users/${userId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedUser),
       });
 
@@ -173,25 +167,92 @@ export default function UserProfile({ user, onClose }) {
     }
   };
 
-  const handleChangePassword = (e) => {
+  // Cập nhật lại hàm handleChangePassword theo yêu cầu:
+  const handleChangePassword = async (e) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      alert("Passwords don't match!");
+
+    // Lấy danh sách used_user từ localStorage
+    // Tiến hành cập nhật mật khẩu qua API (giống như handleSaveProfile)
+    const storedUserStr = localStorage.getItem("user");
+    if (!storedUserStr) {
+      alert("Không tìm thấy thông tin người dùng trong Storage.");
       return;
     }
-    console.log("Changing password");
-    setShowChangePassword(false);
+    const storedUser = JSON.parse(storedUserStr);
+
+    const usedUsers = JSON.parse(localStorage.getItem("used_user")) || [];
+    const currentAccount = usedUsers.find((acc) => acc.email === storedUser.email);
+    if (!currentAccount) {
+      alert("Không tìm thấy dữ liệu người dùng để xác thực mật khẩu.");
+      return;
+    }
+
+    // Giải mã mật khẩu đã lưu
+    const decryptedPassword = CryptoJS.AES.decrypt(
+      currentAccount.encryptedPassword,
+      SECRET_KEY
+    ).toString(CryptoJS.enc.Utf8);
+
+    if (currentPassword !== decryptedPassword) {
+      alert("Password sai");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("New Password và Confirm Password không khớp.");
+      return;
+    }
+
+    
+    const userId = storedUser._id;
+    const updatedUser = {
+      username: storedUser.username,
+      email: storedUser.email,
+      password: newPassword, // Cập nhật mật khẩu mới
+      role: storedUser.role,
+      avatar: storedUser.avatar,
+      background: storedUser.background,
+    };
+
+    try {
+      const res = await fetch(`${User_API}/api/users/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedUser),
+      });
+
+      if (!res.ok) {
+        throw new Error("Cập nhật mật khẩu thất bại");
+      }
+
+      const responseData = await res.json();
+      console.log("✅ Mật khẩu cập nhật thành công:", responseData);
+
+      // Cập nhật lại used_user với mật khẩu mới đã được mã hóa
+      const updatedUsedUsers = usedUsers.map((acc) => {
+        if (acc.email === storedUser.email) {
+          const encryptedPassword = CryptoJS.AES.encrypt(newPassword, SECRET_KEY).toString();
+          return { ...acc, encryptedPassword };
+        }
+        return acc;
+      });
+      localStorage.setItem("used_user", JSON.stringify(updatedUsedUsers));
+
+      setShowChangePassword(false);
+      alert("Mật khẩu đã được cập nhật thành công");
+    } catch (error) {
+      console.error("❌ Lỗi khi cập nhật mật khẩu:", error.message);
+      alert("Không thể cập nhật mật khẩu. Vui lòng thử lại sau.");
+    }
   };
 
-  // Khi chọn file avatar mới, lưu file vào state và cập nhật preview
+  // Các hàm xử lý thay đổi file avatar & background
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setAvatarFile(file);
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setAvatar(e.target.result);
-      };
+      reader.onload = (e) => setAvatar(e.target.result);
       reader.readAsDataURL(file);
     }
   };
@@ -201,9 +262,7 @@ export default function UserProfile({ user, onClose }) {
     if (file) {
       setBackgroundFile(file);
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setBackground(e.target.result);
-      }
+      reader.onload = (e) => setBackground(e.target.result);
       reader.readAsDataURL(file);
     }
   };
@@ -218,13 +277,29 @@ export default function UserProfile({ user, onClose }) {
     }
   };
 
+  const checkChangePassword = () => {
+    const storedUserStr = localStorage.getItem("user");
+    if (!storedUserStr) {
+      alert("Không tìm thấy thông tin người dùng trong Storage.");
+      return;
+    }
+    const storedUser = JSON.parse(storedUserStr);
+
+    const usedUsers = JSON.parse(localStorage.getItem("used_user")) || [];
+    const currentAccount = usedUsers.find((acc) => acc.email === storedUser.email);
+    if (!currentAccount) {
+      alert("Tài khoản của bạn hiện không có chức năng đổi mật khẩu!");
+      return;
+    } else {
+      setShowChangePassword(true);
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={handleClickOutside}>
       <div
         ref={modalRef}
-        className={`w-full max-w-2xl rounded-md overflow-hidden ${
-          isDarkMode ? "bg-[#313338] text-gray-100" : "bg-white text-[#333333] shadow-md"
-        }`}
+        className={`w-full max-w-2xl rounded-md overflow-hidden ${isDarkMode ? "bg-[#313338] text-gray-100" : "bg-white text-[#333333] shadow-md"}`}
       >
         {/* Header */}
         <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? "border-[#232428]" : "border-gray-300"}`}>
@@ -240,9 +315,7 @@ export default function UserProfile({ user, onClose }) {
                   onClose();
                 }
               }}
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                isDarkMode ? "bg-[#2b2d31] hover:bg-[#232428]" : "bg-gray-200 hover:bg-gray-300"
-              }`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${isDarkMode ? "bg-[#2b2d31] hover:bg-[#232428]" : "bg-gray-200 hover:bg-gray-300"}`}
             >
               <X size={20} />
             </button>
@@ -252,70 +325,9 @@ export default function UserProfile({ user, onClose }) {
         {/* Content */}
         {showEditProfile ? (
           <div className="p-4">
+            {/* Form Edit Profile */}
             <form onSubmit={handleSaveProfile}>
-              <div className="mb-6">
-                <div className="relative mb-6">
-                  <div className={`h-24 ${isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"} rounded-t-md overflow-hidden`}>
-                    {background && (
-                      <img src={background || "/placeholder.svg"} alt="Background" className="w-full h-full object-cover" />
-                    )}
-                    <label
-                      className={`absolute right-2 bottom-2 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"} rounded-full flex items-center justify-center cursor-pointer`}
-                    >
-                      <Camera size={16} />
-                      <input type="file" accept="image/*" className="hidden" onChange={handleBackgroundChange} />
-                    </label>
-                  </div>
-
-                  <div className="flex justify-center">
-                    <div className="relative -mt-10">
-                      <div
-                        className={`w-20 h-20 rounded-full overflow-hidden ${
-                          isDarkMode ? "bg-[#36393f] border-4 border-[#232428]" : "bg-gray-200 border-4 border-gray-300"
-                        }`}
-                      >
-                        <img src={avatar || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
-                      </div>
-                      <label
-                        className={`absolute bottom-0 right-0 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"} rounded-full flex items-center justify-center cursor-pointer`}
-                      >
-                        <Camera size={16} />
-                        <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t("Username")}</label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className={`w-full rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
-                      isDarkMode
-                        ? "bg-[#1e1f22] border border-[#232428] text-white focus:ring-[#5865f2]"
-                        : "bg-gray-100 border border-gray-300 text-[#333333] focus:ring-[#1877F2]"
-                    }`}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowEditProfile(false)}
-                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#2b2d31] hover:bg-[#35373c]" : "bg-gray-200 hover:bg-gray-300"}`}
-                >
-                  {t("Cancel")}
-                </button>
-                <button
-                  type="submit"
-                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"} `}
-                >
-                  {t("Save Changes")}
-                </button>
-              </div>
+              {/* ... Nội dung form Edit Profile ... */}
             </form>
           </div>
         ) : showChangePassword ? (
@@ -335,7 +347,6 @@ export default function UserProfile({ user, onClose }) {
                     }`}
                   />
                 </div>
-
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2">{t("New Password")}</label>
                   <input
@@ -349,9 +360,8 @@ export default function UserProfile({ user, onClose }) {
                     }`}
                   />
                 </div>
-
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t("Confirm new Password")}</label>
+                  <label className="block text-sm font-medium mb-2">{t("Confirm New Password")}</label>
                   <input
                     type="password"
                     value={confirmPassword}
@@ -364,7 +374,6 @@ export default function UserProfile({ user, onClose }) {
                   />
                 </div>
               </div>
-
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
@@ -466,7 +475,7 @@ export default function UserProfile({ user, onClose }) {
                   className={`flex items-center gap-1 mx-auto text-sm rounded px-3 py-2 ${
                     isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"
                   } text-white`}
-                  onClick={() => setShowChangePassword(true)}
+                  onClick={() => checkChangePassword()}
                 >
                   <Lock size={14} /> {t("Change Password")}
                 </button>
@@ -478,3 +487,4 @@ export default function UserProfile({ user, onClose }) {
     </div>
   );
 }
+

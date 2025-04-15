@@ -6,7 +6,7 @@ import MessageList from "./Components/MessageList";
 import MessageInput from "./Components/MessageInput";
 
 // Import MessageService để gọi api và socket
-import MessageService from "../../../service/MessageService";
+import MessageService from "../../../services/MessageService";
 
 export default function ServerChat({ channel }) {
   const [messageInput, setMessageInput] = useState("");

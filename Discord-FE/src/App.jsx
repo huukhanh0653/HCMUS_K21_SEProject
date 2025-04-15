@@ -10,7 +10,7 @@ import {
   UserRoute,
   RedirectIfAuthenticated,
 } from "./components/routes/ProtectedRoute";
-import UserService from "./service/UserService";
+import UserService from "./services/UserService";
 
 // Authentication
 import Login from "./pages/Authentication/Login";

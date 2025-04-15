@@ -7,7 +7,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 // Import UserService để gọi api
-import UserService from "../../service/UserService";
+import UserService from "../../services/UserService";
 
 const SignupForm = ({ onError, onSuccess }) => {
   const { isDarkMode } = useTheme();
