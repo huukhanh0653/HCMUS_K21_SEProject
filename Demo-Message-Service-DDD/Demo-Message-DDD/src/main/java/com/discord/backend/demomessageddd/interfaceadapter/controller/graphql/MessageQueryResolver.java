@@ -1,4 +1,4 @@
-package com.discord.backend.demomessageddd.interfaceadapter.graphql;
+package com.discord.backend.demomessageddd.interfaceadapter.controller.graphql;
 
 import com.discord.backend.demomessageddd.domain.entity.Message;
 import com.discord.backend.demomessageddd.domain.repository.MessageRepository;
@@ -19,7 +19,7 @@ public class MessageQueryResolver {
 
     @QueryMapping
     public List<Message> messagesByChannel(@Argument String serverId, @Argument String channelId) {
-//        return messageRepository.findByChannel(serverId, channelId);
+//      return messageRepository.findByChannel(serverId, channelId);
         return null;
     }
 }
