@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useSelector } from "react-redux";
 import DefaultLayout from "./Layout";
 import { DataTable } from "../../ui/data-table";
 import { Button } from "../../ui/button";
@@ -29,16 +28,15 @@ export default function Member() {
   const [sorting, setSorting] = useState([]);
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const { userId, loading, error } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if (loading) return;
       try {
         const data = await getUsers();
+        const userId = JSON.parse(localStorage.getItem("user")).id;
 
         const filteredData = userId
-          ? data.filter((user) => user._id !== userId)
+          ? data.filter((user) => user.id !== userId)
           : data;
         setMembers(filteredData);
         setTotalSize(filteredData.length);
@@ -47,7 +45,7 @@ export default function Member() {
       }
     };
     fetchUsers();
-  }, [userId, loading]);
+  }, []);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -121,24 +119,6 @@ export default function Member() {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-
-  if (loading) {
-    return (
-      <DefaultLayout>
-        <div className="p-4">{t("Loading...")}</div>
-      </DefaultLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <DefaultLayout>
-        <div className="p-4">
-          {t("Error")}: {error}
-        </div>
-      </DefaultLayout>
-    );
-  }
 
   return (
     <DefaultLayout>

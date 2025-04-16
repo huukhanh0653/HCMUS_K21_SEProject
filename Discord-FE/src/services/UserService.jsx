@@ -6,8 +6,21 @@ import { User_API } from "../../apiConfig";
 // --------------------
 const getFriends = async (userId) => {
   try {
-    const response = await axios.get(`${User_API}/api/friendships/${userId}`, {
+    const response = await axios.get(`${User_API}/api/friends/${userId}`, {
       headers: { accept: "application/json" },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching friends data:", error);
+    throw error;
+  }
+};
+
+const sendFriendRequest = async (userId, friendId) => {
+  try {
+    const response = await api.post("/api/friends/request", {
+      user_id: userId,
+      friend_id: friendId,
     });
     return response.data;
   } catch (error) {
@@ -19,7 +32,7 @@ const getFriends = async (userId) => {
 const getFriendRequests = async (userId) => {
   try {
     const response = await axios.get(
-      `${User_API}/api/friendships/requests/${userId}`
+      `${User_API}/api/friends/requests/${userId}`
     );
     return response.data;
   } catch (error) {
@@ -31,7 +44,7 @@ const getFriendRequests = async (userId) => {
 const acceptFriendRequest = async (requestID) => {
   try {
     const response = await axios.post(
-      `${User_API}/api/friendships/request/accept`,
+      `${User_API}/api/friends/request/accept`,
       { requestID },
       { headers: { "Content-Type": "application/json" } }
     );
@@ -45,7 +58,7 @@ const acceptFriendRequest = async (requestID) => {
 const declineFriendRequest = async (requestID) => {
   try {
     const response = await axios.post(
-      `${User_API}/api/friendships/request/decline`,
+      `${User_API}/api/friends/request/decline`,
       { requestID },
       { headers: { "Content-Type": "application/json" } }
     );
@@ -154,6 +167,7 @@ const createUser = async (userData) => {
 const UserService = {
   // Bạn bè & friend requests
   getFriends,
+  sendFriendRequest,
   getFriendRequests,
   acceptFriendRequest,
   declineFriendRequest,

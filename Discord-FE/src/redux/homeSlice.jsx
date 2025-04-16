@@ -82,10 +82,10 @@ const homeSlice = createSlice({
     removeRequest(state, action) {
       const requestID = action.payload;
       state.pendingRequests = state.pendingRequests.filter(
-        (req) => req._id !== requestID
+        (req) => req.id !== requestID
       );
       state.newRequests = state.newRequests.filter(
-        (req) => req._id !== requestID
+        (req) => req.id !== requestID
       );
     },
   },

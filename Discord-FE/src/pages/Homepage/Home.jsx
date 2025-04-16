@@ -28,9 +28,7 @@ import UserService from "../../services/UserService";
 const DirectMessage = lazy(() =>
   import("../../components/friends/DirectMessage/DirectMessage")
 );
-const FriendsView = lazy(() =>
-  import("../../components/friends/FriendsView")
-);
+const FriendsView = lazy(() => import("../../components/friends/FriendsView"));
 const FriendContextMenu = lazy(() =>
   import("../../components/friends/FriendContextMenu")
 );
@@ -45,14 +43,10 @@ const FriendList = lazy(() => import("../../components/friends/FriendList"));
 const FriendRequestModal = lazy(() =>
   import("../../components/friends/FriendRequestModal")
 );
-const DMSidebar = lazy(() =>
-  import("../../components/friends/DMSidebar")
-);
+const DMSidebar = lazy(() => import("../../components/friends/DMSidebar"));
 
 // Lazy load ServerList, Server và các modal liên quan đến Server
-const ServerList = lazy(() =>
-  import("../../components/server/ServerList")
-);
+const ServerList = lazy(() => import("../../components/server/ServerList"));
 const Server = lazy(() => import("../../components/server/Server"));
 const CreateServerModal = lazy(() =>
   import("../../components/server/CreateServerModal")
@@ -64,9 +58,7 @@ const NotificationModal = lazy(() =>
 );
 
 // Lazy load UserProfile
-const UserProfile = lazy(() =>
-  import("../../components/user/UserProfile")
-);
+const UserProfile = lazy(() => import("../../components/user/UserProfile"));
 
 // Component không lazy
 import UserPanel from "../../components/user/UserPanel";
@@ -107,13 +99,13 @@ export default function Home({ user }) {
 
   // Fetch dữ liệu bạn bè và yêu cầu kết bạn khi component mount
   useEffect(() => {
-    if (!currentUser._id) return;
+    if (!currentUser.id) return;
 
     const fetchFriends = async () => {
       try {
-        const data = await UserService.getFriends(currentUser._id);
+        const data = await UserService.getFriends(currentUser.id);
         const transformed = data.map((friend) => ({
-          _id: friend._id,
+          _id: friend.id,
           username: friend.username,
           email: friend.email,
           avatar: friend.avatar,
@@ -127,7 +119,7 @@ export default function Home({ user }) {
 
     const fetchRequests = async () => {
       try {
-        const data = await UserService.getFriendRequests(currentUser._id);
+        const data = await UserService.getFriendRequests(currentUser.id);
         dispatch(setPrevRequests(data));
         dispatch(setPendingRequests(data));
       } catch (error) {
@@ -137,7 +129,7 @@ export default function Home({ user }) {
 
     fetchFriends();
     fetchRequests();
-  }, [currentUser._id, dispatch]);
+  }, [currentUser.id, dispatch]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -190,10 +182,12 @@ export default function Home({ user }) {
     try {
       await UserService.acceptFriendRequest(requestID);
       dispatch(
-        setPendingRequests(pendingRequests.filter((req) => req._id !== requestID))
+        setPendingRequests(
+          pendingRequests.filter((req) => req.id !== requestID)
+        )
       );
       dispatch(
-        setNewRequests(newRequests.filter((req) => req._id !== requestID))
+        setNewRequests(newRequests.filter((req) => req.id !== requestID))
       );
     } catch (error) {
       console.error("Error accepting request:", error);
@@ -204,10 +198,12 @@ export default function Home({ user }) {
     try {
       await UserService.declineFriendRequest(requestID);
       dispatch(
-        setPendingRequests(pendingRequests.filter((req) => req._id !== requestID))
+        setPendingRequests(
+          pendingRequests.filter((req) => req.id !== requestID)
+        )
       );
       dispatch(
-        setNewRequests(newRequests.filter((req) => req._id !== requestID))
+        setNewRequests(newRequests.filter((req) => req.id !== requestID))
       );
     } catch (error) {
       console.error("Error declining request:", error);
@@ -217,10 +213,10 @@ export default function Home({ user }) {
   // Routing tự động dựa trên nội dung chính
   useEffect(() => {
     if (selectedServer && selectedChannel) {
-      const serverId = selectedServer._id || selectedServer.id;
+      const serverId = selectedServer.id || selectedServer.id;
       navigate(`/server/${serverId}/${selectedChannel.id}`, { replace: true });
     } else if (activeTab === "friend" && selectedFriendObj) {
-      navigate(`/direct_message/${selectedFriendObj._id}`, { replace: true });
+      navigate(`/direct_message/${selectedFriendObj.id}`, { replace: true });
     } else {
       navigate("/", { replace: true });
     }
@@ -229,7 +225,9 @@ export default function Home({ user }) {
   return (
     <div
       className={`fixed inset-0 flex h-screen w-screen overflow-hidden ${
-        isDarkMode ? "bg-[#313338] text-gray-100" : "bg-[#F8F9FA] text-[#333333]"
+        isDarkMode
+          ? "bg-[#313338] text-gray-100"
+          : "bg-[#F8F9FA] text-[#333333]"
       }`}
     >
       {/* Left Sidebar: Server List */}
@@ -262,7 +260,9 @@ export default function Home({ user }) {
               setActiveTab={(tab) => dispatch(setActiveTab(tab))}
               setShowAddFriend={(show) => dispatch(setShowAddFriend(show))}
               selectedFriend={selectedFriend}
-              setSelectedFriend={(friend) => dispatch(setSelectedFriend(friend))}
+              setSelectedFriend={(friend) =>
+                dispatch(setSelectedFriend(friend))
+              }
               friends={friends}
               handleFriendAction={handleFriendAction}
               getStatusColor={getStatusColor}
@@ -371,7 +371,9 @@ export default function Home({ user }) {
 
       <Suspense fallback={<div>Loading Create Server Modal...</div>}>
         {showCreateServer && (
-          <CreateServerModal onClose={() => dispatch(setShowCreateServer(false))} />
+          <CreateServerModal
+            onClose={() => dispatch(setShowCreateServer(false))}
+          />
         )}
       </Suspense>
 
@@ -392,7 +394,9 @@ export default function Home({ user }) {
           onClick={() => setShowNotificationModal(false)}
         >
           <Suspense fallback={<div>Loading Notification Modal...</div>}>
-            <NotificationModal onClose={() => setShowNotificationModal(false)} />
+            <NotificationModal
+              onClose={() => setShowNotificationModal(false)}
+            />
           </Suspense>
         </div>
       )}

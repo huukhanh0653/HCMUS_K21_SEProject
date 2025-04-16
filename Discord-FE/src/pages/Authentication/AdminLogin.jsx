@@ -6,6 +6,7 @@ import Logo from "../../assets/echochat_logo.svg";
 import { useTranslation } from "react-i18next";
 import { signInWithEmail } from "../../firebase";
 import { getAuth, signOut } from "firebase/auth";
+import UserService from "../../services/UserService";
 
 const AdminLogin = () => {
   const { isDarkMode } = useTheme();
@@ -22,12 +23,12 @@ const AdminLogin = () => {
     setErrorMessage(""); // Clear previous errors
 
     if (!email || !validateEmail(email)) {
-      setErrorMessage("Email không hợp lệ");
+      setErrorMessage(t("Invalid Email"));
       return;
     }
 
     if (!password) {
-      setErrorMessage("Mật khẩu không được để trống");
+      setErrorMessage(t("Password must be filled"));
       return;
     }
 
@@ -37,23 +38,17 @@ const AdminLogin = () => {
       console.log("Logged in:", user);
 
       // Fetch user details from MongoDB by email
-      const response = await fetch(
-        `http://localhost:5001/users/email/${email}`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const response = await UserService.getUserByEmail(email);
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error("Người dùng không tồn tại hoặc không phải admin");
       }
 
-      const userData = await response.json();
+      const userData = response;
 
       // Check if user role is "admin"
-      if (userData.role !== "admin") {
-        setErrorMessage("Bạn không có quyền truy cập");
+      if (!userData.is_admin) {
+        setErrorMessage(t("You do not have access"));
         const auth = getAuth();
         try {
           await signOut(auth);
@@ -65,15 +60,12 @@ const AdminLogin = () => {
         return;
       }
 
-      // Sync Firebase user with MongoDB
-      await fetch("http://localhost:5001/users/sync-firebase", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, email: user.email }),
-      });
+      // Sync Firebase user with Postgres
+      await UserService.syncFirebaseUser(user.uid, user.email);
 
       // Store email in localStorage & redirect
       localStorage.setItem("email", email);
+      localStorage.setItem("user", JSON.stringify(response));
       window.location.replace("/admin");
     } catch (error) {
       setErrorMessage("Đăng nhập thất bại: " + error.message);
