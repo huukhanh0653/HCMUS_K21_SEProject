@@ -94,12 +94,12 @@ export default function UserProfile({ user, onClose }) {
     e.preventDefault();
 
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (!storedUser || !storedUser._id) {
+    if (!storedUser || !storedUser.id) {
       alert("Không tìm thấy thông tin người dùng để cập nhật.");
       return;
     }
 
-    const userId = storedUser._id;
+    const userId = storedUser.id;
     let avatarUrl = avatar;
     let backgroundUrl = background;
 
@@ -148,14 +148,23 @@ export default function UserProfile({ user, onClose }) {
       const responseData = await res.json();
       console.log("✅ User updated:", responseData);
 
-      const newUserData = { ...storedUser, username: updatedUser.username, avatar: updatedUser.avatar, background: updatedUser.background };
+      const newUserData = {
+        ...storedUser,
+        username: updatedUser.username,
+        avatar: updatedUser.avatar,
+        background: updatedUser.background,
+      };
       localStorage.setItem("user", JSON.stringify(newUserData));
       window.dispatchEvent(new Event("userUpdated"));
 
       const usedUserList = JSON.parse(localStorage.getItem("used_user")) || [];
       const updatedUsedUserList = usedUserList.map((acc) =>
         acc.email === updatedUser.email
-          ? { ...acc, username: updatedUser.username, photoURL: updatedUser.avatar }
+          ? {
+              ...acc,
+              username: updatedUser.username,
+              photoURL: updatedUser.avatar,
+            }
           : acc
       );
       localStorage.setItem("used_user", JSON.stringify(updatedUsedUserList));
@@ -181,7 +190,9 @@ export default function UserProfile({ user, onClose }) {
     const storedUser = JSON.parse(storedUserStr);
 
     const usedUsers = JSON.parse(localStorage.getItem("used_user")) || [];
-    const currentAccount = usedUsers.find((acc) => acc.email === storedUser.email);
+    const currentAccount = usedUsers.find(
+      (acc) => acc.email === storedUser.email
+    );
     if (!currentAccount) {
       alert("Không tìm thấy dữ liệu người dùng để xác thực mật khẩu.");
       return;
@@ -203,8 +214,7 @@ export default function UserProfile({ user, onClose }) {
       return;
     }
 
-    
-    const userId = storedUser._id;
+    const userId = storedUser.id;
     const updatedUser = {
       username: storedUser.username,
       email: storedUser.email,
@@ -231,7 +241,10 @@ export default function UserProfile({ user, onClose }) {
       // Cập nhật lại used_user với mật khẩu mới đã được mã hóa
       const updatedUsedUsers = usedUsers.map((acc) => {
         if (acc.email === storedUser.email) {
-          const encryptedPassword = CryptoJS.AES.encrypt(newPassword, SECRET_KEY).toString();
+          const encryptedPassword = CryptoJS.AES.encrypt(
+            newPassword,
+            SECRET_KEY
+          ).toString();
           return { ...acc, encryptedPassword };
         }
         return acc;
@@ -286,23 +299,36 @@ export default function UserProfile({ user, onClose }) {
     const storedUser = JSON.parse(storedUserStr);
 
     const usedUsers = JSON.parse(localStorage.getItem("used_user")) || [];
-    const currentAccount = usedUsers.find((acc) => acc.email === storedUser.email);
+    const currentAccount = usedUsers.find(
+      (acc) => acc.email === storedUser.email
+    );
     if (!currentAccount) {
       alert("Tài khoản của bạn hiện không có chức năng đổi mật khẩu!");
       return;
     } else {
       setShowChangePassword(true);
     }
-  }
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={handleClickOutside}>
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={handleClickOutside}
+    >
       <div
         ref={modalRef}
-        className={`w-full max-w-2xl rounded-md overflow-hidden ${isDarkMode ? "bg-[#313338] text-gray-100" : "bg-white text-[#333333] shadow-md"}`}
+        className={`w-full max-w-2xl rounded-md overflow-hidden ${
+          isDarkMode
+            ? "bg-[#313338] text-gray-100"
+            : "bg-white text-[#333333] shadow-md"
+        }`}
       >
         {/* Header */}
-        <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? "border-[#232428]" : "border-gray-300"}`}>
+        <div
+          className={`flex justify-between items-center p-4 border-b ${
+            isDarkMode ? "border-[#232428]" : "border-gray-300"
+          }`}
+        >
           <h1 className="text-xl font-bold">{t(getTitle())}</h1>
           <div className="flex items-center gap-2">
             <button
@@ -315,7 +341,11 @@ export default function UserProfile({ user, onClose }) {
                   onClose();
                 }
               }}
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${isDarkMode ? "bg-[#2b2d31] hover:bg-[#232428]" : "bg-gray-200 hover:bg-gray-300"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                isDarkMode
+                  ? "bg-[#2b2d31] hover:bg-[#232428]"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
             >
               <X size={20} />
             </button>
@@ -335,7 +365,9 @@ export default function UserProfile({ user, onClose }) {
             <form onSubmit={handleChangePassword}>
               <div className="mb-6">
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t("Current Password")}</label>
+                  <label className="block text-sm font-medium mb-2">
+                    {t("Current Password")}
+                  </label>
                   <input
                     type="password"
                     value={currentPassword}
@@ -348,7 +380,9 @@ export default function UserProfile({ user, onClose }) {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t("New Password")}</label>
+                  <label className="block text-sm font-medium mb-2">
+                    {t("New Password")}
+                  </label>
                   <input
                     type="password"
                     value={newPassword}
@@ -361,7 +395,9 @@ export default function UserProfile({ user, onClose }) {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t("Confirm New Password")}</label>
+                  <label className="block text-sm font-medium mb-2">
+                    {t("Confirm New Password")}
+                  </label>
                   <input
                     type="password"
                     value={confirmPassword}
@@ -378,13 +414,21 @@ export default function UserProfile({ user, onClose }) {
                 <button
                   type="button"
                   onClick={() => setShowChangePassword(false)}
-                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#2b2d31] hover:bg-[#35373c]" : "bg-gray-200 hover:bg-gray-300"}`}
+                  className={`px-4 py-2 rounded-md ${
+                    isDarkMode
+                      ? "bg-[#2b2d31] hover:bg-[#35373c]"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
                 >
                   {t("Cancel")}
                 </button>
                 <button
                   type="submit"
-                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"} `}
+                  className={`px-4 py-2 rounded-md ${
+                    isDarkMode
+                      ? "bg-[#5865f2] hover:bg-[#4752c4]"
+                      : "bg-[#1877F2] hover:bg-[#0D6EFD]"
+                  } `}
                 >
                   {t("Change Password")}
                 </button>
@@ -394,9 +438,17 @@ export default function UserProfile({ user, onClose }) {
         ) : (
           <div className="flex">
             {/* Sidebar user settings */}
-            <div className={`w-60 p-4 ${isDarkMode ? "bg-[#2b2d31]" : "bg-white border border-gray-300"}`}>
+            <div
+              className={`w-60 p-4 ${
+                isDarkMode ? "bg-[#2b2d31]" : "bg-white border border-gray-300"
+              }`}
+            >
               <div className="mb-8">
-                <div className={`text-xs font-semibold mb-2 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                <div
+                  className={`text-xs font-semibold mb-2 ${
+                    isDarkMode ? "text-gray-400" : "text-gray-600"
+                  }`}
+                >
                   {t("USER SETTINGS")}
                 </div>
               </div>
@@ -409,7 +461,9 @@ export default function UserProfile({ user, onClose }) {
                       : "text-gray-600 hover:bg-gray-100 hover:text-[#333333]"
                   }`}
                 >
-                  {language === "en" ? "Switch to Vietnamese" : "Chuyển sang Tiếng Anh"}
+                  {language === "en"
+                    ? "Switch to Vietnamese"
+                    : "Chuyển sang Tiếng Anh"}
                 </button>
                 <button
                   onClick={toggleTheme}
@@ -420,7 +474,11 @@ export default function UserProfile({ user, onClose }) {
                   }`}
                 >
                   {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-                  {isDarkMode ? <span>{t("Change Light Mode")}</span> : <span>{t("Change Dark Mode")}</span>}
+                  {isDarkMode ? (
+                    <span>{t("Change Light Mode")}</span>
+                  ) : (
+                    <span>{t("Change Dark Mode")}</span>
+                  )}
                 </button>
                 <button
                   onClick={handleLogout}
@@ -438,10 +496,24 @@ export default function UserProfile({ user, onClose }) {
 
             {/* Profile overview */}
             <div className="flex-1 p-4">
-              <div className={`rounded-md overflow-hidden mb-6 ${isDarkMode ? "bg-[#232428]" : "bg-gray-100 border border-gray-300"}`}>
-                <div className={`h-24 ${isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"}`}>
+              <div
+                className={`rounded-md overflow-hidden mb-6 ${
+                  isDarkMode
+                    ? "bg-[#232428]"
+                    : "bg-gray-100 border border-gray-300"
+                }`}
+              >
+                <div
+                  className={`h-24 ${
+                    isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"
+                  }`}
+                >
                   {background && (
-                    <img src={background || "/placeholder.svg"} alt="background" className="w-full h-full object-cover" />
+                    <img
+                      src={background || "/placeholder.svg"}
+                      alt="background"
+                      className="w-full h-full object-cover"
+                    />
                   )}
                 </div>
                 <div className="px-4 pb-4 relative">
@@ -449,10 +521,16 @@ export default function UserProfile({ user, onClose }) {
                     <div className="flex items-end gap-4">
                       <div
                         className={`w-20 h-20 rounded-full overflow-hidden ${
-                          isDarkMode ? "bg-[#36393f] border-4 border-[#232428]" : "bg-gray-200 border-4 border-gray-300"
+                          isDarkMode
+                            ? "bg-[#36393f] border-4 border-[#232428]"
+                            : "bg-gray-200 border-4 border-gray-300"
                         } -mt-10`}
                       >
-                        <img src={avatar || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
+                        <img
+                          src={avatar || "/placeholder.svg"}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <h2 className="text-xl font-bold mb-2">{username}</h2>
                     </div>
@@ -461,7 +539,9 @@ export default function UserProfile({ user, onClose }) {
               </div>
               <button
                 className={`flex items-center gap-1 text-sm rounded px-4 py-1 ${
-                  isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"
+                  isDarkMode
+                    ? "bg-[#5865f2] hover:bg-[#4752c4]"
+                    : "bg-[#1877F2] hover:bg-[#0D6EFD]"
                 } text-white`}
                 onClick={() => setShowEditProfile(true)}
               >
@@ -470,10 +550,14 @@ export default function UserProfile({ user, onClose }) {
               </button>
 
               <div className="mt-8 text-center">
-                <h3 className="text-lg font-semibold mb-4">{t("Password and Authentication")}</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  {t("Password and Authentication")}
+                </h3>
                 <button
                   className={`flex items-center gap-1 mx-auto text-sm rounded px-3 py-2 ${
-                    isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"
+                    isDarkMode
+                      ? "bg-[#5865f2] hover:bg-[#4752c4]"
+                      : "bg-[#1877F2] hover:bg-[#0D6EFD]"
                   } text-white`}
                   onClick={() => checkChangePassword()}
                 >
@@ -487,4 +571,3 @@ export default function UserProfile({ user, onClose }) {
     </div>
   );
 }
-
