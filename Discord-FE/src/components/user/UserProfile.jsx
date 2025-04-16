@@ -325,12 +325,75 @@ export default function UserProfile({ user, onClose }) {
         {/* Content */}
         {showEditProfile ? (
           <div className="p-4">
-            {/* Form Edit Profile */}
+
             <form onSubmit={handleSaveProfile}>
-              {/* ... Nội dung form Edit Profile ... */}
+              <div className="mb-6">
+                <div className="relative mb-6">
+                  <div className={`h-24 ${isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"} rounded-t-md overflow-hidden`}>
+                    {background && (
+                      <img src={background || "/placeholder.svg"} alt="Background" className="w-full h-full object-cover" />
+                    )}
+                    <label
+                      className={`absolute right-2 bottom-2 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"} rounded-full flex items-center justify-center cursor-pointer`}
+                    >
+                      <Camera size={16} />
+                      <input type="file" accept="image/*" className="hidden" onChange={handleBackgroundChange} />
+                    </label>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <div className="relative -mt-10">
+                      <div
+                        className={`w-20 h-20 rounded-full overflow-hidden ${
+                          isDarkMode ? "bg-[#36393f] border-4 border-[#232428]" : "bg-gray-200 border-4 border-gray-300"
+                        }`}
+                      >
+                        <img src={avatar || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
+                      </div>
+                      <label
+                        className={`absolute bottom-0 right-0 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"} rounded-full flex items-center justify-center cursor-pointer`}
+                      >
+                        <Camera size={16} />
+                        <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-2">{t("Username")}</label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className={`w-full rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                      isDarkMode
+                        ? "bg-[#1e1f22] border border-[#232428] text-white focus:ring-[#5865f2]"
+                        : "bg-gray-100 border border-gray-300 text-[#333333] focus:ring-[#1877F2]"
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditProfile(false)}
+                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#2b2d31] hover:bg-[#35373c]" : "bg-gray-200 hover:bg-gray-300"}`}
+                >
+                  {t("Cancel")}
+                </button>
+                <button
+                  type="submit"
+                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"} `}
+                >
+                  {t("Save Changes")}
+                </button>
+              </div>
             </form>
           </div>
         ) : showChangePassword ? (
+          // Form Change Password
           <div className="p-4">
             <form onSubmit={handleChangePassword}>
               <div className="mb-6">
