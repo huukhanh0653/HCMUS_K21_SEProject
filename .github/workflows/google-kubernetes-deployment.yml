@@ -64,7 +64,7 @@ jobs:
         run: |
           if ! kubectl get statefulset redis-cluster &> /dev/null; then
             echo "Installing Redis Cluster..."
-            kubectl apply -f ./CI-CD/Kubernetes/redis/redis-cluster.yaml
+            kubectl apply -f ./CI-CD/Kubenetes/redis/redis-cluster.yaml
           else
             echo "Redis Cluster already exists."
           fi
