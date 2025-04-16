@@ -66,7 +66,7 @@ export default function ServerChat({ channel }) {
     const serverId = "default";
     const payload = {
       messageId: "msg-" + Date.now(), // Tạo id dựa trên timestamp
-      senderId: storedUser?._id || "unknown", // Nếu không có thông tin user, để "unknown"
+      senderId: storedUser?.id || "unknown", // Nếu không có thông tin user, để "unknown"
       serverId: serverId,
       channelId: "general", // Hoặc lấy từ channel.id nếu cần
       content: messageInput,

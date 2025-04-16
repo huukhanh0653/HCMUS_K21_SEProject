@@ -25,7 +25,7 @@ export default function AddFriend() {
         throw new Error("User not found");
       }
 
-      const data = await response.json();
+      const data = response;
       if (data) {
         setSearchResult(data);
       } else {
@@ -52,7 +52,7 @@ export default function AddFriend() {
         throw new Error("Failed to send friend request");
       }
 
-      const data = await response.json();
+      const data = await response;
       console.log("Friend request sent:", data);
       setSuccessMessage("Friend request sent successfully!");
     } catch (error) {

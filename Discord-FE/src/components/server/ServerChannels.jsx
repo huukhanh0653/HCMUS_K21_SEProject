@@ -6,10 +6,11 @@ import ChannelManagementModal from "./ChannelManagementModal";
 import InviteServer from "./InviteServer";
 import AddMemberToChannel from "./AddMemberToChannel";
 import VoiceChat from "./VoiceChat/VoiceChat";
+import VoiceChatPopup from "./VoiceChatPopup"; // Import component popup mới
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 
-export default function ServerChannels({ server, channels, onChannelSelect, onProfileClick, selectedChannelId }) {
+export default function ServerChannels({ server, channels, onChannelSelect, onProfileClick, selectedChannelId, setChannels }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
@@ -20,7 +21,6 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
   const menuRef = useRef(null);
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
-
 
   // Tạo mảng thành viên mẫu với 20 người dùng.
   const serverMembers = [
@@ -48,7 +48,6 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
 
   // Trạng thái cho notification của mỗi channel.
   const [channelNotifications, setChannelNotifications] = useState({});
-
   // Trạng thái dropdown hiển thị notification.
   const [openNotificationDropdown, setOpenNotificationDropdown] = useState(null);
 
@@ -220,12 +219,8 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
             <div
               className={`flex items-center justify-between px-2 py-1.5 gap-2 ${
                 isDarkMode
-                  ? `text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${
-                      selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""
-                    }`
-                  : `text-gray-600 hover:bg-gray-100 hover:text-[#333333] ${
-                      selectedChannelId === channel.id ? "bg-[#1877F2] text-white" : ""
-                    }`
+                  ? `text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""}`
+                  : `text-gray-600 hover:bg-gray-100 hover:text-[#333333] ${selectedChannelId === channel.id ? "bg-[#1877F2] text-white" : ""}`
               }`}
             >
               <button
@@ -254,41 +249,27 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
                     >
                       <Bell
                         size={16}
-                        className={`${
-                          isDarkMode
-                            ? "text-gray-400 hover:text-white"
-                            : "text-gray-500 hover:text-[#333333]"
-                        }`}
+                        className={`${isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-[#333333]"}`}
                       />
                     </button>
                     {openNotificationDropdown === channel.id && (
                       <div
-                        className={`absolute right-0 mt-1 w-32 rounded-md shadow-lg z-20 ${
-                          isDarkMode
-                            ? "bg-[#2b2d31] border border-[#1e1f22]"
-                            : "bg-white border border-gray-300"
-                        }`}
+                        className={`absolute right-0 mt-1 w-32 rounded-md shadow-lg z-20 ${isDarkMode ? "bg-[#2b2d31] border border-[#1e1f22]" : "bg-white border border-gray-300"}`}
                       >
                         <button
-                          onClick={() =>
-                            handleNotificationChange(channel.id, "open")
-                          }
+                          onClick={() => handleNotificationChange(channel.id, "open")}
                           className="block w-full text-left px-2 py-1 hover:bg-gray-200"
                         >
                           {t("Mở")}
                         </button>
                         <button
-                          onClick={() =>
-                            handleNotificationChange(channel.id, "mention")
-                          }
+                          onClick={() => handleNotificationChange(channel.id, "mention")}
                           className="block w-full text-left px-2 py-1 hover:bg-gray-200"
                         >
                           {t("Chỉ khi nhắc")}
                         </button>
                         <button
-                          onClick={() =>
-                            handleNotificationChange(channel.id, "off")
-                          }
+                          onClick={() => handleNotificationChange(channel.id, "off")}
                           className="block w-full text-left px-2 py-1 hover:bg-gray-200"
                         >
                           {t("Tắt")}
@@ -306,18 +287,14 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
                     >
                       <Plus
                         size={16}
-                        className={`${
-                          isDarkMode
-                            ? "text-gray-400 hover:text-white"
-                            : "text-gray-500 hover:text-[#333333]"
-                        }`}
+                        className={`${isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-[#333333]"}`}
                       />
                     </button>
                   )}
                 </div>
               )}
             </div>
-            {/* Nếu channel là voice và đã join, hiển thị VoiceChat ngay bên dưới hàng channel */}
+            {/* Nếu channel là voice và đã join, hiển thị VoiceChat inline ngay bên dưới hàng channel */}
             {channel.type === "voice" && channel.id === joinedVoiceChannelId && (
               <VoiceChat
                 user={JSON.parse(localStorage.getItem("user"))}
@@ -328,6 +305,15 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
           </div>
         ))}
       </div>
+
+      {/* Render thêm VoiceChat Popup – popup này sẽ mở khi đã join kênh voice và có channel hợp lệ */}
+      {joinedVoiceChannelId && (
+        <VoiceChatPopup
+          serverName={server.label}
+          channel={channels.find(ch => ch.id === joinedVoiceChannelId)}
+          onClose={handleLeaveVoiceChannel}
+        />
+      )}
     </div>
   );
 }
