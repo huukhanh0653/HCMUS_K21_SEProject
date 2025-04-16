@@ -72,4 +72,4 @@ jobs:
       # ✅ Deploy ứng dụng chính
       - name: Deploy to GKE
         run: |
-          kubectl apply -f ./CI-CD/Kubernetes/ .
+          kubectl apply -f ./CI-CD/Kubernetes
