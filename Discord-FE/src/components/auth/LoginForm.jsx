@@ -28,6 +28,8 @@ const LoginForm = ({ onSuccess, onError }) => {
     }
 
     try {
+
+
       const user = await signInWithEmail(email, password);
 
       // Sử dụng UserService để đồng bộ và lấy thông tin user

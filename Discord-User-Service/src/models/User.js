@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
   avatar: { type: String },
   background: { type: String },
   role: { type: String, enum: ['admin', 'user'], default: 'user' },
+  isActivated: { type: Boolean, default: true },
   createdAt : { type: Date, default: Date.now },
   updatedAt : { type: Date, default: Date.now }
 }, { timestamps: true });

@@ -15,7 +15,6 @@
     const navigate = useNavigate();
     const { t } = useTranslation();
     const [errorMessage, setErrorMessage] = useState("");
-
     const handleSuccess = () => navigate("/");
     const handleError = (message) => setErrorMessage(message);
 
@@ -61,7 +60,7 @@
           >
             <h2 className="text-xl font-bold text-center mb-4">{t('Login with social media account')}</h2>
 
-            <SocialLogin onError={handleError} />
+            <SocialLogin onSuccess={handleSuccess} onError={handleError} />
           </div>
 
           <div className="w-1/2 p-6">

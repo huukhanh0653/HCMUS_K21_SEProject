@@ -3,7 +3,7 @@ import { useTheme } from "../../components/layout/ThemeProvider";
 import { useTranslation } from "react-i18next";
 import { signInWithGoogle } from "../../firebase";
 import { useNavigate } from "react-router-dom";
-
+import { getAuth } from "firebase/auth";
 // Import UserService để gọi api
 import UserService from "../../services/UserService";
 
@@ -16,19 +16,40 @@ const SocialLogin = ({ onError }) => {
     try {
       const user = await signInWithGoogle();
       if (!user) return onError("Đăng nhập Google thất bại");
-
+  
       await UserService.syncFirebaseUser(user.uid, user.email);
       const response = await UserService.getUserByEmail(user.email);
+  
+      console.log("User response from backend:", response);
+  
+      // Convert string to boolean if needed
+      const isActivated = response.isActivated === true || response.isActivated === "true";
+  
+      if (!isActivated) {
+        console.log("User is not activated:", response);
+        const auth = getAuth();
+        auth.signOut(); // Đăng xuất người dùng nếu tài khoản không được kích hoạt
+        localStorage.removeItem("email");
+        localStorage.removeItem("username");
+        localStorage.removeItem("user");
 
-      localStorage.setItem("email", response.email);
-      localStorage.setItem("username", response.username);
-      localStorage.setItem("user", JSON.stringify(response));
-
-      navigate("/");
+        onError("User is not activated");
+        throw new Error("User is not activated");
+      }
+      else{
+        localStorage.setItem("email", response.email);
+        localStorage.setItem("username", response.username);
+        localStorage.setItem("user", JSON.stringify(response));
+        return navigate("/");
+      }
     } catch (err) {
+      console.log("1232");
+      navigate("/login");
+      console.error("Google login error:", err);
       onError("Google login failed: " + err.message);
     }
   };
+  
 
   return (
     <button
