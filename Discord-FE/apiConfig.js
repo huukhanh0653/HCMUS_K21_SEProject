@@ -1,5 +1,5 @@
 {/*--Base URL của USER SERVICE API--*/}
-export const User_API = "http://localhost:8081";
+export const User_API = "http://localhost:8087";
 
 {/*--Base URL của MESSAGE SERVICE API--*/}
 export const Message_API = "http://localhost:8082";

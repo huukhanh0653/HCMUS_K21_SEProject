@@ -7,7 +7,7 @@ import { signInWithEmail } from "../../firebase";
 import { updateUsedUserList } from "./updateUsedUserList";
 
 // Import UserService để gọi api
-import UserService from "../../service/UserService";
+import UserService from "../../services/UserService";
 
 const LoginForm = ({ onSuccess, onError }) => {
   const { isDarkMode } = useTheme();
