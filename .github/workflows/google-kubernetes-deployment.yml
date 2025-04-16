@@ -1,10 +1,16 @@
 name: Deploy to GKE
 
+# on:
+#   workflow_run:
+#     workflows: ["Build Docker Images"]
+#     types:
+#       - completed
+
 on:
   push:
-    branches: ["master"]
+    branches: [ "master" ]
   pull_request:
-    branches: ["master"]
+    branches: [ "master" ]
 
 jobs:
   deploy:
@@ -12,37 +18,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ✅ Bước 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ✅ Bước 2: Auth với GCP bằng service account key
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      # ✅ Bước 3: Cài gcloud CLI và auth plugin
       - name: Setup gcloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           install_components: 'gke-gcloud-auth-plugin'
 
-      # ✅ Bước 4: Get kubeconfig từ GKE cluster
       - name: Get GKE credentials
         run: |
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_ZONE }}
 
-      # ✅ Bước 5: Cài Helm (nếu bà có xài chart, có thể bỏ nếu không cần)
-      - name: Install Helm
-        uses: azure/setup-helm@v3
-
-      - name: Install Strimzi Kafka Operator (default namespace)
+      - name: Check and install Strimzi Kafka Operator if not exists
         run: |
-              kubectl apply -f https://strimzi.io/install/latest?namespace=default -n default
+          if ! kubectl get crd kafkas.kafka.strimzi.io > /dev/null 2>&1; then
+            echo "Installing Strimzi Kafka Operator..."
+            kubectl apply -f https://strimzi.io/install/latest?namespace=default -n default
+          else
+            echo "✅ Strimzi Kafka Operator already installed, skipping..."
+          fi
 
-      # ✅ Bước 6: Triển khai Kubernetes manifest
-      - name: Deploy to GKE
+      - name: Check and install Nginx Ingress Controller if not exists
+        run: |
+          if ! kubectl get ns ingress-nginx > /dev/null 2>&1; then
+            echo "Installing NGINX Ingress Controller..."
+            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+          else
+            echo "✅ NGINX Ingress Controller already installed, skipping..."
+          fi
+
+      - name: Deploy application manifests
         run: |
           kubectl apply -f ./CI-CD/Kubenetes
