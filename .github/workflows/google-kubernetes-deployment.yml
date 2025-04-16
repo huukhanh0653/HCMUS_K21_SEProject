@@ -25,9 +25,7 @@ jobs:
 
       - name: Install Helm
         uses: azure/setup-helm@v3
-
-      - name: Deploy Redis Cluster via Helm
-        run: bash ./k8s/deploy-redis.sh
+        
       - name: Deploy to GKE
         run: |
           cd ./CI-CD/Kubenetes && kubectl apply -f .
