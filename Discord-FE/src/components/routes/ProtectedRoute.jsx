@@ -1,15 +1,15 @@
 import { Navigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { User_API } from "../../../apiConfig";
+import UserService from "../../services/UserService";
 
 // Fetch user role from backend
 const checkUserRole = async (email) => {
   try {
-    const response = await fetch(`${User_API}/api/users/email/${email}`);
-    if (!response.ok) throw new Error("User not found");
-    const userData = await response.json();
-    return userData.role; // Returns "admin" or "user"
+    const response = await UserService.getUserByEmail(email);
+    if (!response) throw new Error("User not found");
+    const userData = response;
+    return userData.is_admin; // Returns "admin" or "user"
   } catch (error) {
     console.error("Error fetching user role:", error);
     return null;
@@ -19,7 +19,7 @@ const checkUserRole = async (email) => {
 // Higher-order component for role-based protection
 const ProtectedRoute = ({ children, requiredRole }) => {
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState(null);
+  const [role, setRole] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

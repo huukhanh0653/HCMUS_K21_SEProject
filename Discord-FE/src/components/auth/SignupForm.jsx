@@ -26,15 +26,17 @@ const SignupForm = ({ onError, onSuccess }) => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (!email || !validateEmail(email)) return onError("Email không hợp lệ");
-    if (!username) return onError("Username không được để trống");
-    if (!phone || !validatePhone(phone)) return onError("Số điện thoại không hợp lệ");
-    if (!password) return onError("Mật khẩu không được để trống");
-    if (password !== confirmPassword) return onError("Mật khẩu xác nhận không khớp");
+    if (!email || !validateEmail(email)) return onError(t("Invalid Email"));
+    if (!username) return onError(t("Username is required"));
+    if (!phone || !validatePhone(phone))
+      return onError(t("Invalid phone number"));
+    if (!password) return onError(t("Password must be filled"));
+    if (password !== confirmPassword) return onError(t("Password not matched"));
 
     try {
       const user = await signUpWithEmail(email, password);
-      if (!user) throw new Error("User creation failed, no user data returned.");
+      if (!user)
+        throw new Error("User creation failed, no user data returned.");
 
       await UserService.createUser({
         uid: user.uid,
@@ -46,7 +48,9 @@ const SignupForm = ({ onError, onSuccess }) => {
 
       await signOut(getAuth());
       setTimeout(() => navigate("/login"), 2000);
-      onSuccess("Đăng ký thành công! Bạn sẽ được chuyển hướng đến trang đăng nhập.");
+      onSuccess(
+        "Đăng ký thành công! Bạn sẽ được chuyển hướng đến trang đăng nhập."
+      );
     } catch (err) {
       onError(err.message || "Đăng ký thất bại!");
     }
@@ -95,7 +99,9 @@ const SignupForm = ({ onError, onSuccess }) => {
           type={showPassword ? "text" : "password"}
           placeholder={t("Password")}
           className={`p-3 w-full rounded-md border ${
-            isDarkMode ? "bg-[#202225] text-white border-gray-700" : "bg-white text-black border-gray-300"
+            isDarkMode
+              ? "bg-[#202225] text-white border-gray-700"
+              : "bg-white text-black border-gray-300"
           }`}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -107,7 +113,9 @@ const SignupForm = ({ onError, onSuccess }) => {
           type={showPassword ? "text" : "password"}
           placeholder={t("Confirm Password")}
           className={`p-3 w-full rounded-md border ${
-            isDarkMode ? "bg-[#202225] text-white border-gray-700" : "bg-white text-black border-gray-300"
+            isDarkMode
+              ? "bg-[#202225] text-white border-gray-700"
+              : "bg-white text-black border-gray-300"
           }`}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
@@ -124,7 +132,9 @@ const SignupForm = ({ onError, onSuccess }) => {
       <button
         type="submit"
         className={`font-bold py-2 rounded-md ${
-          isDarkMode ? "bg-gray-600 hover:bg-gray-700 text-white" : "bg-[#0D6EFD] hover:bg-[#0056D2] text-white"
+          isDarkMode
+            ? "bg-gray-600 hover:bg-gray-700 text-white"
+            : "bg-[#0D6EFD] hover:bg-[#0056D2] text-white"
         }`}
       >
         {t("Signup")}
