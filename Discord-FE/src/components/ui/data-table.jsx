@@ -25,6 +25,7 @@ export function DataTable({
   filterProps,
   buildInSearch = true,
   onSortingChange,
+  isLoading = false,
 }) {
   const { t } = useTranslation();
   const [sorting, setSorting] = React.useState([]);
@@ -88,7 +89,7 @@ export function DataTable({
                           : ""
                       }
                       ${
-                        header.column.columnDef.accessorKey === "photoURL"
+                        header.column.columnDef.accessorKey === "avatar"
                           ? "hidden md:table-cell"
                           : ""
                       }
@@ -107,7 +108,18 @@ export function DataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center text-xs sm:text-sm"
+                >
+                  <div className="flex justify-center items-center">
+                    <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   className="dark:even:bg-gray-700 text-start"
@@ -124,7 +136,7 @@ export function DataTable({
                             : ""
                         }
                         ${
-                          cell.column.columnDef.accessorKey === "photoURL"
+                          cell.column.columnDef.accessorKey === "avatar"
                             ? "hidden md:table-cell"
                             : ""
                         }

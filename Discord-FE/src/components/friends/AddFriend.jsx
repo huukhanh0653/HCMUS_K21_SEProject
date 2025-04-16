@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../layout/ThemeProvider";
-import { User_API } from "../../../apiConfig";
 import UserService from "../../services/UserService";
 
 export default function AddFriend() {
@@ -25,7 +24,7 @@ export default function AddFriend() {
         throw new Error("User not found");
       }
 
-      const data = response;
+      const data = await response;
       if (data) {
         setSearchResult(data);
       } else {
