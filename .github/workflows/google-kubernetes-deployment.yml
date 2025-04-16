@@ -38,6 +38,10 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
 
+      - name: Install Strimzi Kafka Operator (default namespace)
+        run: |
+              kubectl apply -f https://strimzi.io/install/latest?namespace=default -n default
+
       # ✅ Bước 6: Triển khai Kubernetes manifest
       - name: Deploy to GKE
         run: |
