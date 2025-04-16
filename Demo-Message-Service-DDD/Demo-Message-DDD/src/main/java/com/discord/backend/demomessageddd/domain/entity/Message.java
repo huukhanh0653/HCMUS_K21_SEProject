@@ -6,15 +6,19 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import lombok.Data;
+import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
-import lombok.Getter;
 
 /**
  * Represents a message in the system.
  */
-
+@Data
+@ToString
 @Document(collection = "messages")
-@Getter
+//@JsonSerialize(using = ToStringSerializer.class)
 public class Message {
     private final String messageId;
     private final String senderId;
@@ -22,7 +26,7 @@ public class Message {
     private final String channelId;
     private final List<String> attachments;
     private final MessageContent content;
-    private final Instant timestamp;
+    private final String timestamp;
 
     public Message(String messageId, String senderId, String serverId,
                    String channelId, MessageContent content,
@@ -33,7 +37,7 @@ public class Message {
         this.messageId = messageId;
         this.attachments = attachments;
         this.content = content;
-        this.timestamp = Instant.now();
+        this.timestamp = Instant.now().toString();
     }
 
     public Message(String senderId, String serverId, String channelId, String contentText,
@@ -52,31 +56,11 @@ public class Message {
         System.out.println("Message constructor called with messageId: " + messageId);
     }
 
-    public String getMessageId() {
-        return messageId;
-    }
-
-    public String getSenderId() {
-        return senderId;
-    }
-
-    public String getServerId() {
-        return serverId;
-    }
-
-    public String getChannelId() {
-        return channelId;
-    }
-
-    public List<String> getAttachments() {
-        return attachments;
-    }
-
-    public MessageContent getContent() {
-        return content;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
+    public String getMessageId() { return messageId; }
+    public String getSenderId() { return senderId; }
+    public String getServerId() { return serverId; }
+    public String getChannelId() { return channelId; }
+    public List<String> getAttachments() { return attachments; }
+    public MessageContent getContent() { return content; }
+    public String getTimestamp() { return timestamp; }
 }

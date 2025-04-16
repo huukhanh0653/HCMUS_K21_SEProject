@@ -16,6 +16,7 @@ const fetchMoreMessages = (data) => {
 
 // Hàm gửi tin nhắn
 const sendMessage = (message, callback) => {
+  console.log("Sending message:", message);
   socket.emit("sendMessage", message, (response) => {
     console.log("Server ack:", response);
     if (callback) callback(response);

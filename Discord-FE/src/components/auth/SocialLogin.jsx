@@ -5,7 +5,7 @@ import { signInWithGoogle } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 
 // Import UserService để gọi api
-import UserService from "../../service/UserService";
+import UserService from "../../services/UserService";
 
 const SocialLogin = ({ onError }) => {
   const { isDarkMode } = useTheme();

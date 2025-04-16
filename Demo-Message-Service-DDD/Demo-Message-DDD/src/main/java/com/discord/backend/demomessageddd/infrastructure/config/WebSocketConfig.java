@@ -1,4 +1,4 @@
-package com.discord.backend.demomessageddd.config;
+package com.discord.backend.demomessageddd.infrastructure.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

@@ -22,7 +22,7 @@ import {
 } from "../../redux/homeSlice";
 
 // Gọi API qua UserService
-import UserService from "../../service/UserService";
+import UserService from "../../services/UserService";
 
 // Lazy load các component liên quan đến bạn bè (cho giao diện DM)
 const DirectMessage = lazy(() =>

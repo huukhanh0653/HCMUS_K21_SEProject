@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setSelectedChannel } from "../../redux/homeSlice";
-import { Hash, Bell } from "lucide-react";
+import { Hash, Pin } from "lucide-react";
 import { useTheme } from "../../components/layout/ThemeProvider";
 
 // Import các component liên quan đến Server
@@ -9,16 +9,29 @@ import ServerChannels from "./ServerChannels";
 import ServerChat from "./ServerChat/ServerChat";
 import ServerMembers from "./ServerMembers";
 import UserPanel from "../user/UserPanel";
+import PinnedMessagesModal from "./PinnedMessagesModal"; 
 
 export default function Server({
   selectedServer,
   user,
-  selectedChannel, // Đây chỉ dùng cho các kênh text.
+  selectedChannel, // Dành cho các kênh text.
   onChannelSelect,
   setProfileModal,
 }) {
   const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
+
+  // State để điều khiển modal popup của tin nhắn ghim.
+  const [showPinModal, setShowPinModal] = useState(false);
+
+  // Mẫu 5 tin nhắn ghim
+  const pinnedMessages = [
+    { id: 1, user: "Alice", message: "Hello, welcome!" },
+    { id: 2, user: "Bob", message: "Don't forget to read the rules." },
+    { id: 3, user: "Charlie", message: "Meeting at 3 PM." },
+    { id: 4, user: "Dana", message: "New updates available." },
+    { id: 5, user: "Eve", message: "Check out this cool resource." },
+  ];
 
   // Dữ liệu channels mẫu với các loại: text và voice.
   const [channels, setChannels] = useState([
@@ -69,14 +82,14 @@ export default function Server({
             </span>
           </div>
           <div
-            onClick={() => console.log("Notification clicked")}
+            onClick={() => setShowPinModal(true)}
             className="cursor-pointer"
           >
-            <Bell size={20} className="text-gray-400" />
+            <Pin size={20} className="text-gray-400" />
           </div>
         </div>
 
-        {/* Nội dung chính: hiển thị giao diện chat cho channel text */}
+        {/* Nội dung chính: hiển thị giao diện chat cho kênh text */}
         <div className="flex-1 overflow-x-hidden overflow-y-auto">
           {textChannel ? (
             <ServerChat channel={textChannel} />
@@ -93,6 +106,14 @@ export default function Server({
         <div className="w-60 h-full bg-white border-l border-gray-200 dark:bg-[#2b2d31] overflow-x-hidden overflow-y-auto">
           <ServerMembers />
         </div>
+      )}
+
+      {/* Sử dụng component Popup modal */}
+      {showPinModal && (
+        <PinnedMessagesModal
+          pinnedMessages={pinnedMessages}
+          onClose={() => setShowPinModal(false)}
+        />
       )}
     </div>
   );
