@@ -68,7 +68,7 @@ class UserService {
     }
   }
 
-  async getUserById(id) {
+  async getUserBy_id(id) {
     return await User.findByPk(id, { attributes: { exclude: ["password"] } });
   }
 

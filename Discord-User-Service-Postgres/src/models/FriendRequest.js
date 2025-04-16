@@ -43,12 +43,12 @@ const FriendRequest = sequelize.define(
   }
 );
 
-User.hasMany(FriendRequest, { foreignKey: "senderId", as: "sentRequests" });
+User.hasMany(FriendRequest, { foreignKey: "sender_id", as: "sentRequests" });
 User.hasMany(FriendRequest, {
-  foreignKey: "receiverId",
+  foreignKey: "receiver_id",
   as: "receivedRequests",
 });
-FriendRequest.belongsTo(User, { foreignKey: "senderId", as: "sender" });
-FriendRequest.belongsTo(User, { foreignKey: "receiverId", as: "receiver" });
+FriendRequest.belongsTo(User, { foreignKey: "sender_id", as: "sender" });
+FriendRequest.belongsTo(User, { foreignKey: "receiver_id", as: "receiver" });
 
 module.exports = FriendRequest;

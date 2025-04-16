@@ -3,17 +3,17 @@ const FriendRequest = require("../models/FriendRequest");
 const { Op } = require("sequelize");
 
 class FriendService {
-  async addFriend(userId, friendId) {
+  async addFriend(user_id, friend_id) {
     try {
-      if (!userId || !friendId) {
-        throw new Error("Both userId and friendId are required");
+      if (!user_id || !friend_id) {
+        throw new Error("Both user_id and friend_id are required");
       }
 
       const existingFriend = await Friend.findOne({
         where: {
           [Op.or]: [
-            { userId, friendId },
-            { userId: friendId, friendId: userId },
+            { user_id, friend_id },
+            { user_id: friend_id, friend_id: user_id },
           ],
         },
       });
@@ -21,23 +21,23 @@ class FriendService {
         throw new Error("Friend already exists");
       }
 
-      return await Friend.create({ userId, friendId });
+      return await Friend.create({ user_id, friend_id });
     } catch (error) {
       throw new Error(`Failed to add friend: ${error.message}`);
     }
   }
 
-  async sendFriendRequest(userId, friendId) {
+  async sendFriendRequest(user_id, friend_id) {
     try {
-      if (!userId || !friendId) {
-        throw new Error("Both userId and friendId are required");
+      if (!user_id || !friend_id) {
+        throw new Error("Both user_id and friend_id are required");
       }
 
       const existingRequest = await FriendRequest.findOne({
         where: {
           [Op.or]: [
-            { senderId: userId, receiverId: friendId },
-            { senderId: friendId, receiverId: userId },
+            { sender_id: user_id, receiver_id: friend_id },
+            { sender_id: friend_id, receiver_id: user_id },
           ],
         },
       });
@@ -46,22 +46,22 @@ class FriendService {
       }
 
       return await FriendRequest.create({
-        senderId: userId,
-        receiverId: friendId,
+        sender_id: user_id,
+        receiver_id: friend_id,
       });
     } catch (error) {
       throw new Error(`Failed to send friend request: ${error.message}`);
     }
   }
 
-  async getFriendRequests(userId) {
+  async getFriendRequests(user_id) {
     try {
-      if (!userId) {
-        throw new Error("userId is required");
+      if (!user_id) {
+        throw new Error("user_id is required");
       }
 
       return await FriendRequest.findAll({
-        where: { receiverId: userId, status: "pending" }, // Chỉ lấy các yêu cầu đang pending
+        where: { receiver_id: user_id, status: "pending" }, // Chỉ lấy các yêu cầu đang pending
         include: [
           {
             model: User,
@@ -75,13 +75,13 @@ class FriendService {
     }
   }
 
-  async acceptFriendRequest(requestId) {
+  async acceptFriendRequest(request_id) {
     try {
-      if (!requestId) {
-        throw new Error("requestId is required");
+      if (!request_id) {
+        throw new Error("request_id is required");
       }
 
-      const request = await FriendRequest.findByPk(requestId);
+      const request = await FriendRequest.findByPk(request_id);
       if (!request) {
         throw new Error("Friend request not found");
       }
@@ -90,7 +90,7 @@ class FriendService {
         throw new Error("Friend request is not in pending status");
       }
 
-      await this.addFriend(request.senderId, request.receiverId);
+      await this.addFriend(request.sender_id, request.receiver_id);
       await request.update({ status: "accepted" });
       await request.destroy();
     } catch (error) {
@@ -98,13 +98,13 @@ class FriendService {
     }
   }
 
-  async declineFriendRequest(requestId) {
+  async declineFriendRequest(request_id) {
     try {
-      if (!requestId) {
-        throw new Error("requestId is required");
+      if (!request_id) {
+        throw new Error("request_id is required");
       }
 
-      const request = await FriendRequest.findByPk(requestId);
+      const request = await FriendRequest.findByPk(request_id);
       if (!request) {
         throw new Error("Friend request not found");
       }
@@ -120,15 +120,15 @@ class FriendService {
     }
   }
 
-  async getFriends(userId) {
+  async getFriends(user_id) {
     try {
-      if (!userId) {
-        throw new Error("userId is required");
+      if (!user_id) {
+        throw new Error("user_id is required");
       }
 
       const friends = await Friend.findAll({
         where: {
-          [Op.or]: [{ userId }, { friendId: userId }],
+          [Op.or]: [{ user_id }, { friend_id: user_id }],
         },
         include: [
           {
@@ -146,7 +146,7 @@ class FriendService {
 
       const friendsSet = new Map();
       friends.forEach((f) => {
-        const friend = f.userId === userId ? f.friend : f.user;
+        const friend = f.user_id === user_id ? f.friend : f.user;
         friendsSet.set(friend.id, friend);
       });
 
@@ -156,17 +156,17 @@ class FriendService {
     }
   }
 
-  async removeFriend(userId, friendId) {
+  async removeFriend(user_id, friend_id) {
     try {
-      if (!userId || !friendId) {
-        throw new Error("Both userId and friendId are required");
+      if (!user_id || !friend_id) {
+        throw new Error("Both user_id and friend_id are required");
       }
 
       const result = await Friend.destroy({
         where: {
           [Op.or]: [
-            { userId, friendId },
-            { userId: friendId, friendId: userId },
+            { user_id, friend_id },
+            { user_id: friend_id, friend_id: user_id },
           ],
         },
       });

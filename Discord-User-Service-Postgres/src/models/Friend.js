@@ -37,9 +37,9 @@ const Friend = sequelize.define(
   }
 );
 
-User.hasMany(Friend, { foreignKey: "userId", as: "friends" });
-User.hasMany(Friend, { foreignKey: "friendId", as: "friendOf" });
-Friend.belongsTo(User, { foreignKey: "userId", as: "user" });
-Friend.belongsTo(User, { foreignKey: "friendId", as: "friend" });
+User.hasMany(Friend, { foreignKey: "user_id", as: "friends" });
+User.hasMany(Friend, { foreignKey: "friend_id", as: "friendOf" });
+Friend.belongsTo(User, { foreignKey: "user_id", as: "user" });
+Friend.belongsTo(User, { foreignKey: "friend_id", as: "friend" });
 
 module.exports = Friend;
