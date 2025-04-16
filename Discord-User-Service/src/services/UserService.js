@@ -36,12 +36,20 @@ class UserService {
 
   async syncFirebaseUsers() {
     try {
+      User.deleteMany({}); // Clear the User collection before syncing
       const firebaseUsers = await this.getAllFirebaseUsers(); // Ensure this works
+<<<<<<< HEAD
+      const emails = firebaseUsers.map(user => user.email);
+      const existingUsers = await User.find({ email: { $in: emails } }); // Fetch all at once
+      const existingEmails = new Set(existingUsers.map(user => user.email));
+      
+=======
 
       const emails = firebaseUsers.map((user) => user.email);
       const existingUsers = await User.find({ email: { $in: emails } }); // Fetch all at once
       const existingEmails = new Set(existingUsers.map((user) => user.email));
 
+>>>>>>> 8122bc607127f61a34d0ff217fddca21be8062e5
       for (const user of firebaseUsers) {
         if (!existingEmails.has(user.email)) {
           try {
@@ -51,7 +59,11 @@ class UserService {
               password: null, // Handled by Firebase
               avatar: user.photoURL || "",
               background: user.photoURL || "",
+<<<<<<< HEAD
+              isActivated: true,
+=======
               isAdmin: false,
+>>>>>>> 8122bc607127f61a34d0ff217fddca21be8062e5
             });
           } catch (createError) {
             console.error(`Failed to create user ${user.email}:`, createError);
@@ -88,6 +100,9 @@ class UserService {
 
   async deleteUser(id) {
     return User.findByIdAndDelete(id);
+  }
+  async deactivateUser(id) {
+    return User.findByIdAndUpdate(id, { isActivated: false }, { new: true }).select('-password');
   }
 }
 

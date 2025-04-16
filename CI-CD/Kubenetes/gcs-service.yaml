@@ -53,4 +53,4 @@ spec:
     - protocol: TCP
       port: 8083
       targetPort: 8083
-  type: LoadBalancer  # Exposes the service externally
+  type: ClusterIP  # Exposes the service externally

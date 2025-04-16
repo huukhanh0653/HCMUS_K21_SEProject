@@ -18,13 +18,19 @@ const getFriends = async (userId) => {
 
 const sendFriendRequest = async (userId, friendId) => {
   try {
-    const response = await axios.post(`${User_API}/api/friends/request`, {
-      user_id: userId,
-      friend_id: friendId,
-    });
-    return response.data;
+    const response = await axios.post(
+      `${User_API}/api/friends/request`,
+      {
+        user_id: userId,
+        friend_id: friendId,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data; // Contains the response from your backend
   } catch (error) {
-    console.error("Error fetching friends data:", error);
+    console.error("Error sending friend request:", error);
     throw error;
   }
 };

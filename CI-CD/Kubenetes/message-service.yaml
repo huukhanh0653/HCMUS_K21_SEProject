@@ -40,4 +40,4 @@ spec:
     - protocol: TCP
       port: 8082
       targetPort: 8082
-  type: LoadBalancer
+  type: ClusterIP  # Exposes the service internally within the cluster
