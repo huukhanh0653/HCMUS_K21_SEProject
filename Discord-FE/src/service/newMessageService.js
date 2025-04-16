@@ -1,23 +1,17 @@
 import SockJS from "sockjs-client";
-import Stomp from "stompjs";
-require("dotenv").config();
+import { Client } from "@stomp/stompjs";
 
-const connectMessageService = (stompClientRef, setChatMessages) => {
-  const socket = new SockJS(`http://localhost:${PORT}/ws`);
-  const stompClient = Stomp.over(socket);
-  stompClientRef.current = stompClient;
-
-  stompClient.connect({}, () => {
-    stompClient.subscribe(
-      `/topic/server/${SERVER_ID}/channel/${CHANNEL_ID}`,
-      (msg) => {
-        const received = JSON.parse(msg.body);
-        setChatMessages((prev) => [...prev, received]);
-      }
-    );
-  });
-
-  return () => {
-    stompClient.disconnect();
-  };
-};
+// Kết nối WebSocket
+const socket = new SockJS("http://localhost:8089/ws");
+const stompClient = new Client({
+  webSocketFactory: () => socket,
+  debug: (str) => console.log(str),
+  onConnect: () => {
+    // ✅ Subscribe vào đúng topic
+    stompClient.subscribe("/topic/server/default/channel/general", (message) => {
+      const messageData = JSON.parse(message.body);
+      console.log("Received via WebSocket:", messageData);
+      // 👉 Hiển thị ra UI
+    });
+  },
+});

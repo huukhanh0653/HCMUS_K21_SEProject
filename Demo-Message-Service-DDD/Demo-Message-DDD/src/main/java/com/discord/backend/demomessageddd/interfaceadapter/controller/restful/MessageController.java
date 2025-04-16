@@ -7,7 +7,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/messages")
+@RequestMapping("/api/messages")
 public class MessageController {
     private final SendMessageUseCase sendMessageUseCase;
     private final SimpMessagingTemplate messagingTemplate;
