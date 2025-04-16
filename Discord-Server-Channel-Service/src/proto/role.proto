@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package role;
+
+service RoleService {
+  rpc CreateRole (CreateRoleRequest) returns (RoleResponse) {}
+  rpc GetRoleById (GetRoleByIdRequest) returns (RoleResponse) {}
+  rpc GetRoleByName (GetRoleByNameRequest) returns (RoleResponse) {}
+  rpc GetRolesByServer (GetRolesByServerRequest) returns (RoleListResponse) {}
+  rpc UpdateRole (UpdateRoleRequest) returns (RoleResponse) {}
+  rpc DeleteRole (DeleteRoleRequest) returns (RoleResponse) {}
+}
+
+message CreateRoleRequest {
+  string serverId = 1;
+  string name = 2;
+  string color = 3;
+  int32 position = 4;
+  bool isDefault = 5;
+}
+
+message GetRoleByIdRequest {
+  string roleId = 1;
+}
+
+message GetRoleByNameRequest {
+  string serverId = 1;
+  string name = 2;
+}
+
+message GetRolesByServerRequest {
+  string serverId = 1;
+}
+
+message UpdateRoleRequest {
+  string roleId = 1;
+  string name = 2;
+  string color = 3;
+  int32 position = 4;
+  bool isDefault = 5;
+}
+
+message DeleteRoleRequest {
+  string roleId = 1;
+}
+
+message GetRoleResponse {
+  string id = 1;
+  string serverId = 2;
+  string name = 3;
+  string color = 4;
+  int32 position = 5;
+  bool isDefault = 6;
+}
+
+message RoleResponse {
+  string message = 1;
+}
+
+message RoleListResponse {
+  repeated GetRoleResponse roles = 1;
+}

@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import DefaultLayout from "./Layout";
 import { DataTable } from "../../ui/data-table";
 import { Button } from "../../ui/button";
 import { columns } from "./Columns";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../layout/LanguageProvider";
-import { getUsers, deleteUser } from "../BE-Services/user_services";
+import { getUsers, deleteUser } from "../../../service/UserService";
 import toast from "react-hot-toast";
 import { getAuth } from "firebase/auth";
 import {
@@ -25,6 +25,8 @@ export default function Member() {
   const [members, setMembers] = useState([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState(null);
+  const [filterValue, setFilterValue] = useState("");
+  const [sorting, setSorting] = useState([]);
   const { t } = useTranslation();
   const { language } = useLanguage();
 
@@ -81,9 +83,40 @@ export default function Member() {
     setMemberToDelete(null);
   };
 
+  const processedMembers = useMemo(() => {
+    let filteredMembers = [...members];
+
+    if (filterValue) {
+      filteredMembers = filteredMembers.filter((member) =>
+        member.username?.toLowerCase().includes(filterValue.toLowerCase())
+      );
+    }
+
+    if (sorting.length > 0) {
+      const { id, desc } = sorting[0];
+      filteredMembers.sort((a, b) => {
+        const aValue = a[id] || "";
+        const bValue = b[id] || "";
+        if (aValue < bValue) return desc ? 1 : -1;
+        if (aValue > bValue) return desc ? -1 : 1;
+        return 0;
+      });
+    }
+
+    return filteredMembers.map((member, index) => ({
+      ...member,
+      num: index + 1,
+    }));
+  }, [members, filterValue, sorting]);
+
+  useEffect(() => {
+    setTotalSize(processedMembers.length);
+    setCurrentPage(1);
+  }, [processedMembers]);
+
   const pageSize = 10;
-  const totalPages = Math.ceil(members.length / pageSize);
-  const paginatedMembers = members.slice(
+  const totalPages = Math.ceil(processedMembers.length / pageSize);
+  const paginatedMembers = processedMembers.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -96,17 +129,18 @@ export default function Member() {
 
       <DataTable
         columns={columns({ onDelete: handleOpenDeleteModal })}
-        data={paginatedMembers.map((member, index) => ({
-          ...member,
-          num: (currentPage - 1) * pageSize + index + 1,
-        }))}
+        data={paginatedMembers}
         filterProps={{
           column: "username",
           placeholder:
             language === "en"
               ? "Find member by name"
               : "Tìm thành viên bằng tên...",
+          value: filterValue,
+          onChange: setFilterValue,
         }}
+        buildInSearch={false}
+        onSortingChange={setSorting}
       />
 
       <div className="flex items-center justify-end space-x-2 py-4 px-2 sm:px-4">

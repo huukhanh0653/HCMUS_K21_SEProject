@@ -41,9 +41,9 @@ export const columns = ({ onDelete }) => {
       cell: ({ row }) => (
         <span
           className="text-xs sm:text-sm truncate pl-1 max-w-[120px] sm:max-w-[200px] block"
-          title={row.original.displayName}
+          title={row.original.username}
         >
-          {row.original.displayName}
+          {row.original.username}
         </span>
       ),
     },
@@ -77,7 +77,7 @@ export const columns = ({ onDelete }) => {
       ),
       cell: ({ row }) => (
         <img
-          src={row.original.photoURL || defaultAvatar}
+          src={row.original.avatar || defaultAvatar}
           alt="Avatar"
           className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hidden md:block border border-gray-200"
         />
