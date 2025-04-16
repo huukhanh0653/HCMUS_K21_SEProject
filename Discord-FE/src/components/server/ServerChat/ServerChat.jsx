@@ -44,10 +44,10 @@ export default function ServerChat({ channel }) {
   // Kết nối với dịch vụ tin nhắn sử dụng newMessageService để subscribe nhận tin nhắn từ backend
   useEffect(() => {
     if (!channel?.id) return;
-    const serverId = channel.serverId || "default";
+    const serverId = "default";
 
     // Gọi hàm kết nối và truyền vào stompClientRef, setMessages, serverId và channel.id
-    const disconnect = connectMessageService(stompClientRef, setMessages, serverId, channel.id);
+    const disconnect = connectMessageService(stompClientRef, setMessages, serverId,  "general");
 
     // Cleanup: ngắt kết nối khi channel thay đổi hoặc component unmount
     return () => {
@@ -63,10 +63,10 @@ export default function ServerChat({ channel }) {
   // Hàm gửi tin nhắn qua API (POST)
   const handleSendMessage = async () => {
     if (!messageInput.trim()) return;
-    const serverId = channel.serverId || "default";
+    const serverId = "default";
     const payload = {
       messageId: "msg-" + Date.now(), // Tạo id dựa trên timestamp
-      senderId: storedUser?.id || "unknown", // Nếu không có thông tin user, để "unknown"
+      senderId: storedUser?._id || "unknown", // Nếu không có thông tin user, để "unknown"
       serverId: serverId,
       channelId: "general", // Hoặc lấy từ channel.id nếu cần
       content: messageInput,
@@ -75,7 +75,7 @@ export default function ServerChat({ channel }) {
 
     try {
       // Lưu ý: Sử dụng URL tương đối "/messages" để nhờ proxy (nếu bạn đã cấu hình proxy trong vite.config.ts)
-      const response = await fetch("/messages", {
+      const response = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

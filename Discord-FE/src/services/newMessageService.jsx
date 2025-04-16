@@ -16,8 +16,15 @@ const connectMessageService = (stompClientRef, setChatMessages, serverId, channe
       `/topic/server/${serverId}/channel/${channelId}`,
       (msg) => {
         const received = JSON.parse(msg.body);
-        console.log("Received message:", received);
-        setChatMessages((prev) => [...prev, received]);
+        // Chuyển object content: { text: "kak" } -> "kak"
+        const updatedReceived = {
+          ...received,
+          content: typeof received.content === "object" && received.content.text
+            ? received.content.text
+            : received.content
+        };
+
+        setChatMessages((prev) => [...prev, updatedReceived]);
       }
     );
   });

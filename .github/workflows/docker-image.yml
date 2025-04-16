@@ -36,8 +36,8 @@ jobs:
       - name: Build and Push Message Service
         uses: docker/build-push-action@v4
         with:
-          context: ./Discord-Message-Service
-          file: ./Discord-Message-Service/Dockerfile
+          context: ./Demo-Message-Service-DDD/Demo-Message-DDD
+          file: ./Demo-Message-Service-DDD/Demo-Message-DDD/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-message-service:latest
 
@@ -57,13 +57,13 @@ jobs:
           push: true
           tags: huukhanh0653/echo-chat-gcs-service:latest
       
-      # - name: Build and Push Front-end Service
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: ./Discord-FE
-      #     file: ./Discord-FE/Dockerfile
-      #     push: true
-      #     tags: huukhanh0653/echo-chat-front-end-service:latest
+      - name: Build and Push Front-end Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Discord-FE
+          file: ./Discord-FE/Dockerfile
+          push: true
+          tags: huukhanh0653/echo-chat-front-end-service:latest
 
       - name: Build and Push Notification Service
         uses: docker/build-push-action@v4
