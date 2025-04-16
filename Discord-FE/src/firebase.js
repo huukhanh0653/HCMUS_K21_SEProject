@@ -9,7 +9,7 @@ import {
   EmailAuthProvider, 
   linkWithCredential 
 } from "firebase/auth";
-
+import { User_API } from "../apiConfig";
 // Firebase configuration
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -76,6 +76,24 @@ const signUpWithEmail = async (email, password) => {
 const signInWithEmail = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userResponse = await fetch(`${User_API}/api/users/email/${email}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const user = await userResponse.json();
+    console.log("User signin with email:", user); 
+
+    if (user.isActivated === false) {
+      
+      console.log("User is not activated") ;
+      const auth = getAuth();
+      auth.signOut(); // Sign out the user if the account is not activated
+      onError("User is not activated");
+      throw new Error("User is not activated");
+    }
     console.log("User signed in");
     return userCredential.user;
   } catch (error) {
@@ -91,12 +109,32 @@ const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     console.log("Google sign-in successful:", result.user);
+
+    // Assuming you just want to confirm the user exists on the backend
+    const userResponse = await fetch(`${User_API}/api/users/email/${result.user.email}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const user = await userResponse.json();
+    if (user.isActivated === false) {
+      
+      console.log("User is not activated") ;
+      const auth = getAuth();
+      auth.signOut(); // Sign out the user if the account is not activated
+      onError("User is not activated");
+      throw new Error("User is not activated");
+    }
+
     return result.user;
   } catch (error) {
     console.error("Google sign-in error:", error);
     throw error;
   }
 };
+
 
 /**
  * Sign in with Facebook
