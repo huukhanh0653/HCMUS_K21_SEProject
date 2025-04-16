@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package server;
+
+service ServerService {
+  rpc CreateServer (CreateServerRequest) returns (ServerResponse) {}
+  rpc GetServers (GetServersRequest) returns (ServerListResponse) {}
+  rpc UpdateServer (UpdateServerRequest) returns (ServerResponse) {}
+  rpc DeleteServer (DeleteServerRequest) returns (ServerResponse) {}
+}
+
+message CreateServerRequest {
+  string userId = 1;
+  string name = 2;
+  string serverPic = 3;
+}
+
+message GetServersRequest {
+  string userId = 1;
+  string query = 2;
+}
+
+message UpdateServerRequest {
+  string serverId = 1;
+  string userId = 2;
+  string name = 3;
+  string serverPic = 4;
+}
+
+message DeleteServerRequest {
+  string serverId = 1;
+  string userId = 2;
+}
+
+message GetServerResponse {
+  string name = 1;
+  string ownerUsername = 2;
+  string createdAt = 3;
+  string serverPic = 4;
+}
+
+message ServerResponse {
+  string message = 1;
+}
+
+message ServerListResponse {
+  repeated GetServerResponse servers = 1;
+}

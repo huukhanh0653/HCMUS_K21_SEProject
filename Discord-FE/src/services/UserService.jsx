@@ -1,3 +1,4 @@
+import axios from "axios";
 import { User_API } from "../../apiConfig";
 
 // --------------------
@@ -5,14 +6,10 @@ import { User_API } from "../../apiConfig";
 // --------------------
 const getFriends = async (userId) => {
   try {
-    const response = await fetch(`${User_API}/api/friendships/${userId}`, {
+    const response = await axios.get(`${User_API}/api/friendships/${userId}`, {
       headers: { accept: "application/json" },
     });
-    if (!response.ok) {
-      throw new Error("Failed to fetch friends data");
-    }
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error) {
     console.error("Error fetching friends data:", error);
     throw error;
@@ -21,12 +18,10 @@ const getFriends = async (userId) => {
 
 const getFriendRequests = async (userId) => {
   try {
-    const response = await fetch(`${User_API}/api/friendships/requests/${userId}`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch friend requests");
-    }
-    const data = await response.json();
-    return data;
+    const response = await axios.get(
+      `${User_API}/api/friendships/requests/${userId}`
+    );
+    return response.data;
   } catch (error) {
     console.error("Error fetching friend requests:", error);
     throw error;
@@ -35,14 +30,11 @@ const getFriendRequests = async (userId) => {
 
 const acceptFriendRequest = async (requestID) => {
   try {
-    const response = await fetch(`${User_API}/api/friendships/request/accept`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ requestID }),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to accept friend request");
-    }
+    const response = await axios.post(
+      `${User_API}/api/friendships/request/accept`,
+      { requestID },
+      { headers: { "Content-Type": "application/json" } }
+    );
     return response;
   } catch (error) {
     console.error("Error accepting friend request:", error);
@@ -52,14 +44,11 @@ const acceptFriendRequest = async (requestID) => {
 
 const declineFriendRequest = async (requestID) => {
   try {
-    const response = await fetch(`${User_API}/api/friendships/request/decline`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ requestID }),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to decline friend request");
-    }
+    const response = await axios.post(
+      `${User_API}/api/friendships/request/decline`,
+      { requestID },
+      { headers: { "Content-Type": "application/json" } }
+    );
     return response;
   } catch (error) {
     console.error("Error declining friend request:", error);
@@ -78,14 +67,11 @@ const declineFriendRequest = async (requestID) => {
  */
 const syncFirebaseUser = async (uid, email) => {
   try {
-    const response = await fetch(`${User_API}/api/users/sync-firebase`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ uid, email }),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to sync firebase user");
-    }
+    const response = await axios.post(
+      `${User_API}/api/users/sync-firebase`,
+      { uid, email },
+      { headers: { "Content-Type": "application/json" } }
+    );
     return response;
   } catch (error) {
     console.error("Error syncing firebase user:", error);
@@ -100,16 +86,50 @@ const syncFirebaseUser = async (uid, email) => {
  */
 const getUserByEmail = async (email) => {
   try {
-    const response = await fetch(`${User_API}/api/users/email/${email}`);
-    if (!response.ok) {
-      throw new Error("Failed to get user by email");
-    }
-    const data = await response.json();
-    return data;
+    const response = await axios.get(`${User_API}/api/users/email/${email}`);
+    return response.data;
   } catch (error) {
     console.error("Error getting user by email:", error);
     throw error;
   }
+};
+
+/**
+ * Lấy thông tin người dùng theo ID.
+ * @param {string} userId
+ * @returns {Promise<Object>}
+ */
+const getUserByID = async (userId) => {
+  try {
+    const response = await axios.get(`${User_API}/api/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting user by ID:", error);
+    throw error;
+  }
+};
+
+/**
+ * Lấy danh sách users.
+ * @returns {Promise<Object>}
+ */
+export const getUsers = async () => {
+  const response = await axios.get(`${User_API}/api/users`, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
+};
+
+/**
+ * Xóa user theo ID
+ * @param {string} userId
+ * @returns {Promise<Object>}
+ */
+export const deleteUser = async (userId) => {
+  const response = await axios.delete(`${User_API}/api/users/${userId}`, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
 };
 
 /**
@@ -118,14 +138,9 @@ const getUserByEmail = async (email) => {
  */
 const createUser = async (userData) => {
   try {
-    const response = await fetch(`${User_API}/api/users`, {
-      method: "POST",
+    const response = await axios.post(`${User_API}/api/users`, userData, {
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
     });
-    if (!response.ok) {
-      throw new Error("Failed to create user");
-    }
     return response;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -142,10 +157,13 @@ const UserService = {
   getFriendRequests,
   acceptFriendRequest,
   declineFriendRequest,
-  
+
   // Người dùng
   syncFirebaseUser,
+  getUserByID,
   getUserByEmail,
+  getUsers,
+  deleteUser,
   createUser,
 };
 

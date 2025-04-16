@@ -4,6 +4,13 @@ const router = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management endpoints
+ */
+
+/**
+ * @swagger
  * /api/users/sync-firebase:
  *   post:
  *     summary: Sync Firebase users with MongoDB
@@ -39,12 +46,25 @@ router.get("/firebase", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 /**
  * @swagger
- * tags:
- *   name: Users
- *   description: User management endpoints
+ * /api/users:
+ *   get:
+ *     summary: Get all users from database
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: A list of users from database
  */
+router.get("/", async (req, res) => {
+  try {
+    const users = await UserService.getAllUsers();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 /**
  * @swagger
@@ -65,8 +85,6 @@ router.get("/firebase", async (req, res) => {
  *                 type: string
  *               password:
  *                 type: string
- *               role:
- *                 type: string
  *               avatar:
  *                 type: string
  *               background:
@@ -77,12 +95,11 @@ router.get("/firebase", async (req, res) => {
  */
 router.post("/", async (req, res) => {
   try {
-    const { username, email, password, role, avatar } = req.body;
+    const { username, email, password, avatar } = req.body;
     const user = await UserService.createUser(
       username,
       email,
       password,
-      role,
       avatar
     );
     res.status(201).json(user);
@@ -204,12 +221,12 @@ router.get("/:id", async (req, res) => {
  *                 type: string
  *               password:
  *                 type: string
- *               role:
- *                 type: string
  *               avatar:
  *                 type: string
  *               background:
  *                 type: string
+ *               isAdmin:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: User updated successfully
