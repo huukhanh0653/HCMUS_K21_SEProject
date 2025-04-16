@@ -239,109 +239,114 @@ export default function Home({ user }) {
         />
       </Suspense>
 
-      {selectedServer ? (
-        // Nếu có server được chọn, render giao diện Server đã bao trọn MainContainer (header + nội dung chính)
-        <Suspense fallback={<div>Loading Server...</div>}>
-          <Server
-            selectedServer={selectedServer}
-            user={user}
-            selectedChannel={selectedChannel}
-            onChannelSelect={(channel) => dispatch(setSelectedChannel(channel))}
-            setProfileModal={setProfileModal}
-          />
-        </Suspense>
-      ) : (
-        // Nếu không có server thì render giao diện DM, gồm DM Sidebar và Main Content cho DM
-        <>
-          <Suspense fallback={<div>Loading DM Sidebar...</div>}>
-            <DMSidebar
-              isDarkMode={isDarkMode}
-              activeTab={activeTab}
-              setActiveTab={(tab) => dispatch(setActiveTab(tab))}
-              setShowAddFriend={(show) => dispatch(setShowAddFriend(show))}
-              selectedFriend={selectedFriend}
-              setSelectedFriend={(friend) =>
-                dispatch(setSelectedFriend(friend))
-              }
-              friends={friends}
-              handleFriendAction={handleFriendAction}
-              getStatusColor={getStatusColor}
-              onProfileClick={() => setProfileModal(true)}
+      {/* Main Container Server or DM */}
+      <div className="flex-1 relative flex">
+        {selectedServer ? (
+          // Nếu có server được chọn, render giao diện Server
+          <Suspense fallback={<div>Loading Server...</div>}>
+            <Server
+              selectedServer={selectedServer}
               user={user}
+              selectedChannel={selectedChannel}
+              onChannelSelect={(channel) => dispatch(setSelectedChannel(channel))}
             />
           </Suspense>
-          <div
-            className={`flex-1 h-full flex flex-col ${
-              isDarkMode ? "bg-[#313338]" : "bg-[#F8F9FA]"
-            }`}
-          >
-            {/* Header cho giao diện DM */}
+        ) : (
+          // Nếu không có server thì render giao diện DM, gồm DM Sidebar và Main Content cho DM
+          <>
+            <Suspense fallback={<div>Loading DM Sidebar...</div>}>
+              <DMSidebar
+                isDarkMode={isDarkMode}
+                activeTab={activeTab}
+                setActiveTab={(tab) => dispatch(setActiveTab(tab))}
+                setShowAddFriend={(show) => dispatch(setShowAddFriend(show))}
+                selectedFriend={selectedFriend}
+                setSelectedFriend={(friend) => dispatch(setSelectedFriend(friend))}
+                friends={friends}
+                handleFriendAction={handleFriendAction}
+                getStatusColor={getStatusColor}
+                user={user}
+              />
+            </Suspense>
             <div
-              className={`h-12 min-h-[3rem] flex-shrink-0 border-b flex items-center px-4 justify-between cursor-pointer ${
-                isDarkMode ? "border-[#232428]" : "border-gray-300"
+              className={`flex-1 h-full flex flex-col ${
+                isDarkMode ? "bg-[#313338]" : "bg-[#F8F9FA]"
               }`}
             >
+              {/* Header cho giao diện DM */}
               <div
-                className={`h-12 min-h-[3rem] flex-shrink-0 flex items-center px-4 cursor-pointer ${
+                className={`h-12 min-h-[3rem] flex-shrink-0 border-b flex items-center px-4 justify-between cursor-pointer ${
                   isDarkMode ? "border-[#232428]" : "border-gray-300"
                 }`}
-                onClick={() => {
-                  if (selectedFriendObj) {
-                    // Xử lý khi nhấn vào profile của friend (nếu cần)
-                  }
-                }}
               >
-                {selectedFriendObj ? (
-                  <>
-                    <div className="w-8 h-8 rounded-full mr-2 overflow-hidden bg-[#36393f]">
-                      <img
-                        src={selectedFriendObj.avatar || "/placeholder.svg"}
-                        alt={selectedFriendObj.username}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <span className="font-semibold">
-                      {selectedFriendObj.username}
-                    </span>
-                  </>
+                <div
+                  className={`h-12 min-h-[3rem] flex-shrink-0 flex items-center px-4 cursor-pointer ${
+                    isDarkMode ? "border-[#232428]" : "border-gray-300"
+                  }`}
+                  onClick={() => {
+                    if (selectedFriendObj) {
+                      // Xử lý khi nhấn vào profile của friend (nếu cần)
+                    }
+                  }}
+                >
+                  {selectedFriendObj ? (
+                    <>
+                      <div className="w-8 h-8 rounded-full mr-2 overflow-hidden bg-[#36393f]">
+                        <img
+                          src={selectedFriendObj.avatar || "/placeholder.svg"}
+                          alt={selectedFriendObj.username}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="font-semibold">
+                        {selectedFriendObj.username}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Users size={20} className="text-gray-400 mr-2" />
+                      <span className="font-semibold">{t("Friend")}</span>
+                    </>
+                  )}
+                </div>
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowNotificationModal((prev) => !prev);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Bell size={20} className="text-gray-400" />
+                </div>
+              </div>
+
+              {/* Nội dung chính DM */}
+              <Suspense fallback={<div>Loading Main Content...</div>}>
+                {activeTab === "friends" ? (
+                  <FriendList />
+                ) : activeTab === "addfriend" ? (
+                  <AddFriend />
+                ) : activeTab === "friend_requests" ? (
+                  <FriendRequests
+                    friendRequests={pendingRequests}
+                    onAccept={handleAcceptRequest}
+                    onDecline={handleDeclineRequest}
+                  />
+                ) : activeTab === "friend" && selectedFriendObj ? (
+                  <DirectMessage friend={selectedFriendObj} messages={[]} />
                 ) : (
-                  <>
-                    <Users size={20} className="text-gray-400 mr-2" />
-                    <span className="font-semibold">{t("Friend")}</span>
-                  </>
+                  <FriendsView />
                 )}
-              </div>
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowNotificationModal((prev) => !prev);
-                }}
-                className="cursor-pointer"
-              >
-                <Bell size={20} className="text-gray-400" />
-              </div>
+              </Suspense>
             </div>
-            {/* Nội dung chính DM */}
-            <Suspense fallback={<div>Loading Main Content...</div>}>
-              {activeTab === "friends" ? (
-                <FriendList />
-              ) : activeTab === "addfriend" ? (
-                <AddFriend />
-              ) : activeTab === "friend_requests" ? (
-                <FriendRequests
-                  friendRequests={pendingRequests}
-                  onAccept={handleAcceptRequest}
-                  onDecline={handleDeclineRequest}
-                />
-              ) : activeTab === "friend" && selectedFriendObj ? (
-                <DirectMessage friend={selectedFriendObj} messages={[]} />
-              ) : (
-                <FriendsView />
-              )}
-            </Suspense>
-          </div>
-        </>
-      )}
+          </>
+        )}
+
+        {/* UserPanel được đặt tại góc dưới trái của Main Container (Server hoặc DM) */}
+        <div className="absolute bottom-0 left-0 border-t border-gray-200 dark:border-[#2b2d31]">
+          <UserPanel user={user} onProfileClick={() => setProfileModal(true)} />
+        </div>
+      </div>
 
       {/* Các modal chung */}
       {profileModal && (

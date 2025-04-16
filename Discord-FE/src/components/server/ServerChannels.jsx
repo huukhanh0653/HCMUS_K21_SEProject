@@ -10,7 +10,14 @@ import VoiceChatPopup from "./VoiceChatPopup"; // Import component popup mới
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 
-export default function ServerChannels({ server, channels, onChannelSelect, onProfileClick, selectedChannelId, setChannels }) {
+import { useDispatch, useSelector } from "react-redux";
+import { 
+  joinVoiceChannel
+} from "../../redux/homeSlice";
+
+export default function ServerChannels({ server, channels, onChannelSelect, selectedChannelId, setChannels }) {
+  const dispatch = useDispatch();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
@@ -21,6 +28,10 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
   const menuRef = useRef(null);
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
+
+  // Lấy Redux state nếu user đang join kênh voice
+  const voiceChannel = useSelector((state) => state.home.voiceChannel);
+
 
   // Tạo mảng thành viên mẫu với 20 người dùng.
   const serverMembers = [
@@ -67,14 +78,26 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
   // Khi bấm vào channel:
   const handleChannelClick = (channel) => {
     if (channel.type === "voice") {
-      // Nếu click vào channel voice, chỉ cập nhật state voice.
+      dispatch(
+        joinVoiceChannel({
+          serverId: server.id,
+          serverName: server.label,
+          channelId: channel.id,
+          channelName: channel.name,
+        })
+      );
       setJoinedVoiceChannelId(channel.id);
-      // Không gọi onChannelSelect để không thay đổi selectedChannel cho text.
     } else {
       onChannelSelect(channel);
-      // Không reset joinedVoiceChannelId để voice chat vẫn được giữ.
     }
   };
+
+  // Nếu Redux voiceChannel bị null (user rời kênh từ UserPanel), cập nhật lại state cục bộ
+  useEffect(() => {
+    if (!voiceChannel) {
+      setJoinedVoiceChannelId(null);
+    }
+  }, [voiceChannel]);
 
   // Callback khi người dùng rời channel voice từ VoiceChat.
   const handleLeaveVoiceChannel = () => {
@@ -151,7 +174,7 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
   });
 
   return (
-    <div className={`h-full w-60 flex flex-col relative ${isDarkMode ? "bg-[#2b2d31] text-gray-100" : "bg-white text-[#333333] border-r border-gray-200"}`}>
+    <div className={`pb-16 h-full w-60 flex flex-col relative ${isDarkMode ? "bg-[#2b2d31] text-gray-100" : "bg-white text-[#333333] border-r border-gray-200"}`}>
       {/* Server name header */}
       <div
         className={`h-12 px-4 flex items-center justify-between border-b shadow-sm cursor-pointer relative ${isDarkMode ? "border-[#1e1f22] hover:bg-[#35373c]" : "border-gray-300 hover:bg-gray-100"}`}
@@ -213,7 +236,9 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
       />
 
       {/* Danh sách channels */}
-      <div className="flex-1 overflow-y-auto pt-2">
+      <div className="flex-1 overflow-y-auto pt-2"
+        style={{ scrollbarWidth: "thin", scrollbarColor: "grey transparent" }}
+      >
         {sortedChannels.map((channel) => (
           <div key={channel.id}>
             <div
@@ -305,15 +330,6 @@ export default function ServerChannels({ server, channels, onChannelSelect, onPr
           </div>
         ))}
       </div>
-
-      {/* Render thêm VoiceChat Popup – popup này sẽ mở khi đã join kênh voice và có channel hợp lệ */}
-      {joinedVoiceChannelId && (
-        <VoiceChatPopup
-          serverName={server.label}
-          channel={channels.find(ch => ch.id === joinedVoiceChannelId)}
-          onClose={handleLeaveVoiceChannel}
-        />
-      )}
     </div>
   );
 }
