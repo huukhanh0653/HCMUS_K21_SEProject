@@ -4,6 +4,8 @@ import { ThemeProvider, useTheme } from "./components/layout/ThemeProvider";
 import { LanguageProvider } from "./components/layout/LanguageProvider";
 import { useLanguage } from "./components/layout/LanguageProvider";
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { saveUserId } from "./redux/authSlice";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   AdminRoute,
@@ -167,6 +169,12 @@ function AppContent() {
 
 // Main App Component
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(saveUserId());
+  }, [dispatch]);
+
   return (
     <BrowserRouter>
       <ThemeProvider>
