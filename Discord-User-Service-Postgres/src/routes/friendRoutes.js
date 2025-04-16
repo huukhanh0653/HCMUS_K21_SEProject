@@ -1,13 +1,13 @@
 const express = require("express");
-const FriendshipService = require("../services/FriendshipService");
+const FriendService = require("../services/FriendService");
 const router = express.Router();
 
 /**
  * @swagger
- * /api/friendships/add:
+ * /api/friends/add:
  *   post:
  *     summary: Add a friend
- *     tags: [Friendships]
+ *     tags: [Friends]
  *     requestBody:
  *       required: true
  *       content:
@@ -26,8 +26,8 @@ const router = express.Router();
 router.post("/add", async (req, res) => {
   try {
     const { userID, friendID } = req.body;
-    const friendship = await FriendshipService.addFriend(userID, friendID);
-    res.status(201).json(friendship);
+    const friend = await FriendService.addFriend(userID, friendID);
+    res.status(201).json(friend);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -35,10 +35,10 @@ router.post("/add", async (req, res) => {
 
 /**
  * @swagger
- * /api/friendships/{userID}:
+ * /api/friends/{userID}:
  *   get:
  *     summary: Get a user's friends
- *     tags: [Friendships]
+ *     tags: [Friends]
  *     parameters:
  *       - in: path
  *         name: userID
@@ -53,12 +53,12 @@ router.post("/add", async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Friendship'
+ *                 $ref: '#/components/schemas/Friend'
  */
 router.get("/:userID", async (req, res) => {
   try {
-    const friends = await FriendshipService.getFriends(req.params.userID);
-    res.json(friends);
+    const friends = await FriendService.getFriends(req.params.userID);
+    res.json(friends.map((friend) => friend.get({ plain: true })));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -66,10 +66,10 @@ router.get("/:userID", async (req, res) => {
 
 /**
  * @swagger
- * /api/friendships/remove:
+ * /api/friends/remove:
  *   delete:
  *     summary: Remove a friend
- *     tags: [Friendships]
+ *     tags: [Friends]
  *     requestBody:
  *       required: true
  *       content:
@@ -88,7 +88,7 @@ router.get("/:userID", async (req, res) => {
 router.delete("/remove", async (req, res) => {
   try {
     const { userID, friendID } = req.body;
-    await FriendshipService.removeFriend(userID, friendID);
+    await FriendService.removeFriend(userID, friendID);
     res.json({ message: "Friend removed successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -97,10 +97,10 @@ router.delete("/remove", async (req, res) => {
 
 /**
  * @swagger
- * /api/friendships/request:
+ * /api/friends/request:
  *   post:
  *     summary: Send a friend request
- *     tags: [Friendships]
+ *     tags: [Friends]
  *     requestBody:
  *       required: true
  *       content:
@@ -119,7 +119,7 @@ router.delete("/remove", async (req, res) => {
 router.post("/request", async (req, res) => {
   try {
     const { userID, friendID } = req.body;
-    const request = await FriendshipService.sendFriendRequest(userID, friendID);
+    const request = await FriendService.sendFriendRequest(userID, friendID);
     res.status(201).json(request);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -128,10 +128,10 @@ router.post("/request", async (req, res) => {
 
 /**
  * @swagger
- * /api/friendships/requests/{userID}:
+ * /api/friends/requests/{userID}:
  *   get:
  *     summary: Get friend requests for a user
- *     tags: [Friendships]
+ *     tags: [Friends]
  *     parameters:
  *       - in: path
  *         name: userID
@@ -150,9 +150,7 @@ router.post("/request", async (req, res) => {
  */
 router.get("/requests/:userID", async (req, res) => {
   try {
-    const requests = await FriendshipService.getFriendRequests(
-      req.params.userID
-    );
+    const requests = await FriendService.getFriendRequests(req.params.userID);
     res.json(requests);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -161,10 +159,10 @@ router.get("/requests/:userID", async (req, res) => {
 
 /**
  * @swagger
- * /api/friendships/request/accept:
+ * /api/friends/request/accept:
  *   post:
  *     summary: Accept a friend request
- *     tags: [Friendships]
+ *     tags: [Friends]
  *     requestBody:
  *       required: true
  *       content:
@@ -181,7 +179,7 @@ router.get("/requests/:userID", async (req, res) => {
 router.post("/request/accept", async (req, res) => {
   try {
     const { requestID } = req.body;
-    await FriendshipService.acceptFriendRequest(requestID);
+    await FriendService.acceptFriendRequest(requestID);
     res.json({ message: "Friend request accepted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -190,10 +188,10 @@ router.post("/request/accept", async (req, res) => {
 
 /**
  * @swagger
- * /api/friendships/request/decline:
+ * /api/friends/request/decline:
  *   post:
  *     summary: Decline a friend request
- *     tags: [Friendships]
+ *     tags: [Friends]
  *     requestBody:
  *       required: true
  *       content:
@@ -210,7 +208,7 @@ router.post("/request/accept", async (req, res) => {
 router.post("/request/decline", async (req, res) => {
   try {
     const { requestID } = req.body;
-    await FriendshipService.declineFriendRequest(requestID);
+    await FriendService.declineFriendRequest(requestID);
     res.json({ message: "Friend request declined successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });

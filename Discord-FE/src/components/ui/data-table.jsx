@@ -23,7 +23,6 @@ export function DataTable({
   columns,
   data,
   filterProps,
-  onChange,
   buildInSearch = true,
   onSortingChange,
 }) {

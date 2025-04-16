@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
 import DefaultLayout from "./Layout";
 import { DataTable } from "../../ui/data-table";
 import { Button } from "../../ui/button";
 import { columns } from "./Columns";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../layout/LanguageProvider";
-import { getUsers, deleteUser } from "../../../service/UserService";
+import { getUsers, deleteUser } from "../../../services/UserService";
 import toast from "react-hot-toast";
-import { getAuth } from "firebase/auth";
 import {
   Dialog,
   DialogContent,
@@ -29,16 +29,17 @@ export default function Member() {
   const [sorting, setSorting] = useState([]);
   const { t } = useTranslation();
   const { language } = useLanguage();
+  const { userId, loading, error } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchUsers = async () => {
+      if (loading) return;
       try {
         const data = await getUsers();
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        const filteredData = data.filter(
-          (user) => user.uid !== currentUser?.uid
-        );
+
+        const filteredData = userId
+          ? data.filter((user) => user._id !== userId)
+          : data;
         setMembers(filteredData);
         setTotalSize(filteredData.length);
       } catch (error) {
@@ -46,7 +47,7 @@ export default function Member() {
       }
     };
     fetchUsers();
-  }, []);
+  }, [userId, loading]);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -121,6 +122,24 @@ export default function Member() {
     currentPage * pageSize
   );
 
+  if (loading) {
+    return (
+      <DefaultLayout>
+        <div className="p-4">{t("Loading...")}</div>
+      </DefaultLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DefaultLayout>
+        <div className="p-4">
+          {t("Error")}: {error}
+        </div>
+      </DefaultLayout>
+    );
+  }
+
   return (
     <DefaultLayout>
       <h1 className="text-xl sm:text-2xl font-normal p-4">
@@ -164,7 +183,6 @@ export default function Member() {
         </Button>
       </div>
 
-      {/* Modal xác nhận xóa */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>

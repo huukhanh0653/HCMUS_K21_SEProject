@@ -1,0 +1,36 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+debug.log
+error.log
+
+# Database
+*.sqlite
+*.sqlite-journal
+/data/
+dump.rdb
+*.pid
+
+# Cache & Temp files
+*.cache
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Compiled files
+dist/
+build/
+
+# VS Code settings
+.vscode/
+
+firebase-service-account-key.json

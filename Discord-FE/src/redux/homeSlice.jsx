@@ -81,8 +81,12 @@ const homeSlice = createSlice({
     // Xóa yêu cầu kết bạn khỏi danh sách các yêu cầu đang chờ xử lý
     removeRequest(state, action) {
       const requestID = action.payload;
-      state.pendingRequests = state.pendingRequests.filter(req => req._id !== requestID);
-      state.newRequests = state.newRequests.filter(req => req._id !== requestID);
+      state.pendingRequests = state.pendingRequests.filter(
+        (req) => req._id !== requestID
+      );
+      state.newRequests = state.newRequests.filter(
+        (req) => req._id !== requestID
+      );
     },
   },
 });
