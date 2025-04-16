@@ -36,8 +36,8 @@ jobs:
       - name: Build and Push Message Service
         uses: docker/build-push-action@v4
         with:
-          context: ./Discord-Message-Service
-          file: ./Discord-Message-Service/Dockerfile
+          context: ./Demo-Message-Service-DDD/Demo-Message-DDD
+          file: ./Demo-Message-Service-DDD/Demo-Message-DDD/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-message-service:latest
 

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link } from "react-router-dom";
 import { useTheme } from "../../components/layout/ThemeProvider";
 import { useTranslation } from "react-i18next";
 import { signInWithEmail } from "../../firebase";
@@ -19,11 +18,11 @@ const LoginForm = ({ onSuccess, onError }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      onError("Email không hợp lệ");
+      onError(t("Invalid Email"));
       return;
     }
     if (!password) {
-      onError("Mật khẩu không được để trống");
+      onError(t("Password must be filled"));
       return;
     }
 

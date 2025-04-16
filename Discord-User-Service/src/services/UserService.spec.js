@@ -19,8 +19,8 @@ describe("UserService", () => {
         username: "testuser",
         email: "test@example.com",
         password: "hashedpassword",
-        role: "user",
         avatar: "avatar.png",
+        isAdmin: false,
       };
 
       User.prototype.save = jest.fn().mockResolvedValue(mockUser);
@@ -125,8 +125,8 @@ describe("UserService", () => {
         username: "User Two",
         email: "user2@example.com",
         password: null,
-        role: "user",
         avatar: "photo2.png",
+        isAdmin: false,
       });
       expect(result).toEqual({
         message: "Firebase users synchronized with MongoDB",
@@ -134,45 +134,45 @@ describe("UserService", () => {
     });
   });
 
-//   describe("getUserById", () => {
-//     it("should return a user by ID", async () => {
-//       const mockUser = {
-//         _id: "user1",
-//         username: "testuser",
-//         email: "test@example.com",
-//       };
+  //   describe("getUserById", () => {
+  //     it("should return a user by ID", async () => {
+  //       const mockUser = {
+  //         _id: "user1",
+  //         username: "testuser",
+  //         email: "test@example.com",
+  //       };
 
-//       User.findById.mockResolvedValue(mockUser);
+  //       User.findById.mockResolvedValue(mockUser);
 
-//       const result = await UserService.getUserById("user1");
+  //       const result = await UserService.getUserById("user1");
 
-//       expect(User.findById).toHaveBeenCalledWith("user1");
-//       expect(result).toEqual(mockUser);
-//     });
-//   });
+  //       expect(User.findById).toHaveBeenCalledWith("user1");
+  //       expect(result).toEqual(mockUser);
+  //     });
+  //   });
 
-//   describe("updateUser", () => {
-//     it("should update a user successfully", async () => {
-//       const mockUpdatedUser = {
-//         _id: "user1",
-//         username: "updateduser",
-//         email: "updated@example.com",
-//       };
+  //   describe("updateUser", () => {
+  //     it("should update a user successfully", async () => {
+  //       const mockUpdatedUser = {
+  //         _id: "user1",
+  //         username: "updateduser",
+  //         email: "updated@example.com",
+  //       };
 
-//       User.findByIdAndUpdate.mockResolvedValue(mockUpdatedUser);
+  //       User.findByIdAndUpdate.mockResolvedValue(mockUpdatedUser);
 
-//       const result = await UserService.updateUser("user1", {
-//         username: "updateduser",
-//       });
+  //       const result = await UserService.updateUser("user1", {
+  //         username: "updateduser",
+  //       });
 
-//       expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
-//         "user1",
-//         { username: "updateduser" },
-//         { new: true }
-//       );
-//       expect(result).toEqual(mockUpdatedUser);
-//     });
-//   });
+  //       expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+  //         "user1",
+  //         { username: "updateduser" },
+  //         { new: true }
+  //       );
+  //       expect(result).toEqual(mockUpdatedUser);
+  //     });
+  //   });
 
   describe("deleteUser", () => {
     it("should delete a user successfully", async () => {

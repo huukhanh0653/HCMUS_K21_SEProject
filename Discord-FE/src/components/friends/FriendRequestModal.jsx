@@ -3,7 +3,7 @@ import React from "react";
 const FriendRequestModal = ({ requests, onAccept, onDecline, onClose }) => {
   if (!requests || requests.length === 0) return null;
   const currentRequest = requests[0];
-  
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white text-black rounded p-6 w-[300px] text-center relative">
@@ -18,13 +18,13 @@ const FriendRequestModal = ({ requests, onAccept, onDecline, onClose }) => {
         </h3>
         <div className="flex justify-center gap-4 mt-4">
           <button
-            onClick={() => onAccept(currentRequest._id)}
+            onClick={() => onAccept(currentRequest.id)}
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
           >
             Đồng ý
           </button>
           <button
-            onClick={() => onDecline(currentRequest._id)}
+            onClick={() => onDecline(currentRequest.id)}
             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
           >
             Từ chối
