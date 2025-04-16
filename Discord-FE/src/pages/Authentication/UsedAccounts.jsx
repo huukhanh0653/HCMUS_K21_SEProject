@@ -10,7 +10,7 @@ import { signInWithEmail } from "../../firebase";
 import DarkBackground from "../../assets/darkmode_background.jpg";
 import LightBackground from "../../assets/whitemode_background.jpg";
 // Import UserService để gọi api
-import UserService from "../../service/UserService";
+import UserService from "../../services/UserService";
 
 export default function UsedAccounts() {
   const [showDropdown, setShowDropdown] = useState(null);

@@ -1,5 +1,5 @@
-const express = require('express');
-const FriendshipService = require('../services/FriendshipService');
+const express = require("express");
+const FriendshipService = require("../services/FriendshipService");
 const router = express.Router();
 
 /**
@@ -23,7 +23,7 @@ const router = express.Router();
  *       201:
  *         description: Friend added successfully
  */
-router.post('/add', async (req, res) => {
+router.post("/add", async (req, res) => {
   try {
     const { userID, friendID } = req.body;
     const friendship = await FriendshipService.addFriend(userID, friendID);
@@ -55,7 +55,7 @@ router.post('/add', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/Friendship'
  */
-router.get('/:userID', async (req, res) => {
+router.get("/:userID", async (req, res) => {
   try {
     const friends = await FriendshipService.getFriends(req.params.userID);
     res.json(friends);
@@ -85,11 +85,11 @@ router.get('/:userID', async (req, res) => {
  *       200:
  *         description: Friend removed successfully
  */
-router.delete('/remove', async (req, res) => {
+router.delete("/remove", async (req, res) => {
   try {
     const { userID, friendID } = req.body;
     await FriendshipService.removeFriend(userID, friendID);
-    res.json({ message: 'Friend removed successfully' });
+    res.json({ message: "Friend removed successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -116,7 +116,7 @@ router.delete('/remove', async (req, res) => {
  *       201:
  *         description: Friend request sent successfully
  */
-router.post('/request', async (req, res) => {
+router.post("/request", async (req, res) => {
   try {
     const { userID, friendID } = req.body;
     const request = await FriendshipService.sendFriendRequest(userID, friendID);
@@ -148,9 +148,11 @@ router.post('/request', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/FriendRequest'
  */
-router.get('/requests/:userID', async (req, res) => {
+router.get("/requests/:userID", async (req, res) => {
   try {
-    const requests = await FriendshipService.getFriendRequests(req.params.userID);
+    const requests = await FriendshipService.getFriendRequests(
+      req.params.userID
+    );
     res.json(requests);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -176,11 +178,11 @@ router.get('/requests/:userID', async (req, res) => {
  *       200:
  *         description: Friend request accepted successfully
  */
-router.post('/request/accept', async (req, res) => {
+router.post("/request/accept", async (req, res) => {
   try {
     const { requestID } = req.body;
     await FriendshipService.acceptFriendRequest(requestID);
-    res.json({ message: 'Friend request accepted successfully' });
+    res.json({ message: "Friend request accepted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -205,11 +207,11 @@ router.post('/request/accept', async (req, res) => {
  *       200:
  *         description: Friend request declined successfully
  */
-router.post('/request/decline', async (req, res) => {
+router.post("/request/decline", async (req, res) => {
   try {
     const { requestID } = req.body;
     await FriendshipService.declineFriendRequest(requestID);
-    res.json({ message: 'Friend request declined successfully' });
+    res.json({ message: "Friend request declined successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

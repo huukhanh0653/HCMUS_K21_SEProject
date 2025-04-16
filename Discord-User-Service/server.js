@@ -45,7 +45,7 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'API for managing users and friendships',
     },
-    servers: [{ url: 'http://localhost:8081' }],
+    servers: [{ url: 'http://localhost:8087' }],
   },
   apis: ['./src/routes/*.js'],
 };
@@ -56,5 +56,5 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/api/users', userRoutes);
 app.use('/api/friendships', friendshipRoutes);
 
-const PORT = 8081;
+const PORT = 8087;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

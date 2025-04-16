@@ -23,8 +23,8 @@ export function DataTable({
   columns,
   data,
   filterProps,
-  onChange,
   buildInSearch = true,
+  onSortingChange,
 }) {
   const { t } = useTranslation();
   const [sorting, setSorting] = React.useState([]);
@@ -34,7 +34,12 @@ export function DataTable({
     columns,
     columnResizeMode: "onChange",
     getCoreRowModel: getCoreRowModel(),
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => {
+      const newSorting =
+        typeof updater === "function" ? updater(sorting) : updater;
+      setSorting(newSorting);
+      if (onSortingChange) onSortingChange(newSorting);
+    },
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
@@ -59,11 +64,11 @@ export function DataTable({
             className="w-full max-w-sm sm:max-w-xs"
           />
         )}
-        {!buildInSearch && (
+        {!buildInSearch && filterProps.onChange && (
           <Input
             placeholder={filterProps.placeholder}
-            value={filterProps.value}
-            onChange={(event) => onChange(event.target.value)}
+            value={filterProps.value || ""}
+            onChange={(event) => filterProps.onChange(event.target.value)}
             className="w-full max-w-sm sm:max-w-xs"
           />
         )}
