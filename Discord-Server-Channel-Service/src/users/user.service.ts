@@ -11,11 +11,10 @@ export class UserService {
 
   async getUser(userId: string): Promise<any> {
     try {
-      console.log(`${process.env.USER_SERVICE_URL}/${userId}`);
-
       const response = await firstValueFrom(
         this.httpService.get(`${process.env.USER_SERVICE_URL}/${userId}`),
       );
+
       return response.data;
     } catch (error) {
       throw new HttpException(

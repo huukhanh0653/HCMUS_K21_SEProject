@@ -76,7 +76,7 @@ export class ServerService {
     if (!user) return [];
 
     const servers = await this.serverRepository.find({
-      where: { name: Like(`%${query}%`) },
+      where: { owner_id: userId, name: Like(`%${query}%`) },
     });
 
     return servers;
