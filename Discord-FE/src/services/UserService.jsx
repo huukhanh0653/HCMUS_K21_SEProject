@@ -18,7 +18,7 @@ const getFriends = async (userId) => {
 
 const sendFriendRequest = async (userId, friendId) => {
   try {
-    const response = await api.post("/api/friends/request", {
+    const response = await axios.post(`${User_API}/api/friends/request`, {
       user_id: userId,
       friend_id: friendId,
     });
@@ -134,11 +134,11 @@ export const getUsers = async () => {
 };
 
 /**
- * Xóa user theo ID
+ * Cấm user theo ID
  * @param {string} userId
  * @returns {Promise<Object>}
  */
-export const deleteUser = async (userId) => {
+export const banUser = async (userId) => {
   const response = await axios.delete(`${User_API}/api/users/${userId}`, {
     headers: { "Content-Type": "application/json" },
   });
@@ -177,7 +177,7 @@ const UserService = {
   getUserByID,
   getUserByEmail,
   getUsers,
-  deleteUser,
+  banUser,
   createUser,
 };
 

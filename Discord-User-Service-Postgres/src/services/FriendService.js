@@ -1,3 +1,4 @@
+const User = require("../models/User");
 const Friend = require("../models/Friend");
 const FriendRequest = require("../models/FriendRequest");
 const { Op } = require("sequelize");
@@ -56,12 +57,14 @@ class FriendService {
 
   async getFriendRequests(user_id) {
     try {
+      console.log(user_id);
+
       if (!user_id) {
         throw new Error("user_id is required");
       }
 
       return await FriendRequest.findAll({
-        where: { receiver_id: user_id, status: "pending" }, // Chỉ lấy các yêu cầu đang pending
+        where: { receiver_id: user_id, status: "pending" },
         include: [
           {
             model: User,

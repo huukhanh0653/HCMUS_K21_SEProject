@@ -1,5 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, SmilePlus, Gift, Sticker, ImageIcon, Edit, Trash2 } from "lucide-react";
+import {
+  Plus,
+  SmilePlus,
+  Gift,
+  Sticker,
+  ImageIcon,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import SampleAvt from "../../../assets/sample_avatar.svg";
 import { useTranslation } from "react-i18next";
 import MessageList from "./Components/MessageList";
@@ -13,12 +21,12 @@ export default function ServerChat({ channel }) {
   const [messages, setMessages] = useState([]);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editedContent, setEditedContent] = useState("");
-  
+
   const messagesWrapperRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const stompClientRef = useRef(null);
-  
+
   const { t } = useTranslation();
 
   // Lấy thông tin người dùng từ localStorage (user_info và username)
@@ -47,7 +55,12 @@ export default function ServerChat({ channel }) {
     const serverId = "default";
 
     // Gọi hàm kết nối và truyền vào stompClientRef, setMessages, serverId và channel.id
-    const disconnect = connectMessageService(stompClientRef, setMessages, serverId,  "general");
+    const disconnect = connectMessageService(
+      stompClientRef,
+      setMessages,
+      serverId,
+      "general"
+    );
 
     // Cleanup: ngắt kết nối khi channel thay đổi hoặc component unmount
     return () => {
@@ -66,11 +79,11 @@ export default function ServerChat({ channel }) {
     const serverId = "default";
     const payload = {
       messageId: "msg-" + Date.now(), // Tạo id dựa trên timestamp
-      senderId: storedUser?._id || "unknown", // Nếu không có thông tin user, để "unknown"
+      senderId: storedUser?.id || "unknown", // Nếu không có thông tin user, để "unknown"
       serverId: serverId,
       channelId: "general", // Hoặc lấy từ channel.id nếu cần
       content: messageInput,
-      attachments: [] // Nếu có file đính kèm, cập nhật mảng này
+      attachments: [], // Nếu có file đính kèm, cập nhật mảng này
     };
 
     try {
@@ -78,8 +91,8 @@ export default function ServerChat({ channel }) {
       const response = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });      
+        body: JSON.stringify(payload),
+      });
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Failed to send message:", errorText);

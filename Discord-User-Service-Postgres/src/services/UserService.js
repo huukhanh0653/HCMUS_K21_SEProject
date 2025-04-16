@@ -104,15 +104,21 @@ class UserService {
     }
   }
 
-  async deleteUser(id) {
+  async banUser(id) {
     try {
-      const deletedCount = await User.destroy({ where: { id } });
-      if (deletedCount === 0) {
+      const bannedCount = await User.update(
+        { status: "banned" },
+        {
+          where: { id },
+          returning: true,
+        }
+      );
+      if (bannedCount === 0) {
         throw new Error("User not found");
       }
-      return { message: "User deleted successfully" };
+      return { message: "User banned successfully" };
     } catch (error) {
-      throw new Error(`Failed to delete user: ${error.message}`);
+      throw new Error(`Failed to ban user: ${error.message}`);
     }
   }
 }

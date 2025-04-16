@@ -248,7 +248,7 @@ router.put("/:id", async (req, res) => {
  * @swagger
  * /api/users/{id}:
  *   delete:
- *     summary: Delete a user by ID
+ *     summary: Ban a user by ID
  *     tags: [Users]
  *     parameters:
  *       - in: path
@@ -259,15 +259,15 @@ router.put("/:id", async (req, res) => {
  *         description: The user ID
  *     responses:
  *       200:
- *         description: User deleted successfully
+ *         description: User banned successfully
  *       404:
  *         description: User not found
  */
 router.delete("/:id", async (req, res) => {
   try {
-    const user = await UserService.deleteUser(req.params.id);
+    const user = await UserService.banUser(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
-    res.json({ message: "User deleted successfully" });
+    res.json({ message: "User banned successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

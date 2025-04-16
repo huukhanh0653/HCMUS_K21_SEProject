@@ -7,7 +7,7 @@ import { Button } from "../../ui/button";
 import { columns } from "./Columns";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../layout/LanguageProvider";
-import { getUsers, deleteUser } from "../../../services/UserService";
+import { getUsers, banUser } from "../../../services/UserService";
 import toast from "react-hot-toast";
 import {
   Dialog,
@@ -22,19 +22,20 @@ export default function Member() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalSize, setTotalSize] = useState(0);
   const [members, setMembers] = useState([]);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [memberToDelete, setMemberToDelete] = useState(null);
+  const [isBanModalOpen, setIsBanModalOpen] = useState(false);
+  const [memberToBan, setMemberToBan] = useState(null);
   const [filterValue, setFilterValue] = useState("");
   const [sorting, setSorting] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
   const { language } = useLanguage();
+  const userId = JSON.parse(localStorage.getItem("user")).id;
 
   useEffect(() => {
     const fetchUsers = async () => {
+      setIsLoading(true);
       try {
         const data = await getUsers();
-        const userId = JSON.parse(localStorage.getItem("user")).id;
-
         const filteredData = userId
           ? data.filter((user) => user.id !== userId)
           : data;
@@ -42,10 +43,12 @@ export default function Member() {
         setTotalSize(filteredData.length);
       } catch (error) {
         toast.error(`${error.message}`);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchUsers();
-  }, []);
+  }, [userId]);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -55,31 +58,35 @@ export default function Member() {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
-  const handleOpenDeleteModal = (uid) => {
-    setMemberToDelete(uid);
-    setIsDeleteModalOpen(true);
+  const handleOpenBanModal = (uid) => {
+    setMemberToBan(uid);
+    setIsBanModalOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (memberToDelete) {
+  const handleConfirmBan = async () => {
+    if (memberToBan) {
+      setIsLoading(true);
       try {
-        await deleteUser(memberToDelete);
+        await banUser(memberToBan);
         setMembers((prevMembers) =>
-          prevMembers.filter((member) => member.uid !== memberToDelete)
+          prevMembers.map((member) =>
+            member.id === memberToBan ? { ...member, status: "banned" } : member
+          )
         );
-        setTotalSize((prevSize) => prevSize - 1);
-        toast.success(t("Member deleted successfully"));
+        toast.success(t("Member banned successfully"));
       } catch (error) {
         toast.error(`${error.message}`);
+      } finally {
+        setIsLoading(false);
       }
     }
-    setIsDeleteModalOpen(false);
-    setMemberToDelete(null);
+    setIsBanModalOpen(false);
+    setMemberToBan(null);
   };
 
-  const handleCancelDelete = () => {
-    setIsDeleteModalOpen(false);
-    setMemberToDelete(null);
+  const handleCancelBan = () => {
+    setIsBanModalOpen(false);
+    setMemberToBan(null);
   };
 
   const processedMembers = useMemo(() => {
@@ -127,7 +134,7 @@ export default function Member() {
       </h1>
 
       <DataTable
-        columns={columns({ onDelete: handleOpenDeleteModal })}
+        columns={columns({ onBan: handleOpenBanModal })}
         data={paginatedMembers}
         filterProps={{
           column: "username",
@@ -140,6 +147,7 @@ export default function Member() {
         }}
         buildInSearch={false}
         onSortingChange={setSorting}
+        isLoading={isLoading}
       />
 
       <div className="flex items-center justify-end space-x-2 py-4 px-2 sm:px-4">
@@ -163,20 +171,20 @@ export default function Member() {
         </Button>
       </div>
 
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+      <Dialog open={isBanModalOpen} onOpenChange={setIsBanModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("Confirm Blocking")}</DialogTitle>
+            <DialogTitle>{t("Confirm the ban")}</DialogTitle>
             <DialogDescription>
-              {t("Are you sure you want to block this user?")}
+              {t("Are you sure you want to ban this user?")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={handleCancelDelete}>
+            <Button variant="outline" onClick={handleCancelBan}>
               {t("Cancel")}
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>
-              {t("Block")}
+            <Button variant="destructive" onClick={handleConfirmBan}>
+              {t("Ban")}
             </Button>
           </DialogFooter>
         </DialogContent>
