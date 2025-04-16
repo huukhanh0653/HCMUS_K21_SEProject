@@ -1,16 +1,10 @@
 name: Deploy to GKE
 
-# on:
-#   workflow_run:
-#     workflows: ["Build Docker Images"]
-#     types:
-#       - completed
-
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  workflow_run:
+    workflows: ["Build Docker Images"]
+    types:
+      - completed
 
 jobs:
   deploy:
@@ -36,24 +30,40 @@ jobs:
         run: |
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_ZONE }}
 
-      - name: Check and install Strimzi Kafka Operator if not exists
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      # ✅ Cài Strimzi Kafka nếu chưa có
+      - name: Install Strimzi Kafka Operator (if needed)
         run: |
-          if ! kubectl get crd kafkas.kafka.strimzi.io > /dev/null 2>&1; then
+          if ! kubectl get crd kafkas.kafka.strimzi.io &> /dev/null; then
             echo "Installing Strimzi Kafka Operator..."
             kubectl apply -f https://strimzi.io/install/latest?namespace=default -n default
           else
-            echo "✅ Strimzi Kafka Operator already installed, skipping..."
+            echo "Strimzi Kafka Operator already installed."
           fi
 
-      - name: Check and install Nginx Ingress Controller if not exists
+      # ✅ Cài Ingress Controller nếu chưa có
+      - name: Install Ingress Controller (if needed)
         run: |
-          if ! kubectl get ns ingress-nginx > /dev/null 2>&1; then
-            echo "Installing NGINX Ingress Controller..."
-            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+          if ! kubectl get ns ingress-nginx &> /dev/null; then
+            echo "Installing ingress-nginx..."
+            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.4/deploy/static/provider/cloud/deploy.yaml
           else
-            echo "✅ NGINX Ingress Controller already installed, skipping..."
+            echo "Ingress controller already exists."
           fi
 
-      - name: Deploy application manifests
+      # ✅ Cài Redis Cluster nếu chưa có
+      - name: Install Redis Cluster (if needed)
         run: |
-          kubectl apply -f ./CI-CD/Kubenetes
+          if ! kubectl get statefulset redis-cluster &> /dev/null; then
+            echo "Installing Redis Cluster..."
+            kubectl apply -f ./CI-CD/Kubernetes/redis/redis-cluster.yaml
+          else
+            echo "Redis Cluster already exists."
+          fi
+
+      # ✅ Deploy ứng dụng chính
+      - name: Deploy to GKE
+        run: |
+          kubectl apply -f ./CI-CD/Kubernetes
