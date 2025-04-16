@@ -17,24 +17,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          install_components: 'gke-gcloud-auth-plugin'
+          version: 'latest'
 
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+        
+      # - name: Configure Docker (nếu cần push image)
+      #   run: gcloud auth configure-docker --quiet
 
-      - name: Install gke-gcloud-auth-plugin (standalone)
-        run: |
-          # Tải về bản binary mới nhất
-          curl -LO "https://storage.googleapis.com/cloud-sdk-release/google-cloud-cli-$(curl -s https://storage.googleapis.com/cloud-sdk-release/version).linux-$(uname -m).tar.gz"
+      # - name: Install gke-gcloud-auth-plugin (standalone)
+      #   run: |
+      #     # Tải về bản binary mới nhất
+      #     curl -LO "https://storage.googleapis.com/cloud-sdk-release/google-cloud-cli-$(curl -s https://storage.googleapis.com/cloud-sdk-release/version).linux-$(uname -m).tar.gz"
           
-          # Giải nén và cài đặt
-          tar -xzf google-cloud-cli-*.tar.gz
-          ./google-cloud-sdk/install.sh --quiet --usage-reporting false --command-completion false --path-update false
+      #     # Giải nén và cài đặt
+      #     tar -xzf google-cloud-cli-*.tar.gz
+      #     ./google-cloud-sdk/install.sh --quiet --usage-reporting false --command-completion false --path-update false
           
-          # Thêm vào PATH
-          echo "$(pwd)/google-cloud-sdk/bin" >> $GITHUB_PATH
+      #     # Thêm vào PATH
+      #     echo "$(pwd)/google-cloud-sdk/bin" >> $GITHUB_PATH
 
       - name: Get GKE credentials
         run: |
