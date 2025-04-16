@@ -1,12 +1,32 @@
-import { Controller } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Put,
+  Delete,
+  Query,
+  Param,
+} from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { ServerMemberService } from './server_member.service';
 import { ServerMemberDto } from './server_member.dto';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 
-@Controller()
+@ApiTags('server-members')
+@ApiBearerAuth()
+@Controller('server-members/:userId/:serverId')
 export class ServerMemberController {
   constructor(private readonly serverMemberService: ServerMemberService) {}
 
+  // gRPC Methods
   @GrpcMethod('ServerMemberService', 'AddMember')
   async addMember(
     data: { serverId: string; userId: string } & Partial<ServerMemberDto>,
@@ -68,5 +88,79 @@ export class ServerMemberController {
       profilePic: member.profile_pic || '',
       joinedAt: member.joined_at,
     };
+  }
+
+  // RESTful Methods
+  @Post()
+  @ApiOperation({ summary: 'Add a member to a server' })
+  @ApiResponse({ status: 201, description: 'Member added successfully' })
+  @ApiResponse({ status: 400, description: 'Validation failed' })
+  @ApiParam({ name: 'userId', description: 'ID of the user' })
+  @ApiParam({
+    name: 'serverId',
+    description: 'ID of the server',
+  })
+  async addMemberRest(
+    @Param('userId') userId: string,
+    @Param('serverId') serverId: string,
+    @Body() data: ServerMemberDto,
+  ) {
+    return this.serverMemberService.addMember(serverId, userId, data);
+  }
+
+  @Delete(':memberId')
+  @ApiOperation({ summary: 'Remove a member from a server' })
+  @ApiResponse({ status: 200, description: 'Member removed successfully' })
+  @ApiResponse({ status: 404, description: 'Member or server not found' })
+  @ApiParam({ name: 'userId', description: 'ID of the user' })
+  @ApiParam({
+    name: 'serverId',
+    description: 'ID of the server',
+  })
+  @ApiParam({ name: 'memberId', description: 'ID of the member to delete' })
+  async removeMemberRest(
+    @Param('userId') userId: string,
+    @Param('serverId') serverId: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.serverMemberService.removeMember(serverId, userId, memberId);
+  }
+
+  @Put()
+  @ApiOperation({ summary: 'Update a member’s role in a server' })
+  @ApiResponse({ status: 200, description: 'Member role updated successfully' })
+  @ApiResponse({ status: 404, description: 'Member or role not found' })
+  @ApiParam({ name: 'userId', description: 'ID of the user' })
+  @ApiParam({
+    name: 'serverId',
+    description: 'ID of the server',
+  })
+  async updateMemberRoleRest(
+    @Param('userId') userId: string,
+    @Param('serverId') serverId: string,
+    @Body() data: ServerMemberDto,
+  ) {
+    return this.serverMemberService.updateMemberRole(serverId, userId, data);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Search members in a server' })
+  @ApiResponse({ status: 200, description: 'List of members' })
+  @ApiParam({ name: 'userId', description: 'ID of the user' })
+  @ApiParam({
+    name: 'serverId',
+    description: 'ID of the server',
+  })
+  @ApiQuery({
+    name: 'query',
+    description: 'Query string to filter members by name',
+    required: false,
+  })
+  async searchMemberRest(
+    @Param('userId') userId: string,
+    @Param('serverId') serverId: string,
+    @Query('query') query: string = '',
+  ) {
+    return this.serverMemberService.searchMember(serverId, userId, query);
   }
 }
