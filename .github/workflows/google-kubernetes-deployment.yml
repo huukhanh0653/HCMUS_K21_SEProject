@@ -1,58 +1,44 @@
 name: Deploy to GKE
 
-# on:
-#   workflow_run:
-#     workflows: ["Build Docker Images"]  # 🔥 Chỉ chạy khi CI build thành công
-#     types:
-#       - completed
-
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   deploy:
+    name: Deploy to Google Kubernetes Engine
     runs-on: ubuntu-latest
+
     steps:
+      # ✅ Bước 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup gcloud CLI
+      # ✅ Bước 2: Auth với GCP bằng service account key
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      # ✅ Bước 3: Cài gcloud CLI và auth plugin
+      - name: Setup gcloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           install_components: 'gke-gcloud-auth-plugin'
-          version: 'latest'
 
-      - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-        
-      # - name: Configure Docker (nếu cần push image)
-      #   run: gcloud auth configure-docker --quiet
-
-      # - name: Install gke-gcloud-auth-plugin (standalone)
-      #   run: |
-      #     # Tải về bản binary mới nhất
-      #     curl -LO "https://storage.googleapis.com/cloud-sdk-release/google-cloud-cli-$(curl -s https://storage.googleapis.com/cloud-sdk-release/version).linux-$(uname -m).tar.gz"
-          
-      #     # Giải nén và cài đặt
-      #     tar -xzf google-cloud-cli-*.tar.gz
-      #     ./google-cloud-sdk/install.sh --quiet --usage-reporting false --command-completion false --path-update false
-          
-      #     # Thêm vào PATH
-      #     echo "$(pwd)/google-cloud-sdk/bin" >> $GITHUB_PATH
-
+      # ✅ Bước 4: Get kubeconfig từ GKE cluster
       - name: Get GKE credentials
         run: |
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_ZONE }}
 
+      # ✅ Bước 5: Cài Helm (nếu bà có xài chart, có thể bỏ nếu không cần)
       - name: Install Helm
         uses: azure/setup-helm@v3
 
+      # ✅ Bước 6: Triển khai Kubernetes manifest
       - name: Deploy to GKE
         run: |
-          cd ./CI-CD/Kubenetes && kubectl apply -f .
+          kubectl apply -f ./CI-CD/Kubenetes
