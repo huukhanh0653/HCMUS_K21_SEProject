@@ -5,7 +5,7 @@ import { useTheme } from "../../components/layout/ThemeProvider";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-// Các action của Redux từ homeSlice
+// Redux actions
 import {
   setActiveTab,
   setSelectedFriend,
@@ -17,47 +17,25 @@ import {
   setShowCreateServer,
   setShowAddFriend,
   setPendingRequests,
-  setPrevRequests,
   setNewRequests,
 } from "../../redux/homeSlice";
 
-// Gọi API qua UserService
+// Services
 import UserService from "../../services/UserService";
+import ServerChannelService from "../../services/ServerChannelService";
 
-// Lazy load các component liên quan đến bạn bè (cho giao diện DM)
-const DirectMessage = lazy(() =>
-  import("../../components/friends/DirectMessage/DirectMessage")
-);
-const FriendsView = lazy(() => import("../../components/friends/FriendsView"));
-const FriendContextMenu = lazy(() =>
-  import("../../components/friends/FriendContextMenu")
-);
-const FriendProfile = lazy(() =>
-  import("../../components/friends/FriendProfile")
-);
-const AddFriend = lazy(() => import("../../components/friends/AddFriend"));
-const FriendRequests = lazy(() =>
-  import("../../components/friends/FriendRequests")
-);
-const FriendList = lazy(() => import("../../components/friends/FriendList"));
-const FriendRequestModal = lazy(() =>
-  import("../../components/friends/FriendRequestModal")
-);
-const DMSidebar = lazy(() => import("../../components/friends/DMSidebar"));
-
-// Lazy load ServerList, Server và các modal liên quan đến Server
+// Lazy components
 const ServerList = lazy(() => import("../../components/server/ServerList"));
 const Server = lazy(() => import("../../components/server/Server"));
-const CreateServerModal = lazy(() =>
-  import("../../components/server/CreateServerModal")
-);
-
-// Lazy load NotificationModal component mới
-const NotificationModal = lazy(() =>
-  import("../../components/user/NotificationModal")
-);
-
-// Lazy load UserProfile
+const CreateServerModal = lazy(() => import("../../components/server/CreateServerModal"));
+const DMSidebar = lazy(() => import("../../components/friends/DMSidebar"));
+const FriendList = lazy(() => import("../../components/friends/FriendList"));
+const AddFriend = lazy(() => import("../../components/friends/AddFriend"));
+const FriendRequests = lazy(() => import("../../components/friends/FriendRequests"));
+const DirectMessage = lazy(() => import("../../components/friends/DirectMessage/DirectMessage"));
+const FriendsView = lazy(() => import("../../components/friends/FriendsView"));
+const FriendRequestModal = lazy(() => import("../../components/friends/FriendRequestModal"));
+const NotificationModal = lazy(() => import("../../components/user/NotificationModal"));
 const UserProfile = lazy(() => import("../../components/user/UserProfile"));
 
 // Component không lazy
@@ -87,6 +65,11 @@ export default function Home({ user }) {
     pendingRequests,
     newRequests,
   } = useSelector((state) => state.home);
+
+  // Local state for servers
+  const [servers, setServers] = useState([]);
+  const [loadingServers, setLoadingServers] = useState(true);
+  const [serversError, setServersError] = useState(null);
 
   // Lưu thông tin user vào localStorage
   useEffect(() => {
@@ -165,19 +148,38 @@ export default function Home({ user }) {
     }
   };
 
-  const handleServerClick = (server) => {
-    if (!server) {
+  // Fetch servers
+  useEffect(() => {
+    const load = async () => {
+      setLoadingServers(true);
+      try {
+        const currentUser = JSON.parse(localStorage.getItem("user"));
+        const resp = await ServerChannelService.getServers(currentUser.id);
+        setServers(resp.servers || []);
+      } catch (err) {
+        console.error("Error loading servers", err);
+        setServersError(err.message);
+      } finally {
+        setLoadingServers(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handleServerClick = (srv) => {
+    if (!srv) {
       dispatch(setSelectedServer(null));
       dispatch(setActiveTab("server"));
       dispatch(setSelectedFriend(null));
       return;
     }
-    const { icon, ...serializableServer } = server;
-    dispatch(setSelectedServer(serializableServer));
+    dispatch(setSelectedServer(srv));
+    console.log("Selected server:", selectedServer);
     dispatch(setActiveTab("server"));
     dispatch(setSelectedFriend(null));
   };
 
+  // Đồng ý kết bạn
   const handleAcceptRequest = async (requestID) => {
     try {
       await UserService.acceptFriendRequest(requestID);
@@ -194,6 +196,7 @@ export default function Home({ user }) {
     }
   };
 
+  // Từ chối kết bạn
   const handleDeclineRequest = async (requestID) => {
     try {
       await UserService.declineFriendRequest(requestID);
@@ -213,14 +216,12 @@ export default function Home({ user }) {
   // Routing tự động dựa trên nội dung chính
   useEffect(() => {
     if (selectedServer && selectedChannel) {
-      const serverId = selectedServer.id || selectedServer.id;
-      navigate(`/server/${serverId}/${selectedChannel.id}`, { replace: true });
-    } else if (activeTab === "friend" && selectedFriendObj) {
-      navigate(`/direct_message/${selectedFriendObj.id}`, { replace: true });
-    } else {
-      navigate("/", { replace: true });
-    }
-  }, [selectedServer, selectedChannel, activeTab, selectedFriendObj, navigate]);
+      navigate(`/server/${selectedServer.id}/${selectedChannel.id}`, { replace: true });
+    } else if (activeTab === "friend" && selectedFriend) {
+      const f = friends.find(x => x.username === selectedFriend);
+      if (f) navigate(`/direct_message/${f._id}`, { replace: true });
+    } else navigate("/", { replace: true });
+  }, [selectedServer, selectedChannel, activeTab, selectedFriend, navigate, friends]);
 
   return (
     <div
@@ -231,8 +232,11 @@ export default function Home({ user }) {
       }`}
     >
       {/* Left Sidebar: Server List */}
-      <Suspense fallback={<div>Loading Server List...</div>}>
+      <Suspense fallback={<div>Loading servers...</div>}>
         <ServerList
+          servers={servers}
+          loading={loadingServers}
+          error={serversError}
           selectedServer={selectedServer}
           onServerClick={handleServerClick}
           onShowCreateServer={() => dispatch(setShowCreateServer(true))}
@@ -242,13 +246,12 @@ export default function Home({ user }) {
       {/* Main Container Server or DM */}
       <div className="flex-1 relative flex">
         {selectedServer ? (
-          // Nếu có server được chọn, render giao diện Server
-          <Suspense fallback={<div>Loading Server...</div>}>
+          <Suspense fallback={<div>Server loading...</div>}>
             <Server
               selectedServer={selectedServer}
               user={user}
               selectedChannel={selectedChannel}
-              onChannelSelect={(channel) => dispatch(setSelectedChannel(channel))}
+              onChannelSelect={(ch) => dispatch(setSelectedChannel(ch))}
             />
           </Suspense>
         ) : (
