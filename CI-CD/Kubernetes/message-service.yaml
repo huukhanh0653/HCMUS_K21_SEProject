@@ -24,10 +24,12 @@ spec:
               value: mongodb://35.225.51.17:27117/message_service?directConnection=true
             - name: REDIS_USERNAME
               value: default
+            - name: REDIS_PASSWORD
+              value: Pe5yLucM7SNhDOwyg6sjvc9Vpa3kg5km
             - name: REDIS_HOST
-              value: localhost
+              value: redis-11124.fcrce171.ap-south-1-1.ec2.redns.redis-cloud.com
             - name: REDIS_PORT
-              value: "6379"
+              value: "11124"
 ---
 apiVersion: v1
 kind: Service
