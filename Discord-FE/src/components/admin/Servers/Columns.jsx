@@ -1,38 +1,30 @@
-"use client";
-
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "../../ui/button";
-import { PopupModal } from "../../ui/modal";
-import React, { useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import { formattedDate } from "../../../lib/utils";
+import React from "react";
 import { useTranslation } from "react-i18next";
 
 export const columns = () => {
   const { t } = useTranslation();
+
   return [
     {
-      accessorKey: "ServerID",
+      accessorKey: "num",
       header: ({ column }) => (
         <Button
           variant="ghost"
           className="flex items-center justify-start px-1 text-xs sm:text-sm"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          <span className="pr-0 text-foreground">{t("Server ID")}</span>
-          <ArrowUpDown className="ml-2 h-4 w-4 text-foreground" />
+          <span className="pr-0 text-foreground">{t("Num")}</span>
+          <ArrowUpDown className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:w-4 text-foreground" />
         </Button>
+      ),
+      cell: ({ row }) => (
+        <span className="text-xs sm:text-sm pl-1">{row.original.num}</span>
       ),
     },
     {
-      accessorKey: "ServerName",
+      accessorKey: "name",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -43,23 +35,17 @@ export const columns = () => {
           <ArrowUpDown className="ml-2 h-4 w-4 text-foreground" />
         </Button>
       ),
-    },
-    {
-      accessorKey: "CreatedDate",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="flex items-center justify-start px-1 text-xs sm:text-sm"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      cell: ({ row }) => (
+        <span
+          className="text-xs sm:text-sm truncate pl-1 max-w-[120px] sm:max-w-[200px] block"
+          title={row.original.name}
         >
-          <span className="pr-0 text-foreground">{t("Creation date")}</span>
-          <ArrowUpDown className="ml-2 h-4 w-4 text-foreground" />
-        </Button>
+          {row.original.name}
+        </span>
       ),
-      cell: ({ row }) => formattedDate(row.original.CreatedDate),
     },
     {
-      accessorKey: "Owner",
+      accessorKey: "owner_username",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -70,40 +56,35 @@ export const columns = () => {
           <ArrowUpDown className="ml-2 h-4 w-4 text-foreground" />
         </Button>
       ),
+      cell: ({ row }) => (
+        <span
+          className="text-xs sm:text-sm truncate pl-1 max-w-[120px] sm:max-w-[200px] block"
+          title={row.original.owner_id}
+        >
+          {row.original.owner_id}
+        </span>
+      ),
     },
     {
-      accessorKey: "Status",
-      header: t("Status"),
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const [editOpen, setEditOpen] = useState(false);
-        const [historyOpen, setHistoryOpen] = useState(false);
-
-        return (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">{t("Open menu")}</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{t("Feature")}</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setHistoryOpen(true)}>
-                  {t("View activity history")}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                  {t("Edit information")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
-        );
-      },
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex items-center justify-start px-1 text-xs sm:text-sm"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          <span className="pr-0 text-foreground">{t("Creation date")}</span>
+          <ArrowUpDown className="ml-2 h-4 w-4 text-foreground" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <span
+          className="text-xs sm:text-sm truncate pl-1 max-w-[120px] sm:max-w-[200px] block"
+          title={row.original.created_at}
+        >
+          {new Date(row.original.created_at).toLocaleString()}
+        </span>
+      ),
     },
   ];
 };

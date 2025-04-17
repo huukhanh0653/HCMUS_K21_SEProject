@@ -31,7 +31,7 @@ export default function AdminHeader() {
     try {
       await signOut(auth);
       console.log("User logged out");
-      navigate("/login"); // Redirect to login page
+      navigate("/admin/login"); // Redirect to login page
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
