@@ -33,32 +33,43 @@ export default function ServerManagement() {
   const { t } = useTranslation();
   const userId = JSON.parse(localStorage.getItem("user")).id;
 
+  const fetchServers = async () => {
+    if (!userId) {
+      toast.error(t("User ID not found"));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { servers } = await ServerChannelService.getAllServers(
+        userId,
+        filterValue
+      );
+
+      const configServers = await Promise.all(
+        servers.map(async (server) => {
+          const owner = await UserService.getUserByID(server.owner_id);
+          return {
+            name: server.name,
+            owner: owner.username,
+            created_at: server.created_at,
+          };
+        })
+      );
+
+      setServers(configServers);
+      setTotalSize(configServers.length);
+    } catch (error) {
+      console.error("Error fetching servers:", error);
+      toast.error(`${t("Failed to fetch servers")}: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchServers = async () => {
-      if (!userId) {
-        toast.error(t("User ID not found"));
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        const { servers } = await ServerChannelService.getAllServers(
-          userId,
-          filterValue
-        );
-
-        setServers(servers);
-        setTotalSize(servers.length);
-      } catch (error) {
-        console.error("Error fetching servers:", error);
-        toast.error(`${t("Failed to fetch servers")}: ${error.message}`);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchServers();
-  }, [filterValue]);
+  }, [filterValue, userId]);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -70,25 +81,15 @@ export default function ServerManagement() {
 
   const handleAddServer = async (newServer) => {
     try {
-      const response = await ServerChannelService.createServer(userId, {
+      await ServerChannelService.createServer(userId, {
         name: newServer.serverName,
         server_pic: newServer.serverPic || undefined,
       });
-      setServers((prevServers) => [
-        ...prevServers,
-        {
-          id: response.id,
-          name: response.name,
-          created_at: response.created_at,
-          owner_id: response.owner_id,
-          server_pic: response.server_pic,
-        },
-      ]);
-      setTotalSize((prevSize) => prevSize + 1);
       toast.success(t("Server created successfully"));
       setAddServerOpen(false);
+      await fetchServers();
     } catch (error) {
-      toast.error(`${error.message || t("Failed to create server")}`);
+      toast.error(`${error.message}`);
     }
   };
 
@@ -221,13 +222,9 @@ function AddServerForm({ className, setOpen, onAddServer }) {
       return;
     }
 
-    try {
-      await onAddServer({ serverName, serverPic });
-      setServerName("");
-      setServerPic("");
-    } catch (error) {
-      // Error handled in onAddServer
-    }
+    await onAddServer({ serverName, serverPic });
+    setServerName("");
+    setServerPic("");
   };
 
   return (

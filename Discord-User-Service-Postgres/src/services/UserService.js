@@ -103,24 +103,6 @@ class UserService {
       throw new Error(`Failed to update user: ${error.message}`);
     }
   }
-
-  async banUser(id) {
-    try {
-      const bannedCount = await User.update(
-        { status: "banned" },
-        {
-          where: { id },
-          returning: true,
-        }
-      );
-      if (bannedCount === 0) {
-        throw new Error("User not found");
-      }
-      return { message: "User banned successfully" };
-    } catch (error) {
-      throw new Error(`Failed to ban user: ${error.message}`);
-    }
-  }
 }
 
 module.exports = new UserService();

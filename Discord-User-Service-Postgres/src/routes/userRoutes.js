@@ -244,33 +244,4 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Ban a user by ID
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The user ID
- *     responses:
- *       200:
- *         description: User banned successfully
- *       404:
- *         description: User not found
- */
-router.delete("/:id", async (req, res) => {
-  try {
-    const user = await UserService.banUser(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    res.json({ message: "User banned successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 module.exports = router;
