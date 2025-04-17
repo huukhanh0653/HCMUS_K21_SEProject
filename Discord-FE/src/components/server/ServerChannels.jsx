@@ -1,17 +1,15 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ChevronDown, Hash, Volume2, Bell, Plus, Lock } from "lucide-react";
-import UserPanel from "../user/UserPanel";
 import MemberManagementModal from "./MemberManagementModal";
 import ChannelManagementModal from "./ChannelManagementModal";
 import InviteServer from "./InviteServer";
 import AddMemberToChannel from "./AddMemberToChannel";
 import VoiceChat from "./VoiceChat/VoiceChat";
-import VoiceChatPopup from "./VoiceChatPopup"; // Import component popup mới
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
-
 import { useDispatch, useSelector } from "react-redux";
 import { joinVoiceChannel } from "../../redux/homeSlice";
+import ServerChannelService from "../../services/ServerChannelService";
 
 export default function ServerChannels({
   server,
@@ -21,20 +19,37 @@ export default function ServerChannels({
   setChannels,
 }) {
   const dispatch = useDispatch();
-
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
-  const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-  const [selectedPrivateChannel, setSelectedPrivateChannel] = useState(null);
-
-  const menuRef = useRef(null);
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
+  const menuRef = useRef(null);
 
-  // Lấy Redux state nếu user đang join kênh voice
+  // Fetch channels and map snake_case to camelCase
+  useEffect(() => {
+    if (!server?.id) return;
+    ServerChannelService.getChannelsByServer(server.id)
+      .then((data) => {
+        // 'data' is response.data.data
+        const apiChannels = data.channels || [];
+        const mapped = apiChannels.map((ch) => ({
+          id: ch.id,
+          name: ch.name,
+          type: ch.type,
+          isPrivate: ch.is_private,
+        }));
+        setChannels(mapped);
+      })
+      .catch((err) => console.error("Failed to load channels", err));
+  }, [server, setChannels]);
+
+  // Ensure channels is always an array
+  const safeChannels = Array.isArray(channels) ? channels : [];
+
+  // Redux voice channel
   const voiceChannel = useSelector((state) => state.home.voiceChannel);
+  const [joinedVoiceChannelId, setJoinedVoiceChannelId] = useState(null);
+  useEffect(() => {
+    if (!voiceChannel) setJoinedVoiceChannelId(null);
+  }, [voiceChannel]);
 
   // Tạo mảng thành viên mẫu với 20 người dùng.
   const serverMembers = [
@@ -60,32 +75,21 @@ export default function ServerChannels({
     { id: 20, name: "User 20", avatar: "https://i.pravatar.cc/50?img=20" },
   ];
 
-  // Trạng thái cho notification của mỗi channel.
-  const [channelNotifications, setChannelNotifications] = useState({});
-  // Trạng thái dropdown hiển thị notification.
-  const [openNotificationDropdown, setOpenNotificationDropdown] =
-    useState(null);
-
-  // Khởi tạo channel public/private đầu tiên nếu chưa có channel nào được chọn.
+  // Auto-select first text channel
   useEffect(() => {
-    if (!selectedChannelId) {
-      const firstChannel = channels.find((channel) => channel.type !== "voice");
-      if (firstChannel) {
-        onChannelSelect(firstChannel);
-      }
+    if (!selectedChannelId && safeChannels.length) {
+      const firstText = safeChannels.find((c) => c.type !== "voice");
+      if (firstText) onChannelSelect(firstText);
     }
-  }, [selectedChannelId, onChannelSelect, channels]);
+  }, [safeChannels, selectedChannelId, onChannelSelect]);
 
-  // State để lưu channel voice mà user đã join.
-  const [joinedVoiceChannelId, setJoinedVoiceChannelId] = useState(null);
-
-  // Khi bấm vào channel:
+  // Handle channel click
   const handleChannelClick = (channel) => {
     if (channel.type === "voice") {
       dispatch(
         joinVoiceChannel({
           serverId: server.id,
-          serverName: server.label,
+          serverName: server.name,
           channelId: channel.id,
           channelName: channel.name,
         })
@@ -96,24 +100,21 @@ export default function ServerChannels({
     }
   };
 
-  // Nếu Redux voiceChannel bị null (user rời kênh từ UserPanel), cập nhật lại state cục bộ
-  useEffect(() => {
-    if (!voiceChannel) {
-      setJoinedVoiceChannelId(null);
-    }
-  }, [voiceChannel]);
+  const handleLeaveVoiceChannel = () => setJoinedVoiceChannelId(null);
 
-  // Callback khi người dùng rời channel voice từ VoiceChat.
-  const handleLeaveVoiceChannel = () => {
-    setJoinedVoiceChannelId(null);
-  };
+  // Menu & Modals state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [selectedPrivateChannel, setSelectedPrivateChannel] = useState(null);
+  const [openNotificationDropdown, setOpenNotificationDropdown] = useState(null);
 
-  // Toggle menu.
-  const toggleMenu = () => {
-    setIsMenuOpen((prev) => !prev);
-  };
+  // Lấy user info
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  // Đóng menu khi click bên ngoài.
+  // Close menu on outside click
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -124,34 +125,59 @@ export default function ServerChannels({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  /* CHANNEL MANAGER FUNCTIONS */
-  const handleDeleteChannel = (channelId) => {
-    setChannels(channels.filter((channel) => channel.id !== channelId));
-  };
-
-  const handleRenameChannel = (channelId, newName) => {
-    setChannels(
-      channels.map((channel) =>
-        channel.id === channelId ? { ...channel, name: newName } : channel
-      )
-    );
-  };
-
-  const handleCreateChannel = (newName, newType) => {
-    let channelConfig = {};
-    if (newType === "public") {
-      channelConfig = { type: "text", isPrivate: false };
-    } else if (newType === "private") {
-      channelConfig = { type: "text", isPrivate: true };
-    } else if (newType === "voice") {
-      channelConfig = { type: "voice", isPrivate: false };
+  // CRUD handlers
+  const handleDeleteChannel = async (channelId) => {
+    try {
+      await ServerChannelService.deleteChannel(channelId, user.id);
+      setChannels(safeChannels.filter((c) => c.id !== channelId));
+    } catch (err) {
+      console.error("Failed to delete channel", err);
     }
-    const newChannel = {
-      id: Date.now(),
+  };
+
+  const handleRenameChannel = async (channelId, newName) => {
+    try {
+      const updated = await ServerChannelService.updateChannel(
+        channelId,
+        user.id,
+        { name: newName }
+      );
+      const mapped = {
+        id: updated.id,
+        name: updated.name,
+        type: updated.type,
+        isPrivate: updated.is_private,
+      };
+      setChannels(
+        safeChannels.map((c) => (c.id === channelId ? mapped : c))
+      );
+    } catch (err) {
+      console.error("Failed to rename channel", err);
+    }
+  };
+
+  const handleCreateChannel = async (newName, newType) => {
+    const payload = {
       name: newName,
-      ...channelConfig,
+      type: newType === "voice" ? "voice" : "text",
+      isPrivate: newType === "private",
     };
-    setChannels([...channels, newChannel]);
+    try {
+      const created = await ServerChannelService.createChannel(
+        server.id,
+        user.id,
+        payload
+      );
+      const mapped = {
+        id: created.id,
+        name: created.name,
+        type: created.type,
+        isPrivate: created.is_private,
+      };
+      setChannels([...safeChannels, mapped]);
+    } catch (err) {
+      console.error("Failed to create channel", err);
+    }
   };
 
   const handleNotificationChange = (channelId, setting) => {
@@ -160,24 +186,18 @@ export default function ServerChannels({
     console.log(`Channel ${channelId} notifications set to ${setting}`);
   };
 
-  const getMenuButtonClasses = (option) => {
-    if (option === "Delete server") {
-      return isDarkMode
+  const getMenuButtonClasses = (opt) =>
+    opt === "Delete server"
+      ? isDarkMode
         ? "text-red-500 hover:bg-red-500 hover:text-white"
-        : "text-red-500 hover:bg-red-100 hover:text-red-700";
-    } else {
-      return isDarkMode
-        ? "text-gray-400 hover:bg-[#35373c] hover:text-white"
-        : "text-gray-500 hover:bg-gray-100 hover:text-[#333333]";
-    }
-  };
+        : "text-red-500 hover:bg-red-100 hover:text-red-700"
+      : isDarkMode
+      ? "text-gray-400 hover:bg-[#35373c] hover:text-white"
+      : "text-gray-500 hover:bg-gray-100 hover:text-[#333333]";
 
-  // Sắp xếp channels sao cho channel voice luôn nằm cuối.
-  const sortedChannels = [...channels].sort((a, b) => {
-    if (a.type === "voice" && b.type !== "voice") return 1;
-    if (a.type !== "voice" && b.type === "voice") return -1;
-    return 0;
-  });
+  const sortedChannels = [...safeChannels].sort((a, b) =>
+    a.type === "voice" && b.type !== "voice" ? 1 : b.type === "voice" ? -1 : 0
+  );
 
   return (
     <div
@@ -187,20 +207,16 @@ export default function ServerChannels({
           : "bg-white text-[#333333] border-r border-gray-200"
       }`}
     >
-      {/* Server name header */}
+      {/* Server header */}
       <div
+        ref={menuRef}
         className={`h-12 px-4 flex items-center justify-between border-b shadow-sm cursor-pointer relative ${
-          isDarkMode
-            ? "border-[#1e1f22] hover:bg-[#35373c]"
-            : "border-gray-300 hover:bg-gray-100"
+          isDarkMode ? "border-[#1e1f22] hover:bg-[#35373c]" : "border-gray-300 hover:bg-gray-100"
         }`}
-        onClick={toggleMenu}
+        onClick={() => setIsMenuOpen((o) => !o)}
       >
-        <h2 className="font-semibold truncate">{server.label}</h2>
-        <ChevronDown
-          size={20}
-          className={`${isDarkMode ? "text-gray-400" : "text-gray-500"}`}
-        />
+        <h2 className="font-semibold truncate">{server.name}</h2>
+        <ChevronDown size={20} className={isDarkMode ? "text-gray-400" : "text-gray-500"} />
       </div>
 
       {/* Dropdown menu */}
@@ -245,7 +261,7 @@ export default function ServerChannels({
 
       {/* Channel Management Modal */}
       <ChannelManagementModal
-        channels={channels}
+        channels={safeChannels}
         isOpen={isChannelModalOpen}
         onClose={() => setIsChannelModalOpen(false)}
         onDeleteChannel={handleDeleteChannel}
@@ -268,25 +284,17 @@ export default function ServerChannels({
         members={serverMembers}
       />
 
-      {/* Danh sách channels */}
-      <div
-        className="flex-1 overflow-y-auto pt-2"
-        style={{ scrollbarWidth: "thin", scrollbarColor: "grey transparent" }}
-      >
+      <div className="flex-1 overflow-y-auto pt-2">
         {sortedChannels.map((channel) => (
           <div key={channel.id}>
             <div
               className={`flex items-center justify-between px-2 py-1.5 gap-2 ${
                 isDarkMode
                   ? `text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${
-                      selectedChannelId === channel.id
-                        ? "bg-[#35373c] text-white"
-                        : ""
+                      selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""
                     }`
                   : `text-gray-600 hover:bg-gray-100 hover:text-[#333333] ${
-                      selectedChannelId === channel.id
-                        ? "bg-[#1877F2] text-white"
-                        : ""
+                      selectedChannelId === channel.id ? "bg-[#1877F2] text-white" : ""
                     }`
               }`}
             >
@@ -305,7 +313,6 @@ export default function ServerChannels({
               </button>
               {channel.type !== "voice" && (
                 <div className="flex items-center gap-2">
-                  {/* Notification bell */}
                   <div className="relative">
                     <button
                       onClick={() =>
@@ -318,49 +325,29 @@ export default function ServerChannels({
                     >
                       <Bell
                         size={16}
-                        className={`${
-                          isDarkMode
-                            ? "text-gray-400 hover:text-white"
-                            : "text-gray-500 hover:text-[#333333]"
-                        }`}
+                        className={isDarkMode ? "text-gray-400" : "text-gray-500"}
                       />
                     </button>
                     {openNotificationDropdown === channel.id && (
-                      <div
-                        className={`absolute right-0 mt-1 w-32 rounded-md shadow-lg z-20 ${
-                          isDarkMode
-                            ? "bg-[#2b2d31] border border-[#1e1f22]"
-                            : "bg-white border border-gray-300"
-                        }`}
-                      >
-                        <button
-                          onClick={() =>
-                            handleNotificationChange(channel.id, "open")
-                          }
-                          className="block w-full text-left px-2 py-1 hover:bg-gray-200"
-                        >
-                          {t("Mở")}
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleNotificationChange(channel.id, "mention")
-                          }
-                          className="block w-full text-left px-2 py-1 hover:bg-gray-200"
-                        >
-                          {t("Chỉ khi nhắc")}
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleNotificationChange(channel.id, "off")
-                          }
-                          className="block w-full text-left px-2 py-1 hover:bg-gray-200"
-                        >
-                          {t("Tắt")}
-                        </button>
+                      <div className="absolute right-0 mt-1 w-32 rounded-md shadow-lg z-20">
+                        {["open", "mention", "off"].map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => handleNotificationChange(channel.id, opt)}
+                            className="block w-full text-left px-2 py-1 hover:bg-gray-200"
+                          >
+                            {t(
+                              opt === "open"
+                                ? "Mở"
+                                : opt === "mention"
+                                ? "Chỉ khi nhắc"
+                                : "Tắt"
+                            )}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
-                  {/* Nút plus hiển thị modal thêm thành viên nếu channel là private */}
                   {channel.type === "text" && channel.isPrivate && (
                     <button
                       onClick={() => {
@@ -370,26 +357,20 @@ export default function ServerChannels({
                     >
                       <Plus
                         size={16}
-                        className={`${
-                          isDarkMode
-                            ? "text-gray-400 hover:text-white"
-                            : "text-gray-500 hover:text-[#333333]"
-                        }`}
+                        className={isDarkMode ? "text-gray-400" : "text-gray-500"}
                       />
                     </button>
                   )}
                 </div>
               )}
             </div>
-            {/* Nếu channel là voice và đã join, hiển thị VoiceChat inline ngay bên dưới hàng channel */}
-            {channel.type === "voice" &&
-              channel.id === joinedVoiceChannelId && (
-                <VoiceChat
-                  user={JSON.parse(localStorage.getItem("user"))}
-                  channel={channel}
-                  onLeave={handleLeaveVoiceChannel}
-                />
-              )}
+            {channel.type === "voice" && channel.id === joinedVoiceChannelId && (
+              <VoiceChat
+                user={JSON.parse(localStorage.getItem("user"))}
+                channel={channel}
+                onLeave={handleLeaveVoiceChannel}
+              />
+            )}
           </div>
         ))}
       </div>

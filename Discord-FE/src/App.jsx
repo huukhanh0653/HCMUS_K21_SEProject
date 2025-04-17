@@ -28,9 +28,7 @@ import Admin from "./components/admin/Admin";
 import AdminPanel from "./components/admin/AdminPanel";
 import Member from "./components/admin/Members/Member";
 import ServerManagement from "./components/admin/Servers/Servers";
-import AdminSettings from "./components/admin/AdminSettings/AdminSettings";
 import AccountProfile from "./components/admin/Account/AccountProfile";
-import AdminAccountSettings from "./components/admin/Account/AccountSettings";
 import { Toaster } from "react-hot-toast";
 
 // App Content Component
@@ -156,9 +154,7 @@ function AppContent() {
           <Route path="" element={<AdminPanel />} />
           <Route path="member" element={<Member />} />
           <Route path="server" element={<ServerManagement />} />
-          <Route path="setting" element={<AdminSettings />} />
           <Route path="account/profile" element={<AccountProfile />} />
-          <Route path="account/settings" element={<AdminAccountSettings />} />
         </Route>
       </Routes>
     </div>

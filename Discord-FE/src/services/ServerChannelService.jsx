@@ -55,7 +55,7 @@ const getAllServers = async (userId, query) => {
  * @param {string} query - Từ khóa tìm kiếm.
  * @returns {Promise<Object>}
  */
-const getServers = async (userId, query) => {
+const getServers = async (userId, query='') => {
   try {
     const response = await axios.get(
       `${Server_API}/servers/${userId}?query=${encodeURIComponent(query)}`,
@@ -66,6 +66,23 @@ const getServers = async (userId, query) => {
     return response.data.data;
   } catch (error) {
     console.error("Error fetching user servers:", error);
+    throw error;
+  }
+};
+
+/**
+ * Lấy một server theo ID.
+ * @param {string} serverId - ID của server.
+ * @returns {Promise<Object>}
+ */
+const getServerById = async (serverId) => {
+  try {
+    const response = await axios.get(`${Server_API}/servers/${serverId}/one`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching server:", error);
     throw error;
   }
 };
@@ -483,6 +500,7 @@ const ServerChannelService = {
   createServer,
   getAllServers,
   getServers,
+  getServerById,
   updateServer,
   deleteServer,
 

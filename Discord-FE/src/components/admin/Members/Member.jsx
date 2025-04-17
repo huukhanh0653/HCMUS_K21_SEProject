@@ -7,7 +7,7 @@ import { Button } from "../../ui/button";
 import { columns } from "./Columns";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../layout/LanguageProvider";
-import { getUsers, banUser } from "../../../services/UserService";
+import UserService from "../../../services/UserService";
 import toast from "react-hot-toast";
 import {
   Dialog,
@@ -24,6 +24,8 @@ export default function Member() {
   const [members, setMembers] = useState([]);
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
   const [memberToBan, setMemberToBan] = useState(null);
+  const [isUnbanModalOpen, setIsUnbanModalOpen] = useState(false);
+  const [memberToUnban, setMemberToUnban] = useState(null);
   const [filterValue, setFilterValue] = useState("");
   const [sorting, setSorting] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +37,7 @@ export default function Member() {
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        const data = await getUsers();
+        const data = await UserService.getUsers();
         const filteredData = userId
           ? data.filter((user) => user.id !== userId)
           : data;
@@ -67,7 +69,12 @@ export default function Member() {
     if (memberToBan) {
       setIsLoading(true);
       try {
-        await banUser(memberToBan);
+        const user = await UserService.getUserByID(memberToBan);
+        await UserService.updateUser(memberToBan, {
+          ...user,
+          status: "banned",
+        });
+
         setMembers((prevMembers) =>
           prevMembers.map((member) =>
             member.id === memberToBan ? { ...member, status: "banned" } : member
@@ -87,6 +94,44 @@ export default function Member() {
   const handleCancelBan = () => {
     setIsBanModalOpen(false);
     setMemberToBan(null);
+  };
+
+  const handleOpenUnbanModal = (uid) => {
+    setMemberToUnban(uid);
+    setIsUnbanModalOpen(true);
+  };
+
+  const handleConfirmUnban = async () => {
+    if (memberToUnban) {
+      setIsLoading(true);
+      try {
+        const user = await UserService.getUserByID(memberToUnban);
+        await UserService.updateUser(memberToUnban, {
+          ...user,
+          status: "offline",
+        });
+
+        setMembers((prevMembers) =>
+          prevMembers.map((member) =>
+            member.id === memberToUnban
+              ? { ...member, status: "offline" }
+              : member
+          )
+        );
+        toast.success(t("Member unbanned successfully"));
+      } catch (error) {
+        toast.error(`${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    setIsUnbanModalOpen(false);
+    setMemberToUnban(null);
+  };
+
+  const handleCancelUnban = () => {
+    setIsUnbanModalOpen(false);
+    setMemberToUnban(null);
   };
 
   const processedMembers = useMemo(() => {
@@ -134,7 +179,10 @@ export default function Member() {
       </h1>
 
       <DataTable
-        columns={columns({ onBan: handleOpenBanModal })}
+        columns={columns({
+          onBan: handleOpenBanModal,
+          onUnban: handleOpenUnbanModal,
+        })}
         data={paginatedMembers}
         filterProps={{
           column: "username",
@@ -174,9 +222,11 @@ export default function Member() {
       <Dialog open={isBanModalOpen} onOpenChange={setIsBanModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("Confirm the ban")}</DialogTitle>
+            <DialogTitle>
+              {t("Confirm")} {t("ban")}
+            </DialogTitle>
             <DialogDescription>
-              {t("Are you sure you want to ban this user?")}
+              {t("Are you sure you want to")} {t("ban")} {t("this person?")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -185,6 +235,31 @@ export default function Member() {
             </Button>
             <Button variant="destructive" onClick={handleConfirmBan}>
               {t("Ban")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isUnbanModalOpen} onOpenChange={setIsUnbanModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {t("Confirm")} {t("unban")}
+            </DialogTitle>
+            <DialogDescription>
+              {t("Are you sure you want to")} {t("unban")} {t("this person?")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelUnban}>
+              {t("Cancel")}
+            </Button>
+            <Button
+              variant="default"
+              className="bg-green-500"
+              onClick={handleConfirmUnban}
+            >
+              {t("Unban")}
             </Button>
           </DialogFooter>
         </DialogContent>

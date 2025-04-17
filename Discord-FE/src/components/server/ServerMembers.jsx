@@ -119,7 +119,9 @@ export default function ServerMembers() {
                 <span className={`text-sm ${userNameClass} truncate`}>
                   {user.name}
                 </span>
-                {/* {user.role === "crown" && <span className="text-yellow-500 text-sm">👑</span>} */}
+                {user.role === "crown" && (
+                  <span className="text-yellow-500 text-sm">👑</span>
+                )}
               </div>
             ))}
           </div>

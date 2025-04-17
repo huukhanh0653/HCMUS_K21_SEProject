@@ -22,7 +22,7 @@ import {
 
 @ApiTags('servers')
 @ApiBearerAuth()
-@Controller('servers/:userId')
+@Controller('servers')
 export class ServerController {
   constructor(private readonly serverService: ServerService) {}
 
@@ -57,6 +57,14 @@ export class ServerController {
     };
   }
 
+  @GrpcMethod('ServerService', 'GetServerById')
+  async getServerById(data: { serverId: string }) {
+    const { message, server } = await this.serverService.getServerById(
+      data.serverId,
+    );
+    return { message, server };
+  }
+
   @GrpcMethod('ServerService', 'UpdateServer')
   async updateServer(data: { serverId: string; userId: string } & ServerDto) {
     const message = await this.serverService.updateServer(
@@ -86,7 +94,7 @@ export class ServerController {
   }
 
   // RESTful Methods
-  @Post()
+  @Post(':userId')
   @ApiOperation({ summary: 'Create a new server' })
   @ApiResponse({ status: 201, description: 'Server created successfully' })
   @ApiResponse({ status: 400, description: 'Validation failed' })
@@ -98,7 +106,7 @@ export class ServerController {
     return this.serverService.createServer(userId, data);
   }
 
-  @Get('all')
+  @Get(':userId/all')
   @ApiOperation({ summary: 'Search servers' })
   @ApiResponse({ status: 200, description: 'List of servers' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
@@ -114,7 +122,7 @@ export class ServerController {
     return this.serverService.getAllServers(userId, query);
   }
 
-  @Get()
+  @Get(':userId')
   @ApiOperation({ summary: 'Search servers of the user' })
   @ApiResponse({ status: 200, description: 'List of servers of the user' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
@@ -130,7 +138,15 @@ export class ServerController {
     return this.serverService.getServers(userId, query);
   }
 
-  @Put(':serverId')
+  @Get(':serverId/one')
+  @ApiOperation({ summary: 'Get a server by ID' })
+  @ApiResponse({ status: 200, description: 'A server with input ID' })
+  @ApiParam({ name: 'serverId', description: 'ID of the server' })
+  async getServerByIdRest(@Param('serverId') serverId: string) {
+    return this.serverService.getServerById(serverId);
+  }
+
+  @Put(':userId/:serverId')
   @ApiOperation({ summary: 'Update a server' })
   @ApiResponse({ status: 200, description: 'Server updated successfully' })
   @ApiResponse({ status: 404, description: 'Server not found' })
@@ -147,7 +163,7 @@ export class ServerController {
     return this.serverService.updateServer(serverId, userId, data);
   }
 
-  @Delete(':serverId')
+  @Delete(':userId/:serverId')
   @ApiOperation({ summary: 'Delete a server' })
   @ApiResponse({ status: 200, description: 'Server deleted successfully' })
   @ApiResponse({ status: 404, description: 'Server not found' })

@@ -84,7 +84,6 @@ export default function UserPanel({ user, onProfileClick }) {
           }`}
         >
           <div className="flex items-center gap-2">
-            <Wifi className="text-green-500" size={16} />
             <span className="font-semibold text-green-500">
               {voiceChannel.channelName} / {voiceChannel.serverName}
             </span>

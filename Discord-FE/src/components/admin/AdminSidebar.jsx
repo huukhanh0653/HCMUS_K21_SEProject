@@ -70,11 +70,6 @@ export default function AdminSidebar({ isOpen, onClose }) {
             icon={<PlayIcon className="h-6 w-6" />}
             label={t("Servers")}
           />
-          <NavItem
-            to="/admin/setting"
-            icon={<SettingsIcon className="h-6 w-6" />}
-            label={t("Settings")}
-          />
           <button
             onClick={toggleLanguage}
             className="flex items-center gap-2 p-2 rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

@@ -6,6 +6,7 @@ service ServerService {
   rpc CreateServer (CreateServerRequest) returns (ServerResponse) {}
   rpc GetAllServers (GetServersRequest) returns (ServerListResponse) {}
   rpc GetServers (GetServersRequest) returns (ServerListResponse) {}
+  rpc GetServerById (GetServerRequest) returns (GetServerResponse) {}
   rpc UpdateServer (UpdateServerRequest) returns (ServerResponse) {}
   rpc DeleteServer (DeleteServerRequest) returns (ServerResponse) {}
 }
@@ -19,6 +20,10 @@ message CreateServerRequest {
 message GetServersRequest {
   string userId = 1;
   string query = 2;
+}
+
+message GetServerRequest {
+  string serverId = 1;
 }
 
 message UpdateServerRequest {
