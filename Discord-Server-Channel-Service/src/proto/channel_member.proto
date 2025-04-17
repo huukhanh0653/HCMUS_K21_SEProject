@@ -3,39 +3,31 @@ syntax = "proto3";
 package channel_member;
 
 service ChannelMemberService {
-  rpc AddMember (AddMemberRequest) returns (ChannelMemberResponse) {}
-  rpc RemoveMember (RemoveMemberRequest) returns (ChannelMemberResponse) {}
+  rpc AddMember (MemberRequest) returns (ChannelMemberResponse) {}
+  rpc RemoveMember (MemberRequest) returns (ChannelMemberResponse) {}
   rpc SearchMember (SearchMemberRequest) returns (ChannelMemberListResponse) {}
 }
 
-message AddMemberRequest {
+message MemberRequest {
   string channelId = 1;
-  string userId = 2;
-  string memberId = 3;
-}
-
-message RemoveMemberRequest {
-  string channelId = 1;
-  string userId = 2;
-  string memberId = 3;
+  string memberId = 2;
 }
 
 message SearchMemberRequest {
   string channelId = 1;
-  string userId = 2;
-  string query = 3;
+  string query = 2;
 }
 
 message ChannelMemberResponse {
   string message = 1;
 }
 
-message ChannelMemberListResponse {
-  repeated ChannelMemberInfo members = 1;
-}
-
 message ChannelMemberInfo {
   string username = 1;
   string profilePic = 2;
   string createdAt = 3;
+}
+
+message ChannelMemberListResponse {
+  repeated ChannelMemberInfo members = 1;
 }

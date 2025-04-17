@@ -8,6 +8,8 @@ import { plainToClass } from 'class-transformer';
 import { ServerMemberService } from '../server_members/server_member.service';
 import { RoleService } from 'src/roles/role.service';
 import { UserService } from 'src/users/user.service';
+import { ServerMember } from 'src/server_members/server_member.entity';
+import { Role } from 'src/roles/role.entity';
 
 @Injectable()
 export class ServerService {
@@ -15,7 +17,11 @@ export class ServerService {
     @InjectRepository(Server)
     private serverRepository: Repository<Server>,
     private userService: UserService,
+    @InjectRepository(ServerMember)
+    private serverMemeberRepository: Repository<ServerMember>,
     private serverMemberService: ServerMemberService,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
     private roleService: RoleService,
   ) {}
 
@@ -34,21 +40,17 @@ export class ServerService {
     });
 
     await this.serverRepository.save(server);
-
-    const role = await this.roleService.getRoleByName(server.id, 'Owner');
+    await this.roleService.createRole(server.id, { name: 'Owner' });
+    await this.roleService.createRole(server.id, { name: 'Member' });
     await this.serverMemberService.addMember(server.id, userId, {
       memberId: userId,
-      roleId: role?.id,
+      role: 'Owner',
     });
 
     return { message: 'Server created successfully' };
   }
 
-  async updateServer(
-    serverId: string,
-    userId: string,
-    data: Partial<ServerDto>,
-  ) {
+  async updateServer(serverId: string, userId: string, data: ServerDto) {
     const serverDto = plainToClass(ServerDto, data);
     const errors = await validate(serverDto, { skipMissingProperties: true });
     if (errors.length > 0) return { message: `Validation failed: ${errors}` };
@@ -71,15 +73,31 @@ export class ServerService {
     return { message: 'Server updated successfully' };
   }
 
+  async getAllServers(userId: string, query: string) {
+    const user = await this.userService.getUser(userId);
+    if (!user) return { message: 'User not found', servers: [] };
+    if (!user.is_admin)
+      return {
+        message: 'User does not have sufficient access rights',
+        servers: [],
+      };
+
+    const servers = await this.serverRepository.find({
+      where: { name: Like(`%${query}%`) },
+    });
+
+    return { message: 'Get servers successfully', servers };
+  }
+
   async getServers(userId: string, query: string) {
     const user = await this.userService.getUser(userId);
-    if (!user) return [];
+    if (!user) return { message: 'User not found', servers: [] };
 
     const servers = await this.serverRepository.find({
       where: { owner_id: userId, name: Like(`%${query}%`) },
     });
 
-    return servers;
+    return { message: 'Get servers successfully', servers };
   }
 
   async deleteServer(serverId: string, userId: string) {
@@ -90,7 +108,9 @@ export class ServerService {
     if (server.owner_id !== userId)
       return { message: 'Only the owner can delete the server' };
 
-    await this.serverRepository.delete(serverId);
+    await this.serverMemeberRepository.delete({ server_id: serverId });
+    await this.roleRepository.delete({ server_id: serverId });
+    await this.serverRepository.delete({ id: serverId });
 
     return { message: 'Server deleted successfully' };
   }

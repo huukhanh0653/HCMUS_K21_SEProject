@@ -3,17 +3,17 @@ syntax = "proto3";
 package server_member;
 
 service ServerMemberService {
-  rpc AddMember (AddMemberRequest) returns (ServerMemberResponse) {}
+  rpc AddMember (ChangeMemberRequest) returns (ServerMemberResponse) {}
   rpc RemoveMember (RemoveMemberRequest) returns (ServerMemberResponse) {}
-  rpc UpdateMemberRole (UpdateMemberRoleRequest) returns (ServerMemberResponse) {}
+  rpc UpdateMemberRole (ChangeMemberRequest) returns (ServerMemberResponse) {}
   rpc SearchMember (SearchMemberRequest) returns (ServerMemberListResponse) {}
 }
 
-message AddMemberRequest {
+message ChangeMemberRequest {
   string serverId = 1;
   string userId = 2;
   string memberId = 3;
-  string roleId = 4;
+  string role = 4;
 }
 
 message RemoveMemberRequest {
@@ -22,25 +22,13 @@ message RemoveMemberRequest {
   string memberId = 3;
 }
 
-message UpdateMemberRoleRequest {
-  string serverId = 1;
-  string userId = 2;
-  string memberId = 3;
-  string roleId = 4;
-}
-
 message SearchMemberRequest {
   string serverId = 1;
-  string userId = 2;
-  string query = 3;
+  string query = 2;
 }
 
 message ServerMemberResponse {
   string message = 1;
-}
-
-message ServerMemberListResponse {
-  repeated ServerMemberInfo members = 1;
 }
 
 message ServerMemberInfo {
@@ -48,4 +36,9 @@ message ServerMemberInfo {
   string roleName = 2;
   string profilePic = 3;
   string joinedAt = 4;
+}
+
+message ServerMemberListResponse {
+  string message = 1;
+  repeated ServerMemberInfo members = 2;
 }

@@ -26,15 +26,9 @@ export class RoleController {
 
   // gRPC Methods
   @GrpcMethod('RoleService', 'CreateRole')
-  async createRole(data: { serverId: string } & Partial<RoleDto>) {
-    const result = await this.roleService.createRole(data.serverId, data);
-    return { message: result.message };
-  }
-
-  @GrpcMethod('RoleService', 'GetRoleById')
-  async getRoleById(data: { roleId: string }) {
-    const role = await this.roleService.getRoleById(data.roleId);
-    return this.mapRoleToResponse(role);
+  async createRole(data: { serverId: string } & RoleDto) {
+    const message = await this.roleService.createRole(data.serverId, data);
+    return { message };
   }
 
   @GrpcMethod('RoleService', 'GetRoleByName')
@@ -45,20 +39,25 @@ export class RoleController {
 
   @GrpcMethod('RoleService', 'GetRolesByServer')
   async getRolesByServer(data: { serverId: string }) {
-    const roles = await this.roleService.getRolesByServer(data.serverId);
-    return { roles: roles.map((role: any) => this.mapRoleToResponse(role)) };
+    const { message, roles } = await this.roleService.getRolesByServer(
+      data.serverId,
+    );
+    return {
+      message,
+      roles: roles.map((role: any) => this.mapRoleToResponse(role)),
+    };
   }
 
   @GrpcMethod('RoleService', 'UpdateRole')
-  async updateRole(data: { roleId: string } & Partial<RoleDto>) {
-    const result = await this.roleService.updateRole(data.roleId, data);
-    return { message: result.message };
+  async updateRole(data: { roleId: string } & RoleDto) {
+    const message = await this.roleService.updateRole(data.roleId, data);
+    return { message };
   }
 
   @GrpcMethod('RoleService', 'DeleteRole')
   async deleteRole(data: { roleId: string }) {
-    const result = await this.roleService.deleteRole(data.roleId);
-    return { message: result.message };
+    const message = await this.roleService.deleteRole(data.roleId);
+    return { message };
   }
 
   private mapRoleToResponse(role: any) {
@@ -75,7 +74,7 @@ export class RoleController {
   // RESTful Methods
   @Post(':serverId')
   @ApiOperation({ summary: 'Create a new role' })
-  @ApiResponse({ status: 200, description: 'Role created successfully' })
+  @ApiResponse({ status: 201, description: 'Role created successfully' })
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiParam({
     name: 'serverId',
@@ -88,20 +87,8 @@ export class RoleController {
     return this.roleService.createRole(serverId, data);
   }
 
-  @Get(':roleId')
-  @ApiOperation({ summary: 'Get a role by ID' })
-  @ApiResponse({ status: 200, description: 'Role details' })
-  @ApiResponse({ status: 404, description: 'Role not found' })
-  @ApiParam({
-    name: 'roleId',
-    description: 'ID of the role',
-  })
-  async getRoleByIdRest(@Param('roleId') roleId: string) {
-    return this.roleService.getRoleById(roleId);
-  }
-
   @Get(':serverId/:name')
-  @ApiOperation({ summary: 'Get a role by name and server ID' })
+  @ApiOperation({ summary: 'Get a role in a server by name' })
   @ApiResponse({ status: 200, description: 'Role details' })
   @ApiResponse({ status: 404, description: 'Role not found' })
   @ApiParam({
@@ -119,7 +106,7 @@ export class RoleController {
     return this.roleService.getRoleByName(serverId, name);
   }
 
-  @Get('by-server/:serverId')
+  @Get(':serverId')
   @ApiOperation({ summary: 'Get all roles in a server' })
   @ApiResponse({ status: 200, description: 'List of roles' })
   @ApiParam({

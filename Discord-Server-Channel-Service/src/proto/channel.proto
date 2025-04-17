@@ -19,8 +19,7 @@ message CreateChannelRequest {
 
 message GetChannelsByServerRequest {
   string serverId = 1;
-  string userId = 2;
-  string query = 3;
+  string query = 2;
 }
 
 message UpdateChannelRequest {

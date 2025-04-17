@@ -3,11 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { Channel } from './channel.entity';
 import { Server } from '../servers/server.entity';
-import { UserService } from 'src/users/user.service';
 import { ChannelMemberService } from '../channel_members/channel_member.service';
 import { ChannelDto } from './channel.dto';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import { ChannelMember } from 'src/channel_members/channel_member.entity';
+import { ServerMemberService } from 'src/server_members/server_member.service';
 
 @Injectable()
 export class ChannelService {
@@ -16,7 +17,9 @@ export class ChannelService {
     private channelRepository: Repository<Channel>,
     @InjectRepository(Server)
     private serverRepository: Repository<Server>,
-    private userService: UserService,
+    @InjectRepository(ChannelMember)
+    private channelMemberRepository: Repository<ChannelMember>,
+    private serverMemberService: ServerMemberService,
     private channelMemberService: ChannelMemberService,
   ) {}
 
@@ -29,8 +32,13 @@ export class ChannelService {
       where: { id: serverId },
     });
     if (!server) return { message: 'Server not found' };
-    if (server.owner_id !== userId)
-      return { message: 'Only the owner can create the channel' };
+
+    const server_member = await this.serverMemberService.getMemberById(
+      serverId,
+      userId,
+    );
+    if (!server_member)
+      return { message: 'Only the members of the server can create channel' };
 
     const existingChannel = await this.channelRepository.findOne({
       where: { server_id: serverId, name: data.name },
@@ -51,11 +59,7 @@ export class ChannelService {
     return { message: 'Channel created successfully' };
   }
 
-  async updateChannel(
-    channelId: string,
-    userId: string,
-    data: Partial<ChannelDto>,
-  ) {
+  async updateChannel(channelId: string, userId: string, data: ChannelDto) {
     const channelDto = plainToClass(ChannelDto, data);
     const errors = await validate(channelDto, { skipMissingProperties: true });
     if (errors.length > 0) return { message: `Validation failed: ${errors}` };
@@ -65,8 +69,13 @@ export class ChannelService {
       relations: ['server'],
     });
     if (!channel) return { message: 'Channel not found' };
-    if (channel.server.owner_id !== userId)
-      return { message: 'Only the owner can update the channel' };
+
+    const server_member = await this.serverMemberService.getMemberById(
+      channel.server_id,
+      userId,
+    );
+    if (!server_member)
+      return { message: 'Only the members of the server can create channel' };
 
     const updatedData = {
       name: data.name || channel.name,
@@ -80,20 +89,17 @@ export class ChannelService {
     return { message: 'Channel updated successfully' };
   }
 
-  async getChannelsByServer(serverId: string, userId: string, query: string) {
-    const user = await this.userService.getUser(userId);
-    if (!user) return [];
-
+  async getChannelsByServer(serverId: string, query: string) {
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return [];
+    if (!server) return { message: 'Server not found', channels: [] };
 
     const channels = await this.channelRepository.find({
       where: { server_id: serverId, name: Like(`%${query}%`) },
     });
 
-    return channels;
+    return { message: 'Get channels successfully', channels };
   }
 
   async deleteChannel(channelId: string, userId: string) {
@@ -101,10 +107,16 @@ export class ChannelService {
       where: { id: channelId },
     });
     if (!channel) return { message: 'Channel not found' };
-    if (channel.server.owner_id !== userId)
-      return { message: 'Only the owner can delete the channel' };
 
-    await this.channelRepository.delete(channelId);
+    const server_member = await this.serverMemberService.getMemberById(
+      channel.server_id,
+      userId,
+    );
+    if (!server_member)
+      return { message: 'Only the members of the server can create channel' };
+
+    await this.channelMemberRepository.delete({ channel_id: channelId });
+    await this.channelRepository.delete({ id: channelId });
 
     return { message: 'Channel deleted successfully' };
   }
