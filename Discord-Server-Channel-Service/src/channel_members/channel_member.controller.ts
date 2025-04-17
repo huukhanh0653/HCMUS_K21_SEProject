@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  Delete,
-  Query,
-  Param,
-} from '@nestjs/common';
+import { Controller, Post, Get, Delete, Query, Param } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { ChannelMemberService } from './channel_member.service';
 import {
@@ -20,7 +12,7 @@ import {
 
 @ApiTags('channel-members')
 @ApiBearerAuth()
-@Controller('channel-members/:userId/:channelId')
+@Controller('channel-members/:channelId')
 export class ChannelMemberController {
   constructor(private readonly channelMemberService: ChannelMemberService) {}
 
@@ -31,12 +23,12 @@ export class ChannelMemberController {
     userId: string;
     memberId: string;
   }) {
-    const result = await this.channelMemberService.addMember(
+    const message = await this.channelMemberService.addMember(
       data.channelId,
       data.userId,
       data.memberId,
     );
-    return { message: result.message };
+    return { message };
   }
 
   @GrpcMethod('ChannelMemberService', 'RemoveMember')
@@ -45,26 +37,22 @@ export class ChannelMemberController {
     userId: string;
     memberId: string;
   }) {
-    const result = await this.channelMemberService.removeMember(
+    const message = await this.channelMemberService.removeMember(
       data.channelId,
       data.userId,
       data.memberId,
     );
-    return { message: result.message };
+    return { message };
   }
 
   @GrpcMethod('ChannelMemberService', 'SearchMember')
-  async searchMember(data: {
-    channelId: string;
-    userId: string;
-    query: string;
-  }) {
-    const members = await this.channelMemberService.searchMember(
+  async searchMember(data: { channelId: string; query: string }) {
+    const { message, members } = await this.channelMemberService.searchMember(
       data.channelId,
-      data.userId,
       data.query,
     );
     return {
+      message,
       members: members.map((member: any) => this.mapMemberToInfo(member)),
     };
   }
@@ -78,7 +66,7 @@ export class ChannelMemberController {
   }
 
   // RESTful Methods
-  @Post(':memberId')
+  @Post(':userId/:memberId')
   @ApiOperation({ summary: 'Add a member to a channel' })
   @ApiResponse({ status: 201, description: 'Member added successfully' })
   @ApiResponse({ status: 400, description: 'Validation failed' })
@@ -99,7 +87,7 @@ export class ChannelMemberController {
     return this.channelMemberService.addMember(channelId, userId, memberId);
   }
 
-  @Delete(':memberId')
+  @Delete(':userId/:memberId')
   @ApiOperation({ summary: 'Remove a member from a channel' })
   @ApiResponse({ status: 200, description: 'Member removed successfully' })
   @ApiResponse({ status: 404, description: 'Member or channel not found' })
@@ -123,7 +111,6 @@ export class ChannelMemberController {
   @Get()
   @ApiOperation({ summary: 'Search members in a channel' })
   @ApiResponse({ status: 200, description: 'List of members' })
-  @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiParam({
     name: 'channelId',
     description: 'ID of the channel',
@@ -134,10 +121,9 @@ export class ChannelMemberController {
     required: false,
   })
   async searchMemberRest(
-    @Param('userId') userId: string,
     @Param('channelId') channelId: string,
     @Query('query') query: string = '',
   ) {
-    return this.channelMemberService.searchMember(channelId, userId, query);
+    return this.channelMemberService.searchMember(channelId, query);
   }
 }

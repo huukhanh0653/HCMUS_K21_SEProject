@@ -11,10 +11,11 @@ export class ServerMemberDto {
   memberId: string;
 
   @ApiProperty({
-    description: "The id of the member's role",
+    description: 'The role of the member',
     required: false,
+    default: 'Member',
   })
   @IsOptional()
   @IsString()
-  roleId?: string;
+  role?: string;
 }

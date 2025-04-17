@@ -18,10 +18,11 @@ export class ChannelMemberService {
   async addMember(channelId: string, userId: string, memberId: string) {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
-      relations: ['server'],
     });
     if (!channel) return { message: 'Channel not found' };
-    if (channel.server.owner_id !== userId)
+
+    const channel_owner = await this.searchMember(channelId, '')[0];
+    if (channel_owner.id !== userId)
       return { message: 'Only the owner can add members' };
 
     const memberToAdd = await this.userService.getUser(memberId);
@@ -50,15 +51,17 @@ export class ChannelMemberService {
       where: { id: channelId },
     });
     if (!channel) return { message: 'Channel not found' };
-    if (channel.server.owner_id !== userId)
-      return { message: 'Only the owner can remove members' };
+
+    const channel_owner = await this.searchMember(channelId, '')[0];
+    if (channel_owner.id !== userId)
+      return { message: 'Only the owner can add members' };
 
     const member = await this.channelMemberRepository.findOne({
       where: { channel_id: channelId, user_id: memberId },
     });
     if (!member) return { message: 'User is not a member of this channel' };
 
-    await this.channelMemberRepository.delete(memberId);
+    await this.channelMemberRepository.delete({ user_id: memberId });
 
     const memberToRemove = await this.userService.getUser(memberId);
     return {
@@ -66,20 +69,15 @@ export class ChannelMemberService {
     };
   }
 
-  async searchMember(channelId: string, userId: string, query: string) {
-    const user = await this.userService.getUser(userId);
-    if (!user) return [];
-
+  async searchMember(channelId: string, query: string) {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
     });
-    if (!channel) return [];
+    if (!channel) return { message: 'Channel not found', members: [] };
 
     const members = await this.channelMemberRepository.find({
       where: { channel_id: channelId },
     });
-    if (!members) return [];
-
     const users = await this.userService.getUsers();
 
     const filteredMembers = members.filter((member) => {
@@ -87,6 +85,6 @@ export class ChannelMemberService {
       return user && user.username.toLowerCase().includes(query.toLowerCase());
     });
 
-    return filteredMembers;
+    return { message: 'Get members successfully', members: filteredMembers };
   }
 }

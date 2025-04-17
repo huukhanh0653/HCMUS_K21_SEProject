@@ -22,33 +22,29 @@ import {
 
 @ApiTags('channels')
 @ApiBearerAuth()
-@Controller('channels/:userId')
+@Controller('channels')
 export class ChannelController {
   constructor(private readonly channelService: ChannelService) {}
 
   // gRPC Methods
   @GrpcMethod('ChannelService', 'CreateChannel')
   async createChannel(data: { serverId: string; userId: string } & ChannelDto) {
-    const result = await this.channelService.createChannel(
+    const message = await this.channelService.createChannel(
       data.serverId,
       data.userId,
       data,
     );
-    return { message: result.message };
+    return { message };
   }
 
   @GrpcMethod('ChannelService', 'GetChannelsByServer')
-  async getChannelsByServer(data: {
-    serverId: string;
-    userId: string;
-    query: string;
-  }) {
-    const channels = await this.channelService.getChannelsByServer(
+  async getChannelsByServer(data: { serverId: string; query: string }) {
+    const { message, channels } = await this.channelService.getChannelsByServer(
       data.serverId,
-      data.userId,
       data.query,
     );
     return {
+      message,
       channels: channels.map((channel: any) =>
         this.mapChannelToResponse(channel),
       ),
@@ -57,23 +53,23 @@ export class ChannelController {
 
   @GrpcMethod('ChannelService', 'UpdateChannel')
   async updateChannel(
-    data: { channelId: string; userId: string } & Partial<ChannelDto>,
+    data: { channelId: string; userId: string } & ChannelDto,
   ) {
-    const result = await this.channelService.updateChannel(
+    const message = await this.channelService.updateChannel(
       data.channelId,
       data.userId,
       { name: data.name, type: data.type, isPrivate: data.isPrivate },
     );
-    return { message: result.message };
+    return { message };
   }
 
   @GrpcMethod('ChannelService', 'DeleteChannel')
   async deleteChannel(data: { channelId: string; userId: string }) {
-    const result = await this.channelService.deleteChannel(
+    const message = await this.channelService.deleteChannel(
       data.channelId,
       data.userId,
     );
-    return { message: result.message };
+    return { message };
   }
 
   private mapChannelToResponse(channel: any) {
@@ -89,7 +85,7 @@ export class ChannelController {
   }
 
   // RESTful Methods
-  @Post(':serverId')
+  @Post(':userId/:serverId')
   @ApiOperation({ summary: 'Create a new channel' })
   @ApiResponse({ status: 201, description: 'Channel created successfully' })
   @ApiResponse({ status: 400, description: 'Validation failed' })
@@ -109,7 +105,6 @@ export class ChannelController {
   @Get(':serverId')
   @ApiOperation({ summary: 'Get channels by server' })
   @ApiResponse({ status: 200, description: 'List of channels' })
-  @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiParam({
     name: 'serverId',
     description: 'ID of the server',
@@ -121,13 +116,12 @@ export class ChannelController {
   })
   async getChannelsByServerRest(
     @Param('serverId') serverId: string,
-    @Param('userId') userId: string,
     @Query('query') query: string = '',
   ) {
-    return this.channelService.getChannelsByServer(serverId, userId, query);
+    return this.channelService.getChannelsByServer(serverId, query);
   }
 
-  @Put(':channelId')
+  @Put(':userId/:channelId')
   @ApiOperation({ summary: 'Update a channel' })
   @ApiResponse({ status: 200, description: 'Channel updated successfully' })
   @ApiResponse({ status: 404, description: 'Channel not found' })
@@ -144,7 +138,7 @@ export class ChannelController {
     return this.channelService.updateChannel(channelId, userId, data);
   }
 
-  @Delete(':channelId')
+  @Delete(':userId/:channelId')
   @ApiOperation({ summary: 'Delete a channel' })
   @ApiResponse({ status: 200, description: 'Channel deleted successfully' })
   @ApiResponse({ status: 404, description: 'Channel not found' })

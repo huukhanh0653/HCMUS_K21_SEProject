@@ -22,21 +22,21 @@ import {
 
 @ApiTags('server-members')
 @ApiBearerAuth()
-@Controller('server-members/:userId/:serverId')
+@Controller('server-members/:serverId')
 export class ServerMemberController {
   constructor(private readonly serverMemberService: ServerMemberService) {}
 
   // gRPC Methods
   @GrpcMethod('ServerMemberService', 'AddMember')
   async addMember(
-    data: { serverId: string; userId: string } & Partial<ServerMemberDto>,
+    data: { serverId: string; userId: string } & ServerMemberDto,
   ) {
-    const result = await this.serverMemberService.addMember(
+    const message = await this.serverMemberService.addMember(
       data.serverId,
       data.userId,
-      { memberId: data.memberId, roleId: data.roleId },
+      { memberId: data.memberId, role: data.role },
     );
-    return { message: result.message };
+    return { message };
   }
 
   @GrpcMethod('ServerMemberService', 'RemoveMember')
@@ -45,38 +45,34 @@ export class ServerMemberController {
     userId: string;
     memberId: string;
   }) {
-    const result = await this.serverMemberService.removeMember(
+    const message = await this.serverMemberService.removeMember(
       data.serverId,
       data.userId,
       data.memberId,
     );
-    return { message: result.message };
+    return { message };
   }
 
   @GrpcMethod('ServerMemberService', 'UpdateMemberRole')
   async updateMemberRole(
     data: { serverId: string; userId: string } & ServerMemberDto,
   ) {
-    const result = await this.serverMemberService.updateMemberRole(
+    const message = await this.serverMemberService.updateMemberRole(
       data.serverId,
       data.userId,
-      { memberId: data.memberId, roleId: data.roleId },
+      { memberId: data.memberId, role: data.role },
     );
-    return { message: result.message };
+    return { message };
   }
 
   @GrpcMethod('ServerMemberService', 'SearchMember')
-  async searchMember(data: {
-    serverId: string;
-    userId: string;
-    query: string;
-  }) {
-    const members = await this.serverMemberService.searchMember(
+  async searchMember(data: { serverId: string; query: string }) {
+    const { message, members } = await this.serverMemberService.searchMember(
       data.serverId,
-      data.userId,
       data.query,
     );
     return {
+      message,
       members: members.map((member: any) => this.mapMemberToInfo(member)),
     };
   }
@@ -91,7 +87,7 @@ export class ServerMemberController {
   }
 
   // RESTful Methods
-  @Post()
+  @Post(':userId')
   @ApiOperation({ summary: 'Add a member to a server' })
   @ApiResponse({ status: 201, description: 'Member added successfully' })
   @ApiResponse({ status: 400, description: 'Validation failed' })
@@ -108,7 +104,7 @@ export class ServerMemberController {
     return this.serverMemberService.addMember(serverId, userId, data);
   }
 
-  @Delete(':memberId')
+  @Delete(':userId/:memberId')
   @ApiOperation({ summary: 'Remove a member from a server' })
   @ApiResponse({ status: 200, description: 'Member removed successfully' })
   @ApiResponse({ status: 404, description: 'Member or server not found' })
@@ -126,8 +122,8 @@ export class ServerMemberController {
     return this.serverMemberService.removeMember(serverId, userId, memberId);
   }
 
-  @Put()
-  @ApiOperation({ summary: 'Update a member’s role in a server' })
+  @Put(':userId')
+  @ApiOperation({ summary: "Update a member's role in a server" })
   @ApiResponse({ status: 200, description: 'Member role updated successfully' })
   @ApiResponse({ status: 404, description: 'Member or role not found' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
@@ -146,7 +142,6 @@ export class ServerMemberController {
   @Get()
   @ApiOperation({ summary: 'Search members in a server' })
   @ApiResponse({ status: 200, description: 'List of members' })
-  @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiParam({
     name: 'serverId',
     description: 'ID of the server',
@@ -157,10 +152,9 @@ export class ServerMemberController {
     required: false,
   })
   async searchMemberRest(
-    @Param('userId') userId: string,
     @Param('serverId') serverId: string,
     @Query('query') query: string = '',
   ) {
-    return this.serverMemberService.searchMember(serverId, userId, query);
+    return this.serverMemberService.searchMember(serverId, query);
   }
 }

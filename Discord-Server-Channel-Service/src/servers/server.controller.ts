@@ -29,40 +29,51 @@ export class ServerController {
   // gRPC Methods
   @GrpcMethod('ServerService', 'CreateServer')
   async createServer(data: { userId: string } & ServerDto) {
-    const result = await this.serverService.createServer(data.userId, data);
-    return { message: result.message };
+    const message = await this.serverService.createServer(data.userId, data);
+    return { message };
   }
 
-  @GrpcMethod('ServerService', 'GetServers')
-  async getServers(data: { userId: string; query: string }) {
-    const servers = await this.serverService.getServers(
+  @GrpcMethod('ServerService', 'GetAllServers')
+  async getAllServers(data: { userId: string; query: string }) {
+    const { message, servers } = await this.serverService.getAllServers(
       data.userId,
       data.query,
     );
     return {
+      message,
+      servers: servers.map((server: any) => this.mapServerToResponse(server)),
+    };
+  }
+
+  @GrpcMethod('ServerService', 'GetServers')
+  async getServers(data: { userId: string; query: string }) {
+    const { message, servers } = await this.serverService.getServers(
+      data.userId,
+      data.query,
+    );
+    return {
+      message,
       servers: servers.map((server: any) => this.mapServerToResponse(server)),
     };
   }
 
   @GrpcMethod('ServerService', 'UpdateServer')
-  async updateServer(
-    data: { serverId: string; userId: string } & Partial<ServerDto>,
-  ) {
-    const result = await this.serverService.updateServer(
+  async updateServer(data: { serverId: string; userId: string } & ServerDto) {
+    const message = await this.serverService.updateServer(
       data.serverId,
       data.userId,
       data,
     );
-    return { message: result.message };
+    return { message };
   }
 
   @GrpcMethod('ServerService', 'DeleteServer')
   async deleteServer(data: { serverId: string; userId: string }) {
-    const result = await this.serverService.deleteServer(
+    const message = await this.serverService.deleteServer(
       data.serverId,
       data.userId,
     );
-    return { message: result.message };
+    return { message };
   }
 
   private mapServerToResponse(server: any) {
@@ -77,7 +88,7 @@ export class ServerController {
   // RESTful Methods
   @Post()
   @ApiOperation({ summary: 'Create a new server' })
-  @ApiResponse({ status: 200, description: 'Server created successfully' })
+  @ApiResponse({ status: 201, description: 'Server created successfully' })
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
   async createServerRest(
@@ -87,9 +98,25 @@ export class ServerController {
     return this.serverService.createServer(userId, data);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Search servers with optional query' })
+  @Get('all')
+  @ApiOperation({ summary: 'Search servers' })
   @ApiResponse({ status: 200, description: 'List of servers' })
+  @ApiParam({ name: 'userId', description: 'ID of the user' })
+  @ApiQuery({
+    name: 'query',
+    description: 'Query string to filter servers by name',
+    required: false,
+  })
+  async getAllServersRest(
+    @Param('userId') userId: string,
+    @Query('query') query: string = '',
+  ) {
+    return this.serverService.getAllServers(userId, query);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Search servers of the user' })
+  @ApiResponse({ status: 200, description: 'List of servers of the user' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiQuery({
     name: 'query',
