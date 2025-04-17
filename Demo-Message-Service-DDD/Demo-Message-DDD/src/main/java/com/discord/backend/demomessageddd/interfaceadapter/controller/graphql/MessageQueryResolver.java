@@ -2,7 +2,10 @@ package com.discord.backend.demomessageddd.interfaceadapter.controller.graphql;
 
 import com.discord.backend.demomessageddd.domain.entity.Message;
 import com.discord.backend.demomessageddd.domain.valueobject.FetchMessage;
+import com.discord.backend.demomessageddd.application.service.EditMessageUseCase;
 import com.discord.backend.demomessageddd.application.service.FetchMessageUseCase;
+import com.discord.backend.demomessageddd.application.service.SearchMessageUseCase;
+
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -13,9 +16,13 @@ import java.util.List;
 public class MessageQueryResolver {
 
     private final FetchMessageUseCase fetchMessageUseCase;
+    private final SearchMessageUseCase searchMessageUseCase;
+    private final EditMessageUseCase editMessageUseCase;
 
-    public MessageQueryResolver(FetchMessageUseCase fetchMessageUseCase) {
+    public MessageQueryResolver(FetchMessageUseCase fetchMessageUseCase, SearchMessageUseCase searchMessageUseCase, EditMessageUseCase editMessageUseCase) {
         this.fetchMessageUseCase = fetchMessageUseCase;
+        this.searchMessageUseCase = searchMessageUseCase;
+        this.editMessageUseCase = editMessageUseCase;
     }
 
     /**
@@ -28,12 +35,81 @@ public class MessageQueryResolver {
      * @return A list of messages.
      */
     @QueryMapping
-    public FetchMessage fetchMessages(@Argument String serverId,
-            @Argument String channelId,
-            @Argument int amount,
-            @Argument String timestamp) {
+    public FetchMessage fetchMessagesBefore(@Argument String serverId,
+                                            @Argument String channelId,
+                                            @Argument int amount,
+                                            @Argument String timestamp) {
         System.out.println("MessageQueryResolver fetchMessages called with serverId: " + serverId);
-        return fetchMessageUseCase.execute(serverId, channelId, amount, timestamp);
+        return fetchMessageUseCase.fetchBefore(serverId, channelId, amount, timestamp);
     }
 
+    /**
+     * Fetches messages from a specific channel after a given timestamp.
+     *
+     * @param serverId  The ID of the server.
+     * @param channelId The ID of the channel.
+     * @param amount    The number of messages to fetch.
+     * @param timestamp The timestamp to fetch messages from.
+     * @return A list of messages.
+     */
+
+    @QueryMapping
+    public FetchMessage fetchMessagesAfter(@Argument String serverId,
+                                           @Argument String channelId,
+                                           @Argument int amount,
+                                           @Argument String timestamp) {
+        System.out.println("MessageQueryResolver fetchMessages called with serverId: " + serverId);
+        return fetchMessageUseCase.fetchAfter(serverId, channelId, amount, timestamp);
+
+    }
+
+    /**
+     * Searches for messages in a specific channel.
+     *
+     * @param serverId  The ID of the server.
+     * @param channelId The ID of the channel.
+     * @param content   The content to search for.
+     * @return A list of messages that match the search criteria.
+     */
+    @QueryMapping
+    public List<Message> searchMessages(
+            @Argument String content,
+            @Argument String serverId,
+            @Argument String channelId) {
+        System.out.println("MessageQueryResolver searchMessages called with serverId: " + serverId);
+        return searchMessageUseCase.execute(content, serverId, channelId);
+    }
+
+    /**
+     * Edits a message in a specific channel.
+     *
+     * @param serverId  The ID of the server.
+     * @param channelId The ID of the channel.
+     * @param messageId The ID of the message to edit.
+     * @param content   The new content for the message.
+     * @return The edited message.
+     */
+    @QueryMapping
+    public Message editMessage(@Argument String messageId,
+                               @Argument String serverId,
+                               @Argument String channelId,
+                               @Argument String content) {
+        System.out.println("MessageQueryResolver editMessages called with messageId: " + messageId);
+        return editMessageUseCase.edit(messageId, serverId, channelId, content);
+    }
+
+    /**
+     * Deletes a message in a specific channel.
+     *
+     * @param serverId  The ID of the server.
+     * @param channelId The ID of the channel.
+     * @param messageId The ID of the message to delete.
+     */
+    @QueryMapping
+    public void deleteMessage(@Argument String serverId,
+                              @Argument String channelId,
+                              @Argument String messageId) {
+        System.out.println("MessageQueryResolver deleteMessages called with messageId: " + messageId);
+        editMessageUseCase.delete(serverId, channelId, messageId);
+    }
 }

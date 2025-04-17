@@ -1,5 +1,6 @@
 package com.discord.backend.demomessageddd.interfaceadapter.DTO;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
@@ -8,7 +9,8 @@ import java.util.List;
 
 @Data
 @JsonSerialize
-public class MessageSentEvent implements Serializable {
+@JsonTypeName("sent")
+public class MessageSentEvent extends Event implements Serializable {
     private String messageId;
     private String senderId;
     private String serverId;

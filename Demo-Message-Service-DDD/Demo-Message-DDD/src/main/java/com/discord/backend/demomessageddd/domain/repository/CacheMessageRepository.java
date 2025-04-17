@@ -9,15 +9,22 @@ public interface CacheMessageRepository {
 
     List<Message> findByChannel(String serverId, String channelId, int amount, String timestamp);
 
+    List<Message> findByChannelAfter(String serverId, String channelId, int amount, String timestamp);
+
     long countByChannel(String serverId, String channelId, String timestamp);
 
     void deleteByChannel(String serverId, String channelId, String timestamp);
 
     void deleteByServer(String serverId, String timestamp);
 
-    void deleteById(String messageId, String timestamp);
+    void deleteById(String serverId, String channelId, String messageId);
 
-    void editById(String messageId, String timestamp, Message message);
+    void editById(String messageId, String serverId, String channelId, String newContent);
 
+    /*
+     * @deprecated Use {@link #searchFullText(String, String, String)} instead.
+     * Service will search in MongoDB only
+     */
+    @Deprecated
     List<Message> findByContent(String content, String timestamp, int amount, String serverId, String channelId);
 }
