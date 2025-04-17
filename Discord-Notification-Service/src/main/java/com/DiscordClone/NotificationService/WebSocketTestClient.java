@@ -1,5 +1,6 @@
 package com.DiscordClone.NotificationService;
 
+import com.DiscordClone.NotificationService.model.Notification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
@@ -29,12 +30,21 @@ public class WebSocketTestClient {
                 session.subscribe(SUBSCRIBE_TOPIC, new StompFrameHandler() {
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
-                        return Object.class;
+                        return Notification.class;  // Replace with your full Notification class
                     }
 
                     @Override
                     public void handleFrame(StompHeaders headers, Object payload) {
-                        log.info("🔔 Notification received: {}", payload);
+                        if (payload instanceof Notification) {
+                            Notification notification = (Notification) payload;
+                            log.info("🔔 Notification received:");
+                            log.info("📨 Type: {}", notification.getType());
+                            log.info("👤 From: {}", notification.getSourceId());
+                            log.info("👥 To: {}", notification.getReceiverId());
+                            log.info("💬 Content: {}", notification.getContent());
+                        } else {
+                            log.warn("❗ Unexpected payload type: {}", payload.getClass().getName());
+                        }
                     }
                 });
                 log.info("📡 Subscribed to {}", SUBSCRIBE_TOPIC);

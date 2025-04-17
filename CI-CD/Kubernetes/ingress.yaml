@@ -13,48 +13,48 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: 34.142.226.114.nip.io   # 🔥 thay bằng EXTERNAL-IP của NGINX Ingress Controller
-    http:
-      paths:
-        - path: /user-service
-          pathType: Prefix
-          backend:
-            service:
-              name: echo-chat-user-service
-              port:
-                number: 8081
-        - path: /message-service/messages
-          pathType: Prefix
-          backend:
-            service:
-              name: echo-chat-message-service
-              port:
-                number: 8082
-        - path: /storage-service
-          pathType: Prefix
-          backend:
-            service:
-              name: storage-service
-              port:
-                number: 8083
-        - path: /notification-service
-          pathType: Prefix
-          backend:
-            service:
-              name: notification-service
-              port:
-                number: 8085
-        - path: /manager-service
-          pathType: Prefix
-          backend:
-            service:
-              name: echo-chat-manage-server-service
-              port:
-                number: 8084
-        - path: /api
-          pathType: Prefix
-          backend:
-            service:
-              name: api-gateway
-              port:
-                number: 8080
+    - host: 34.126.79.147.nip.io
+      http:
+        paths:
+          - path: /user-service
+            pathType: Prefix
+            backend:
+              service:
+                name: echo-chat-user-service
+                port:
+                  number: 8081
+          - path: /message-service
+            pathType: Prefix
+            backend:
+              service:
+                name: echo-chat-message-service
+                port:
+                  number: 8082
+          - path: /storage-service
+            pathType: Prefix
+            backend:
+              service:
+                name: storage-service
+                port:
+                  number: 8083
+          - path: /notification-service
+            pathType: Prefix
+            backend:
+              service:
+                name: notification-service
+                port:
+                  number: 8085
+          - path: /manager-service
+            pathType: Prefix
+            backend:
+              service:
+                name: echo-chat-manage-server-service
+                port:
+                  number: 8084
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 8080

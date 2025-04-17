@@ -6,6 +6,5 @@ import java.util.List;
 
 public interface MessageRepository {
     Message save(Message message);
-
+    Map<int, String, List<Message>> findByChannel(String serverId, String channelId, int amount, String timestamp);
 }
-
