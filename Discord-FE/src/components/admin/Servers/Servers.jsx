@@ -8,19 +8,57 @@ import { columns } from "./Columns";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { cn } from "../../../lib/utils";
-import { PopupModal } from "../../ui/modal";
 import { useLanguage } from "../../layout/LanguageProvider";
 import { useTranslation } from "react-i18next";
+import ServerChannelService from "../../../services/ServerChannelService";
+import toast from "react-hot-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../../ui/dialog";
+import UserService from "../../../services/UserService";
 
 export default function ServerManagement() {
-  const [AddServerOpen, setAddServerOpen] = useState(false);
+  const [addServerOpen, setAddServerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalSize, setTotalSize] = useState(0);
   const [servers, setServers] = useState([]);
   const [filterValue, setFilterValue] = useState("");
   const [sorting, setSorting] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { language } = useLanguage();
   const { t } = useTranslation();
+  const userId = JSON.parse(localStorage.getItem("user")).id;
+
+  useEffect(() => {
+    const fetchServers = async () => {
+      if (!userId) {
+        toast.error(t("User ID not found"));
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const { servers } = await ServerChannelService.getAllServers(
+          userId,
+          filterValue
+        );
+
+        setServers(servers);
+        setTotalSize(servers.length);
+      } catch (error) {
+        console.error("Error fetching servers:", error);
+        toast.error(`${t("Failed to fetch servers")}: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchServers();
+  }, [filterValue]);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -30,10 +68,28 @@ export default function ServerManagement() {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
-  const handleAddServer = (newServer) => {
-    console.log("Adding server:", newServer);
-    setServers((prevServers) => [...prevServers, newServer]);
-    setTotalSize((prevSize) => prevSize + 1);
+  const handleAddServer = async (newServer) => {
+    try {
+      const response = await ServerChannelService.createServer(userId, {
+        name: newServer.serverName,
+        server_pic: newServer.serverPic || undefined,
+      });
+      setServers((prevServers) => [
+        ...prevServers,
+        {
+          id: response.id,
+          name: response.name,
+          created_at: response.created_at,
+          owner_id: response.owner_id,
+          server_pic: response.server_pic,
+        },
+      ]);
+      setTotalSize((prevSize) => prevSize + 1);
+      toast.success(t("Server created successfully"));
+      setAddServerOpen(false);
+    } catch (error) {
+      toast.error(`${error.message || t("Failed to create server")}`);
+    }
   };
 
   const processedServers = useMemo(() => {
@@ -41,7 +97,7 @@ export default function ServerManagement() {
 
     if (filterValue) {
       filteredServers = filteredServers.filter((server) =>
-        server.ServerName?.toLowerCase().includes(filterValue.toLowerCase())
+        server.name?.toLowerCase().includes(filterValue.toLowerCase())
       );
     }
 
@@ -80,72 +136,38 @@ export default function ServerManagement() {
         <h1 className="text-2xl font-normal p-4">
           {t("Servers")} ({totalSize})
         </h1>
-        {language == "en" ? (
-          <PopupModal
-            open={AddServerOpen}
-            setOpen={setAddServerOpen}
-            formComponent={AddServerForm}
-            props={{
-              title: "Add new Server",
-              description: "Enter Server information",
-              onAddServer: handleAddServer,
-            }}
-          >
-            <Button className="px-6 py-0 text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 rounded-lg ml-6">
-              Add Server
-            </Button>
-          </PopupModal>
-        ) : (
-          <PopupModal
-            open={AddServerOpen}
-            setOpen={setAddServerOpen}
-            formComponent={AddServerForm}
-            props={{
-              title: "Thêm Server mới",
-              description: "Nhập thông tin Server",
-              onAddServer: handleAddServer,
-            }}
-          >
-            <Button className="px-6 py-0 text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 rounded-lg ml-6">
-              Thêm Server
-            </Button>
-          </PopupModal>
-        )}
-      </div>
-      {language == "en" ? (
-        <DataTable
-          columns={columns()}
-          data={paginatedServers}
-          filterProps={{
-            column: "ServerName",
-            placeholder: "Find Server by name...",
-            value: filterValue,
-            onChange: setFilterValue,
-          }}
-          buildInSearch={false}
-          onSortingChange={setSorting}
-        />
-      ) : (
-        <DataTable
-          columns={columns()}
-          data={paginatedServers}
-          filterProps={{
-            column: "ServerName",
-            placeholder: "Tìm Server bằng tên...",
-            value: filterValue,
-            onChange: setFilterValue,
-          }}
-          buildInSearch={false}
-          onSortingChange={setSorting}
-        />
-      )}
 
-      <div className="flex items-center justify-end space-x-2 py-4">
+        <Button
+          className="px-6 py-0 text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 rounded-lg ml-6"
+          onClick={() => setAddServerOpen(true)}
+        >
+          {t("Add Server")}
+        </Button>
+      </div>
+
+      <DataTable
+        columns={columns()}
+        data={paginatedServers}
+        filterProps={{
+          column: "name",
+          placeholder:
+            language === "en"
+              ? "Find Server by name..."
+              : "Tìm Server bằng tên...",
+          value: filterValue,
+          onChange: setFilterValue,
+        }}
+        buildInSearch={false}
+        onSortingChange={setSorting}
+        isLoading={isLoading}
+      />
+
+      <div className="flex items-center justify-end space-x-2 py-4 px-4">
         <Button
           variant="outline"
           size="sm"
           onClick={handlePrevPage}
-          disabled={currentPage === 1}
+          disabled={currentPage === 1 || isLoading}
         >
           {t("Previous")}
         </Button>
@@ -153,32 +175,59 @@ export default function ServerManagement() {
           variant="outline"
           size="sm"
           onClick={handleNextPage}
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || isLoading}
         >
           {t("Next")}
         </Button>
       </div>
+
+      <Dialog open={addServerOpen} onOpenChange={setAddServerOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {language === "en" ? "Add new Server" : "Thêm Server mới"}
+            </DialogTitle>
+            <DialogDescription>
+              {language === "en"
+                ? "Enter Server information"
+                : "Nhập thông tin Server"}
+            </DialogDescription>
+          </DialogHeader>
+          <AddServerForm
+            setOpen={setAddServerOpen}
+            onAddServer={handleAddServer}
+          />
+        </DialogContent>
+      </Dialog>
     </DefaultLayout>
   );
 }
 
 function AddServerForm({ className, setOpen, onAddServer }) {
-  const handleClose = () => {
-    setOpen(false);
-  };
   const [serverName, setServerName] = useState("");
   const [serverPic, setServerPic] = useState("");
   const { t } = useTranslation();
 
-  const handleSubmit = async () => {
+  const handleClose = () => {
+    setOpen(false);
+    setServerName("");
+    setServerPic("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!serverName) {
+      toast.error(t("Server name is required"));
+      return;
+    }
+
     try {
-      // const data = await getUserByID();
-      // const newServer = {
-      //   username: data.username,
-      //   name: serverName,
-      //   serverPic: serverPic || undefined,
-      // };
-    } catch (error) {}
+      await onAddServer({ serverName, serverPic });
+      setServerName("");
+      setServerPic("");
+    } catch (error) {
+      // Error handled in onAddServer
+    }
   };
 
   return (
@@ -205,10 +254,12 @@ function AddServerForm({ className, setOpen, onAddServer }) {
           onChange={(e) => setServerPic(e.target.value)}
         />
       </div>
-      <Button type="submit">{t("Add")}</Button>
-      <Button onClick={handleClose} variant="outline">
-        {t("Cancel")}
-      </Button>
+      <div className="flex gap-2">
+        <Button type="submit">{t("Add")}</Button>
+        <Button variant="outline" onClick={handleClose}>
+          {t("Cancel")}
+        </Button>
+      </div>
     </form>
   );
 }

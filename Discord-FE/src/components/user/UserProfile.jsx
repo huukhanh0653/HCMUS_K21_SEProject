@@ -129,9 +129,9 @@ export default function UserProfile({ user, onClose }) {
       username: username.trim(),
       email: storedUser.email,
       password: "", // Không cập nhật mật khẩu ở đây
-      role: storedUser.role,
       avatar: avatarUrl,
       background: backgroundUrl,
+      is_admin: storedUser.is_admin,
     };
 
     try {
@@ -219,9 +219,9 @@ export default function UserProfile({ user, onClose }) {
       username: storedUser.username,
       email: storedUser.email,
       password: newPassword, // Cập nhật mật khẩu mới
-      role: storedUser.role,
       avatar: storedUser.avatar,
       background: storedUser.background,
+      is_admin: storedUser.is_admin,
     };
 
     try {
@@ -355,19 +355,33 @@ export default function UserProfile({ user, onClose }) {
         {/* Content */}
         {showEditProfile ? (
           <div className="p-4">
-
             <form onSubmit={handleSaveProfile}>
               <div className="mb-6">
                 <div className="relative mb-6">
-                  <div className={`h-24 ${isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"} rounded-t-md overflow-hidden`}>
+                  <div
+                    className={`h-24 ${
+                      isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"
+                    } rounded-t-md overflow-hidden`}
+                  >
                     {background && (
-                      <img src={background || "/placeholder.svg"} alt="Background" className="w-full h-full object-cover" />
+                      <img
+                        src={background || "/placeholder.svg"}
+                        alt="Background"
+                        className="w-full h-full object-cover"
+                      />
                     )}
                     <label
-                      className={`absolute right-2 bottom-2 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"} rounded-full flex items-center justify-center cursor-pointer`}
+                      className={`absolute right-2 bottom-2 w-8 h-8 ${
+                        isDarkMode ? "bg-[#313338]" : "bg-gray-200"
+                      } rounded-full flex items-center justify-center cursor-pointer`}
                     >
                       <Camera size={16} />
-                      <input type="file" accept="image/*" className="hidden" onChange={handleBackgroundChange} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleBackgroundChange}
+                      />
                     </label>
                   </div>
 
@@ -375,23 +389,38 @@ export default function UserProfile({ user, onClose }) {
                     <div className="relative -mt-10">
                       <div
                         className={`w-20 h-20 rounded-full overflow-hidden ${
-                          isDarkMode ? "bg-[#36393f] border-4 border-[#232428]" : "bg-gray-200 border-4 border-gray-300"
+                          isDarkMode
+                            ? "bg-[#36393f] border-4 border-[#232428]"
+                            : "bg-gray-200 border-4 border-gray-300"
                         }`}
                       >
-                        <img src={avatar || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
+                        <img
+                          src={avatar || "/placeholder.svg"}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <label
-                        className={`absolute bottom-0 right-0 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"} rounded-full flex items-center justify-center cursor-pointer`}
+                        className={`absolute bottom-0 right-0 w-8 h-8 ${
+                          isDarkMode ? "bg-[#313338]" : "bg-gray-200"
+                        } rounded-full flex items-center justify-center cursor-pointer`}
                       >
                         <Camera size={16} />
-                        <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleAvatarChange}
+                        />
                       </label>
                     </div>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t("Username")}</label>
+                  <label className="block text-sm font-medium mb-2">
+                    {t("Username")}
+                  </label>
                   <input
                     type="text"
                     value={username}
@@ -409,13 +438,21 @@ export default function UserProfile({ user, onClose }) {
                 <button
                   type="button"
                   onClick={() => setShowEditProfile(false)}
-                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#2b2d31] hover:bg-[#35373c]" : "bg-gray-200 hover:bg-gray-300"}`}
+                  className={`px-4 py-2 rounded-md ${
+                    isDarkMode
+                      ? "bg-[#2b2d31] hover:bg-[#35373c]"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
                 >
                   {t("Cancel")}
                 </button>
                 <button
                   type="submit"
-                  className={`px-4 py-2 rounded-md ${isDarkMode ? "bg-[#5865f2] hover:bg-[#4752c4]" : "bg-[#1877F2] hover:bg-[#0D6EFD]"} `}
+                  className={`px-4 py-2 rounded-md ${
+                    isDarkMode
+                      ? "bg-[#5865f2] hover:bg-[#4752c4]"
+                      : "bg-[#1877F2] hover:bg-[#0D6EFD]"
+                  } `}
                 >
                   {t("Save Changes")}
                 </button>

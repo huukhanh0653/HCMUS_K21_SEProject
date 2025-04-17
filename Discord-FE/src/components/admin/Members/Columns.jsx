@@ -23,7 +23,7 @@ export const columns = ({ onBan }) => {
         </Button>
       ),
       cell: ({ row }) => (
-        <span className="text-xs sm:text-sm pl-1">{row.original.num}</span> // Sử dụng num từ dữ liệu
+        <span className="text-xs sm:text-sm pl-1">{row.original.num}</span>
       ),
     },
     {
@@ -75,13 +75,20 @@ export const columns = ({ onBan }) => {
           {t("Avatar")}
         </span>
       ),
-      cell: ({ row }) => (
-        <img
-          src={row.original.avatar || defaultAvatar}
-          alt="Avatar"
-          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hidden md:block border border-gray-200"
-        />
-      ),
+      cell: ({ row }) =>
+        row.original.avatar ? (
+          <img
+            src={row.original.avatar}
+            alt="Avatar"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hidden md:block border border-gray-200"
+          />
+        ) : (
+          <img
+            src={defaultAvatar}
+            alt="Avatar"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hidden md:block border border-gray-200"
+          />
+        ),
     },
     {
       accessorKey: "status",
