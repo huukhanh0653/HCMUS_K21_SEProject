@@ -8,6 +8,6 @@ public record SendMessageRequest(
         String serverId,
         String channelId,
         String content,
-        List<String> attachments
-        
+        List<String> attachments,
+        List<String> mentions
 ) {}

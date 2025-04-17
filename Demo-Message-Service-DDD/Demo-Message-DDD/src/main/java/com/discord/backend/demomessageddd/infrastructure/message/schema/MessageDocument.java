@@ -19,9 +19,11 @@ public class MessageDocument {
     private String channelId;
     private String content;
     private List<String> attachments;
+    private List<String> mentions;
     private String timestamp;
 
-    public MessageDocument() {}
+    public MessageDocument() {
+    }
 
     public MessageDocument(Message message) {
         this.messageId = message.getMessageId();
@@ -30,6 +32,7 @@ public class MessageDocument {
         this.channelId = message.getChannelId();
         this.content = message.getContent().getText();
         this.attachments = message.getAttachments();
+        this.mentions = message.getMentions();
         this.timestamp = message.getTimestamp();
     }
 
@@ -56,6 +59,8 @@ public class MessageDocument {
     public List<String> getAttachments() {
         return attachments;
     }
+
+    public List<String> getMentions() { return mentions; }
 
     public String getTimestamp() {
         return timestamp;
@@ -89,14 +94,4 @@ public class MessageDocument {
         this.timestamp = timestamp;
     }
 
-    public Message toDomain() {
-        return new Message(
-                messageId,
-                senderId,
-                serverId,
-                channelId,
-                new MessageContent(content),
-                attachments
-        );
-    }
 }

@@ -26,8 +26,9 @@ public class MessageController {
     // là gửi broadcast đến tất cả các client đang subscribe đến topic này
     @PostMapping
     public Message sendMessage(@RequestBody SendMessageRequest request) {
+
         Message message = sendMessageUseCase.execute(request.messageId(), request.senderId(), request.serverId(),
-                request.channelId(), request.content(), request.attachments());
+                request.channelId(), request.attachments(), request.mentions(), request.content());
         messagingTemplate.convertAndSend(
                 "/topic/server/" + request.serverId() + "/channel/" + request.channelId(),
                 message);
