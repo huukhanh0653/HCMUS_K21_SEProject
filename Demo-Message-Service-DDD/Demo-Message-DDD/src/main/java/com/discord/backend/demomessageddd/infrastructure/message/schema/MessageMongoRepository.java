@@ -1,25 +1,33 @@
 package com.discord.backend.demomessageddd.infrastructure.message.schema;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import com.discord.backend.demomessageddd.domain.entity.Message;
-import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
 
 import java.util.List;
 
 public interface MessageMongoRepository extends MongoRepository<MessageDocument, String> {
 
-    List<Message> findByChannel(String serverId, String channelId);
+    @Query("{ 'serverId': ?0, 'channelId': ?1, 'timestamp': { $lt: ?2 } }")
+    List<MessageDocument> findByServerIdAndChannelId(String serverId, String channelId, String timestamp);
 
-    long countByChannel(String serverId, String channelId, String timestamp);
+    @Query(value = "{ 'serverId': ?0, 'channelId': ?1, 'timestamp': { $lt: ?2 } }", count = true)
+    long countByServerIdAndChannelIdAndTimestamp(String serverId, String channelId, String timestamp);
 
-    void deleteByChannel(String serverId, String channelId, String timestamp);
+    @Query("{ 'serverId': ?0, 'channelId': ?1 }")
+    void deleteByServerIdAndChannelId(String serverId, String channelId);
 
-    void deleteByServer(String serverId, String timestamp);
+    @Query("{ 'serverId': ?0 }")
+    void deleteByServerId(String serverId);
 
-    void deleteById(String messageId, String timestamp);
+    @SuppressWarnings("null")
+    @Query("{ '_id': ?0 }")
+    void deleteById(String messageId);
 
-    void editById(String messageId, String timestamp, MessageContent message);
+    @Query("{ '_id': ?0, 'timestamp': { $lt: ?1 } }")
+    void editById(String messageId, String timestamp, String message);
 
-    List<Message> findByContent(String content, String timestamp, int amount, String serverId, String channelId);
+    @Query("{ 'content': ?0, 'serverId': ?1, 'channelId': ?2 }")
+    List<MessageDocument> findByContent(String content, String serverId, String channelId);
 }

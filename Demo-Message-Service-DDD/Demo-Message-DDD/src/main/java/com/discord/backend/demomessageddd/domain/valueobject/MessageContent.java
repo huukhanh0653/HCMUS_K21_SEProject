@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class MessageContent {
+
     private final String text;
 
     public MessageContent(String text) {

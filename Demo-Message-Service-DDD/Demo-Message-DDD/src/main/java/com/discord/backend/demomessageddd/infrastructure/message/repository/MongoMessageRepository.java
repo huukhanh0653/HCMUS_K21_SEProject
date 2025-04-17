@@ -7,7 +7,6 @@ import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageD
 import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageMongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,65 +30,63 @@ public class MongoMessageRepository implements MessageRepository {
     // contentText, List<String> attachments
 
     @Override
-    public List<Message> findByChannel(String serverId, String channelId, long amount, long offset) {
+    public List<Message> findByChannelBeforeTimeStamp(String serverId, String channelId, long amount,
+                                                      String timestamp) {
         System.out.println(
                 "MongoMessageRepository findByChannel called with serverId: " + serverId + ", channelId: " + channelId);
 
-        return mongoRepository.findByChannel(serverId, channelId)
+        return mongoRepository.findByServerIdAndChannelId(serverId, channelId, timestamp)
                 .stream()
-                .skip(offset) // Apply pagination offset
                 .limit(amount) // Apply pagination limit
-                .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(), doc.getChannelId(),
-                        new MessageContent(doc.getContent().getText()), doc.getAttachments()))
+                .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(),
+                        doc.getChannelId(), doc.getAttachments(), doc.getMentions(), new MessageContent(doc.getContent())))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public long countByChannel(String serverId, String channelId, String timestamp) {
+    public long countByChannelBeforeTimeStamp(String serverId, String channelId, String timestamp) {
         System.out.println("MongoMessageRepository countByChannel called with serverId: " + serverId + ", channelId: "
-                + channelId + ", timestamp: " + timestamp);
-        return mongoRepository.countByChannel(serverId, channelId, timestamp);
+                + channelId);
+        return mongoRepository.countByServerIdAndChannelIdAndTimestamp(serverId, channelId, timestamp);
     }
 
     @Override
-    public void deleteByChannel(String serverId, String channelId, String timestamp) {
+    public void deleteByChannel(String serverId, String channelId) {
         System.out.println("MongoMessageRepository deleteByChannel called with serverId: " + serverId + ", channelId: "
-                + channelId + ", timestamp: " + timestamp);
-        mongoRepository.deleteByChannel(serverId, channelId, timestamp);
+                + channelId);
+        mongoRepository.deleteByServerIdAndChannelId(serverId, channelId);
     }
 
     @Override
-    public void deleteByServer(String serverId, String timestamp) {
-        System.out.println("MongoMessageRepository deleteByServer called with serverId: " + serverId + ", timestamp: "
-                + timestamp);
-        mongoRepository.deleteByServer(serverId, timestamp);
+    public void deleteByServer(String serverId) {
+        System.out.println("MongoMessageRepository deleteByServer called with serverId: " + serverId);
+        mongoRepository.deleteByServerId(serverId);
     }
 
     @Override
-    public void deleteById(String messageId, String timestamp) {
-        System.out.println("MongoMessageRepository deleteById called with messageId: " + messageId + ", timestamp: "
-                + timestamp);
-        mongoRepository.deleteById(messageId, timestamp);
+    public void deleteById(String messageId) {
+        System.out.println("MongoMessageRepository deleteById called with messageId: " + messageId);
+        mongoRepository.deleteById(messageId);
     }
 
     @Override
-    public void editById(String messageId, String timestamp, String message) {
-        System.out.println("MongoMessageRepository editById called with messageId: " + messageId + ", timestamp: "
-                + timestamp + ", message: " + message);
+    public void editById(String messageId, String message, String timestamp) {
 
-        mongoRepository.editById(messageId, timestamp, new MessageContent(message));
+        System.out.println(
+                "MongoMessageRepository editById called with messageId: " + messageId + ", message: " + message);
+
+        mongoRepository.editById(messageId, timestamp, new MessageContent(message).getText());
     }
 
     @Override
-    public List<Message> findByContent(String content, String timestamp, int amount, String serverId,
-            String channelId) {
-        System.out.println("MongoMessageRepository findByContent called with content: " + content + ", timestamp: "
-                + timestamp + ", amount: " + amount + ", serverId: " + serverId + ", channelId: " + channelId);
+    public List<Message> findByContent(String content, String serverId, String channelId) {
 
-        return mongoRepository.findByContent(content, timestamp, amount, serverId, channelId)
+        System.out.println("MongoMessageRepository findByContent called with content: " + content + ", serverId: "
+                + serverId + ", channelId: " + channelId);
+        return mongoRepository.findByContent(content, serverId, channelId)
                 .stream()
-                .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(), doc.getChannelId(),
-                        new MessageContent(doc.getContent().getText()), doc.getAttachments()))
+                .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(),
+                        doc.getChannelId(), doc.getAttachments(), doc.getMentions(), new MessageContent(doc.getContent())))
                 .collect(Collectors.toList());
     }
 

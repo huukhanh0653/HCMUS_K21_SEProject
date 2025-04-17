@@ -3,8 +3,6 @@ package com.discord.backend.demomessageddd.interfaceadapter.controller.graphql;
 import com.discord.backend.demomessageddd.domain.entity.Message;
 import com.discord.backend.demomessageddd.domain.valueobject.FetchMessage;
 import com.discord.backend.demomessageddd.application.service.FetchMessageUseCase;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;

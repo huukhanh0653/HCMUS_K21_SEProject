@@ -5,19 +5,20 @@ import com.discord.backend.demomessageddd.domain.entity.Message;
 import java.util.List;
 
 public interface MessageRepository {
+
     void save(Message message);
 
-    List<Message> findByChannel(String serverId, String channelId, long amount, long offset);
+    List<Message> findByChannelBeforeTimeStamp(String serverId, String channelId, long amount, String timestamp);
 
-    long countByChannel(String serverId, String channelId, String timestamp);
+    long countByChannelBeforeTimeStamp(String serverId, String channelId, String timestamp);
 
-    void deleteByChannel(String serverId, String channelId, String timestamp);
+    void deleteByChannel(String serverId, String channelId);
 
-    void deleteByServer(String serverId, String timestamp);
+    void deleteByServer(String serverId);
 
-    void deleteById(String messageId, String timestamp);
+    void deleteById(String messageId);
 
     void editById(String messageId, String timestamp, String message);
 
-    List<Message> findByContent(String content, String timestamp, int amount, String serverId, String channelId);
+    List<Message> findByContent(String content, String serverId, String channelId);
 }
