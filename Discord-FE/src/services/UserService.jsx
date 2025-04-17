@@ -140,26 +140,35 @@ export const getUsers = async () => {
 };
 
 /**
- * Cấm user theo ID
- * @param {string} userId
- * @returns {Promise<Object>}
- */
-export const banUser = async (userId) => {
-  const response = await axios.delete(`${User_API}/api/users/${userId}`, {
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.data;
-};
-
-/**
  * Tạo user mới trong hệ thống.
- * @param {Object} userData - Chứa các thuộc tính uid, email, username, password, phone.
+ * @param {Object} userData - Chứa các thuộc tính của user.
  */
 const createUser = async (userData) => {
   try {
     const response = await axios.post(`${User_API}/api/users`, userData, {
       headers: { "Content-Type": "application/json" },
     });
+    return response;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
+};
+
+/**
+ * Sửa thông tin user trong hệ thống.
+ * @param {string} userId
+ * @param {Object} userData - Chứa các thuộc tính của user.
+ */
+const updateUser = async (userId, userData) => {
+  try {
+    const response = await axios.put(
+      `${User_API}/api/users/${userId}`,
+      userData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
     return response;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -183,8 +192,8 @@ const UserService = {
   getUserByID,
   getUserByEmail,
   getUsers,
-  banUser,
   createUser,
+  updateUser,
 };
 
 export default UserService;

@@ -245,7 +245,8 @@ export default function FriendList() {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
           <div className={`${modalContainerClasses} p-4 rounded shadow-md`}>
             <p className="mb-4">
-              {t("Are you sure you want to unfriend this person?")}
+              {t("Are you sure you want to")} {t("unfriend")}{" "}
+              {t("this person?")}
             </p>
             <div className="flex justify-end gap-2">
               <button

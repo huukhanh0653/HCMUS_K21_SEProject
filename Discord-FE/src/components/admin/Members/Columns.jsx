@@ -1,13 +1,13 @@
 "use client";
 
-import { ArrowUpDown, Ban } from "lucide-react";
+import { ArrowUpDown, Ban, Unlock } from "lucide-react";
 import { Button } from "../../ui/button";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import defaultAvatar from "../../../assets/discord-logo.png";
 import toast from "react-hot-toast";
 
-export const columns = ({ onBan }) => {
+export const columns = ({ onBan, onUnban }) => {
   const { t } = useTranslation();
   return [
     {
@@ -75,20 +75,13 @@ export const columns = ({ onBan }) => {
           {t("Avatar")}
         </span>
       ),
-      cell: ({ row }) =>
-        row.original.avatar ? (
-          <img
-            src={row.original.avatar}
-            alt="Avatar"
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hidden md:block border border-gray-200"
-          />
-        ) : (
-          <img
-            src={defaultAvatar}
-            alt="Avatar"
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hidden md:block border border-gray-200"
-          />
-        ),
+      cell: ({ row }) => (
+        <img
+          src={row.original.avatar || defaultAvatar}
+          alt="Avatar"
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hidden md:block border border-gray-200"
+        />
+      ),
     },
     {
       accessorKey: "status",
@@ -116,23 +109,41 @@ export const columns = ({ onBan }) => {
       cell: ({ row }) => {
         const member = row.original;
         return (
-          member.status !== "banned" && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                try {
-                  onBan(member.id);
-                } catch (error) {
-                  toast.error(t("Failed to ban member"));
-                }
-              }}
-              className="p-1 sm:p-2"
-              title={t("Ban member")}
-            >
-              <Ban className="h-3 sm:h-4 w-3 sm:w-4" />
-            </Button>
-          )
+          <>
+            {member.status === "banned" ? (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  try {
+                    onUnban(member.id);
+                  } catch (error) {
+                    toast.error(t("Failed to unban member"));
+                  }
+                }}
+                className="p-1 sm:p-2 bg-green-500"
+                title={t("Unban member")}
+              >
+                <Unlock className="h-3 sm:h-4 w-3 sm:w-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  try {
+                    onBan(member.id);
+                  } catch (error) {
+                    toast.error(t("Failed to ban member"));
+                  }
+                }}
+                className="p-1 sm:p-2"
+                title={t("Ban member")}
+              >
+                <Ban className="h-3 sm:h-4 w-3 sm:w-4" />
+              </Button>
+            )}
+          </>
         );
       },
     },
