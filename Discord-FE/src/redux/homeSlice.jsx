@@ -13,6 +13,9 @@ const initialState = {
   pendingRequests: [],
   prevRequests: [],
   newRequests: [],
+
+  voiceChannel: null, // lưu thông tin kênh voice đang join (serverId, serverName, channelId, channelName)
+  isMuted: false,     // trạng thái mic
 };
 
 const homeSlice = createSlice({
@@ -88,6 +91,22 @@ const homeSlice = createSlice({
         (req) => req.id !== requestID
       );
     },
+
+    // Tham gia Voice Channel
+    joinVoiceChannel(state, action) {
+      // payload = { serverId, serverName, channelId, channelName }
+      state.voiceChannel = action.payload;
+      state.isMuted = false; // mặc định unmute khi join kênh mới
+    },
+    // Rời Voice Channel
+    leaveVoiceChannel(state) {
+      state.voiceChannel = null;
+      state.isMuted = false;
+    },
+    // Tắt/Bật mic
+    toggleMute(state) {
+      state.isMuted = !state.isMuted;
+    },
   },
 });
 
@@ -105,6 +124,9 @@ export const {
   setPrevRequests,
   setNewRequests,
   removeRequest,
+  joinVoiceChannel,
+  leaveVoiceChannel,
+  toggleMute,
 } = homeSlice.actions;
 
 export default homeSlice.reducer;

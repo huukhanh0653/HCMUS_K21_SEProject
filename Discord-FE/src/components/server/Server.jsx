@@ -16,7 +16,6 @@ export default function Server({
   user,
   selectedChannel, // Dành cho các kênh text.
   onChannelSelect,
-  setProfileModal,
 }) {
   const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
@@ -56,11 +55,9 @@ export default function Server({
             onChannelSelect={onChannelSelect}
             onProfileClick={() => setProfileModal(true)}
             selectedChannelId={selectedChannel?.id}
+            setChannels={setChannels}
           />
         </Suspense>
-        <div className="border-t border-gray-200 dark:border-[#2b2d31]">
-          <UserPanel user={user} onProfileClick={() => setProfileModal(true)} />
-        </div>
       </div>
 
       {/* Cột giữa: Header và nội dung chính của kênh text */}

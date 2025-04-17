@@ -57,10 +57,8 @@ class FriendService {
 
   async getFriendRequests(user_id) {
     try {
-      console.log(user_id);
-
       if (!user_id) {
-        throw new Error("user_id is required");
+        throw new Error("User id is required");
       }
 
       return await FriendRequest.findAll({
@@ -126,7 +124,7 @@ class FriendService {
   async getFriends(user_id) {
     try {
       if (!user_id) {
-        throw new Error("user_id is required");
+        throw new Error("User id is required");
       }
 
       const friends = await Friend.findAll({

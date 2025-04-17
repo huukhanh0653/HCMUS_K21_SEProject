@@ -4,7 +4,6 @@ package role;
 
 service RoleService {
   rpc CreateRole (CreateRoleRequest) returns (RoleResponse) {}
-  rpc GetRoleById (GetRoleByIdRequest) returns (RoleResponse) {}
   rpc GetRoleByName (GetRoleByNameRequest) returns (RoleResponse) {}
   rpc GetRolesByServer (GetRolesByServerRequest) returns (RoleListResponse) {}
   rpc UpdateRole (UpdateRoleRequest) returns (RoleResponse) {}
@@ -17,10 +16,6 @@ message CreateRoleRequest {
   string color = 3;
   int32 position = 4;
   bool isDefault = 5;
-}
-
-message GetRoleByIdRequest {
-  string roleId = 1;
 }
 
 message GetRoleByNameRequest {

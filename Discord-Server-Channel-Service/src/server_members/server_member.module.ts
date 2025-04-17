@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ServerMember } from './server_member.entity';
+import { Server } from 'src/servers/server.entity';
+import { UserModule } from 'src/users/user.module';
+import { RoleModule } from 'src/roles/role.module';
 import { ServerMemberService } from './server_member.service';
 import { ServerMemberController } from './server_member.controller';
-import { ServerMember } from './server_member.entity';
-import { Server } from '../servers/server.entity';
-import { RoleModule } from '../roles/role.module';
-import { UserModule } from 'src/users/user.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ServerMember, Server]),
-    RoleModule,
     UserModule,
+    RoleModule,
   ],
-  providers: [ServerMemberService],
   controllers: [ServerMemberController],
+  providers: [ServerMemberService],
   exports: [ServerMemberService],
 })
 export class ServerMemberModule {}

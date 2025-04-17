@@ -16,7 +16,7 @@ export class RoleService {
     private serverRepository: Repository<Server>,
   ) {}
 
-  async createRole(serverId: string, data: Partial<RoleDto>) {
+  async createRole(serverId: string, data: RoleDto) {
     const roleDto = plainToClass(RoleDto, data);
     const errors = await validate(roleDto);
     if (errors.length > 0) return { message: `Validation failed: ${errors}` };
@@ -45,7 +45,7 @@ export class RoleService {
     return { message: 'Role created successfully' };
   }
 
-  async updateRole(roleId: string, data: Partial<RoleDto>) {
+  async updateRole(roleId: string, data: RoleDto) {
     const roleDto = plainToClass(RoleDto, data);
     const errors = await validate(roleDto, { skipMissingProperties: true });
     if (errors.length > 0) return { message: `Validation failed: ${errors}` };
@@ -76,14 +76,14 @@ export class RoleService {
     const roles = await this.roleRepository.find({
       where: { server_id: serverId },
     });
-    return roles;
+    return { message: 'Get roles successfully', roles };
   }
 
   async deleteRole(roleId: string) {
     const role = await this.getRoleById(roleId);
     if (!role) return { message: 'Role not found' };
 
-    await this.roleRepository.delete(roleId);
+    await this.roleRepository.delete({ id: roleId });
 
     return { message: 'Role deleted successfully' };
   }

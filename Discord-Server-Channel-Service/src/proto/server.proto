@@ -4,6 +4,7 @@ package server;
 
 service ServerService {
   rpc CreateServer (CreateServerRequest) returns (ServerResponse) {}
+  rpc GetAllServers (GetServersRequest) returns (ServerListResponse) {}
   rpc GetServers (GetServersRequest) returns (ServerListResponse) {}
   rpc UpdateServer (UpdateServerRequest) returns (ServerResponse) {}
   rpc DeleteServer (DeleteServerRequest) returns (ServerResponse) {}
@@ -44,5 +45,6 @@ message ServerResponse {
 }
 
 message ServerListResponse {
-  repeated GetServerResponse servers = 1;
+  string message = 1;
+  repeated GetServerResponse servers = 2;
 }

@@ -20,11 +20,7 @@ export class ServerMemberService {
     private roleService: RoleService,
   ) {}
 
-  async addMember(
-    serverId: string,
-    userId: string,
-    data: Partial<ServerMemberDto>,
-  ) {
+  async addMember(serverId: string, userId: string, data: ServerMemberDto) {
     const serverMemberDto = plainToClass(ServerMemberDto, data);
     const errors = await validate(serverMemberDto);
     if (errors.length > 0) return { message: `Validation failed: ${errors}` };
@@ -36,11 +32,8 @@ export class ServerMemberService {
     if (server.owner_id !== userId)
       return { message: 'Only the owner can add members' };
 
-    let role: any;
-    if (data.roleId) {
-      role = await this.roleService.getRoleById(data.roleId);
-      if (!role) return { message: 'Role not found' };
-    }
+    const role = await this.roleService.getRoleByName(serverId, data.role!);
+    if (!role) return { message: 'Role not found' };
 
     const memberToAdd = await this.userService.getUser(data.memberId!);
     if (!memberToAdd) return { message: 'User to add not found' };
@@ -53,7 +46,7 @@ export class ServerMemberService {
     const member = this.serverMemberRepository.create({
       server_id: serverId,
       user_id: data.memberId,
-      role_id: data.roleId,
+      role_id: role.id,
     });
 
     await this.serverMemberRepository.save(member);
@@ -103,11 +96,8 @@ export class ServerMemberService {
     if (server.owner_id !== userId)
       return { message: 'Only the owner can update member roles' };
 
-    let role: any;
-    if (data.roleId) {
-      role = await this.roleService.getRoleById(data.roleId);
-      if (!role) return { message: 'Role not found' };
-    }
+    const role = await this.roleService.getRoleByName(serverId, data.role!);
+    if (!role) return { message: 'Role not found' };
 
     const member = await this.serverMemberRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
@@ -115,7 +105,7 @@ export class ServerMemberService {
     if (!member) return { message: 'User is not a member' };
 
     await this.serverMemberRepository.update(member.id, {
-      role_id: data.roleId,
+      role_id: role.id,
     });
 
     const memberToUpdate = await this.userService.getUser(data.memberId);
@@ -124,20 +114,22 @@ export class ServerMemberService {
     };
   }
 
-  async searchMember(serverId: string, userId: string, query: string) {
-    const user = await this.userService.getUser(userId);
-    if (!user) return [];
+  async getMemberById(serverId: string, userId: string) {
+    const member = await this.serverMemberRepository.findOne({
+      where: { server_id: serverId, user_id: userId },
+    });
+    return member;
+  }
 
+  async searchMember(serverId: string, query: string) {
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return [];
+    if (!server) return { message: 'Server not found', members: [] };
 
     const members = await this.serverMemberRepository.find({
       where: { server_id: serverId },
     });
-    if (!members) return [];
-
     const users = await this.userService.getUsers();
 
     const filteredMembers = members.filter((member) => {
@@ -145,6 +137,6 @@ export class ServerMemberService {
       return user && user.username.toLowerCase().includes(query.toLowerCase());
     });
 
-    return filteredMembers;
+    return { message: 'Get members successfully', members: filteredMembers };
   }
 }
