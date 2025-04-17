@@ -1,12 +1,19 @@
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "../../ui/button";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import defaultAvatar from "../../../assets/discord-logo.png";
 
-export const columns = () => {
+export const columns = (
+  showActions = false,
+  setEditServerOpen,
+  setCurrentServer,
+  handleOpenDeleteModal,
+  userId
+) => {
   const { t } = useTranslation();
 
-  return [
+  const baseColumns = [
     {
       accessorKey: "num",
       header: ({ column }) => (
@@ -66,6 +73,21 @@ export const columns = () => {
       ),
     },
     {
+      accessorKey: "server_pic",
+      header: () => (
+        <span className="text-xs sm:text-sm hidden md:block">
+          {t("Server picture")}
+        </span>
+      ),
+      cell: ({ row }) => (
+        <img
+          src={row.original.server_pic || defaultAvatar}
+          alt="Picture"
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hidden md:block border border-gray-200"
+        />
+      ),
+    },
+    {
       accessorKey: "created_at",
       header: ({ column }) => (
         <Button
@@ -86,5 +108,40 @@ export const columns = () => {
         </span>
       ),
     },
+    {
+      accessorKey: "actions",
+      header: () => <span className="text-xs sm:text-sm">{t("Actions")}</span>,
+      cell: ({ row }) => {
+        const isOwner = row.original.owner_id === userId;
+        if (showActions || isOwner) {
+          return (
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setCurrentServer(row.original);
+                  setEditServerOpen(true);
+                }}
+                title={t("Edit")}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleOpenDeleteModal(row.original)}
+                title={t("Delete")}
+              >
+                <Trash2 className="h-4 w-4 text-red-500" />
+              </Button>
+            </div>
+          );
+        }
+        return null;
+      },
+    },
   ];
+
+  return baseColumns;
 };

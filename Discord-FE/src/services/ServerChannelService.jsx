@@ -71,6 +71,23 @@ const getServers = async (userId, query) => {
 };
 
 /**
+ * Lấy một server theo ID.
+ * @param {string} serverId - ID của server.
+ * @returns {Promise<Object>}
+ */
+const getServerById = async (serverId, query) => {
+  try {
+    const response = await axios.get(`${Server_API}/servers/${serverId}`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching server:", error);
+    throw error;
+  }
+};
+
+/**
  * Cập nhật thông tin server.
  * @param {string} serverId - ID của server.
  * @param {string} userId - ID của người dùng.
@@ -483,6 +500,7 @@ const ServerChannelService = {
   createServer,
   getAllServers,
   getServers,
+  getServerById,
   updateServer,
   deleteServer,
 

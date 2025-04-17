@@ -13,7 +13,7 @@ const router = express.Router();
  * @swagger
  * /api/users/sync-firebase:
  *   post:
- *     summary: Sync Firebase users with MongoDB
+ *     summary: Sync Firebase users with Postgres
  *     tags: [Users]
  *     responses:
  *       200:

@@ -16,15 +16,32 @@ import {
 } from "../ui/breadcrumb";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { useTranslation } from "react-i18next";
 import adminAvatar from "../../assets/admin-avatar.png";
+import UserService from "../../services/UserService";
 
 export default function AdminHeader() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const userId = JSON.parse(localStorage.getItem("user"))?.id;
+  const [user, setUser] = useState({ username: "", avatar: "" });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await UserService.getUserByID(userId);
+        setUser(userData);
+      } catch (error) {
+        setError(t("Failed to load user data"));
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
   // Handle Logout
   const handleLogout = async () => {
     const auth = getAuth();
@@ -67,7 +84,7 @@ export default function AdminHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <img
-                  src={adminAvatar}
+                  src={user.avatar || adminAvatar}
                   width="32"
                   height="32"
                   className="rounded-full"
@@ -77,17 +94,12 @@ export default function AdminHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>John Doe</DropdownMenuLabel>
+              <DropdownMenuLabel>{user.username}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => navigate("/admin/account/profile")}
               >
                 {t("Profile")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate("/admin/account/settings")}
-              >
-                {t("Settings")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>

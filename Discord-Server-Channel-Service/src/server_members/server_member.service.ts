@@ -8,6 +8,7 @@ import { RoleService } from '../roles/role.service';
 import { ServerMemberDto } from './server_member.dto';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import { ChannelMember } from 'src/channel_members/channel_member.entity';
 
 @Injectable()
 export class ServerMemberService {
@@ -16,6 +17,8 @@ export class ServerMemberService {
     private serverMemberRepository: Repository<ServerMember>,
     @InjectRepository(Server)
     private serverRepository: Repository<Server>,
+    @InjectRepository(ChannelMember)
+    private channelMemberRepository: Repository<ChannelMember>,
     private userService: UserService,
     private roleService: RoleService,
   ) {}
@@ -70,6 +73,7 @@ export class ServerMemberService {
     });
     if (!member) return { message: 'User is not a member' };
 
+    await this.channelMemberRepository.delete({ user_id: memberId });
     await this.serverMemberRepository.delete({ user_id: memberId });
 
     const memberToRemove = await this.userService.getUser(memberId);

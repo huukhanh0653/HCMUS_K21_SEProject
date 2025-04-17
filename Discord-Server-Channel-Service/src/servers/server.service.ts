@@ -100,6 +100,14 @@ export class ServerService {
     return { message: 'Get servers successfully', servers };
   }
 
+  async getServerById(serverId: string) {
+    const server = await this.serverRepository.findOne({
+      where: { id: serverId },
+    });
+
+    return { message: 'Get server successfully', server };
+  }
+
   async deleteServer(serverId: string, userId: string) {
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
