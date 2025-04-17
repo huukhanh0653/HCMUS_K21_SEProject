@@ -1,8 +1,8 @@
 package com.discord.backend.demomessageddd.interfaceadapter.controller.graphql;
 
 import com.discord.backend.demomessageddd.domain.entity.Message;
-import com.discord.backend.demomessageddd.domain.repository.CacheMessageRepository;
-import com.discord.backend.demomessageddd.domain.repository.MessageRepository;
+import com.discord.backend.demomessageddd.domain.valueobject.FetchMessage;
+import com.discord.backend.demomessageddd.application.service.FetchMessageUseCase;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -14,20 +14,28 @@ import java.util.List;
 @Controller
 public class MessageQueryResolver {
 
-    private final MessageRepository messageRepository;
-    private final CacheMessageRepository cacheMessageRepository;
+    private final FetchMessageUseCase fetchMessageUseCase;
 
-    public MessageQueryResolver(MessageRepository messageRepository, CacheMessageRepository cacheMessageRepository) {
-        this.messageRepository = messageRepository;
-        this.cacheMessageRepository = cacheMessageRepository;
+    public MessageQueryResolver(FetchMessageUseCase fetchMessageUseCase) {
+        this.fetchMessageUseCase = fetchMessageUseCase;
     }
 
+    /**
+     * Fetches messages from a specific channel.
+     *
+     * @param serverId  The ID of the server.
+     * @param channelId The ID of the channel.
+     * @param amount    The number of messages to fetch.
+     * @param timestamp The timestamp to fetch messages from.
+     * @return A list of messages.
+     */
     @QueryMapping
-    public List<Message> findByServerIdAndChannelIdAndTimestampBefore(@Argument String serverId, @Argument String channelId,
-                                     @Argument long offset, @Argument long limit) {
-        System.out.println("MessageQueryResolver messages called with serverId: " + serverId);
-        Pageable pageable = PageRequest.of((int) offset, (int) limit); // Chuyển offset và limit thành Pageable
-        return messageRepository.findByServerIdAndChannelIdAndTimestampBefore(serverId, channelId, offset, pageable);
+    public FetchMessage fetchMessages(@Argument String serverId,
+            @Argument String channelId,
+            @Argument int amount,
+            @Argument String timestamp) {
+        System.out.println("MessageQueryResolver fetchMessages called with serverId: " + serverId);
+        return fetchMessageUseCase.execute(serverId, channelId, amount, timestamp);
     }
 
 }

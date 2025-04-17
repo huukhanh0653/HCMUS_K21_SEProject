@@ -31,13 +31,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # - name: Build and Push User Service
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: ./Discord-User-Service
-      #     file: ./Discord-User-Service/Dockerfile
-      #     push: true
-      #     tags: huukhanh0653/echo-chat-user-service:latest
+      - name: Build and Push User Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Discord-User-Service-Postgres
+          file: ./Discord-User-Service-Postgres/Dockerfile
+          push: true
+          tags: huukhanh0653/echo-chat-user-service:latest
 
       - name: Build and Push Message Service
         uses: docker/build-push-action@v4
