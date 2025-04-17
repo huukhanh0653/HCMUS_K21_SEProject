@@ -20,6 +20,14 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "kubernetes"
+            - name: REDIS_USERNAME
+              value: default
+            - name: REDIS_PASSWORD
+              value: Pe5yLucM7SNhDOwyg6sjvc9Vpa3kg5km
+            - name: REDIS_HOST
+              value: redis-11124.fcrce171.ap-south-1-1.ec2.redns.redis-cloud.com
+            - name: REDIS_PORT
+              value: "11124"
           resources:
             requests:
               cpu: "500m"        # CPU request giảm nhẹ hơn
@@ -37,8 +45,8 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8085
-            initialDelaySeconds: 30    # Delay trước khi thực hiện liveness
-            periodSeconds: 10          # Kiểm tra sống định kỳ
+            initialDelaySeconds: 30
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
