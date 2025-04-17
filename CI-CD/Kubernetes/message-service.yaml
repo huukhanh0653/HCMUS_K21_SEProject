@@ -30,6 +30,25 @@ spec:
               value: redis-11124.fcrce171.ap-south-1-1.ec2.redns.redis-cloud.com
             - name: REDIS_PORT
               value: "11124"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 15
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
@@ -42,4 +61,4 @@ spec:
     - protocol: TCP
       port: 8082
       targetPort: 8082
-  type: ClusterIP  # Exposes the service internally within the cluster
+  type: LoadBalancer

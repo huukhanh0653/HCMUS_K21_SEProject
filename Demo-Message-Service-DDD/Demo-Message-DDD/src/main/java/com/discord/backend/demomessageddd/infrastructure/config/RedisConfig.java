@@ -21,6 +21,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int redisPort;
 
+    @Value("${spring.data.redis.password}")
+    private String redisPassword;
+
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
@@ -32,8 +35,19 @@ public class RedisConfig {
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
-        // Log if connection is successful
-        System.out.println("Connecting to Redis at: " + redisHost + ":" + redisPort);
-        return new LettuceConnectionFactory(redisHost, redisPort);
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(redisHost, redisPort);
+        factory.setPassword(redisPassword);
+        factory.setShareNativeConnection(false); // Ensure a new connection is created for each request
+        factory.setValidateConnection(true); // Validate the connection before using it
+        factory.setTimeout(5000); // Set a timeout for the connection
+        factory.setShutdownTimeout(1000); // Set a timeout for shutting down the connection
+// Log connection details
+        try {
+            factory.afterPropertiesSet(); // Initialize the connection factory
+            System.out.println("Redis connection factory is successfully connected");
+        } catch (Exception e) {
+            System.err.println("Redis connection factory failed to connect: " + e.getMessage());
+        }
+        return factory;
     }
 }

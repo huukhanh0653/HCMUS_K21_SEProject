@@ -30,21 +30,24 @@ spec:
               value: "11124"
           resources:
             requests:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "500m"        # CPU request giảm nhẹ hơn
+              memory: "512Mi"     # Memory request cho stable performance
             limits:
-              cpu: "1000m"
-              memory: "1Gi"
+              cpu: "1000m"       # Giới hạn CPU với giá trị thích hợp
+              memory: "1Gi"      # Giới hạn bộ nhớ vừa đủ để tránh OOM
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8085
+            initialDelaySeconds: 15    # Thời gian chờ ban đầu (để service khởi động)
+            periodSeconds: 10          # Kiểm tra sống định kỳ sau mỗi 10s
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: 8085
             initialDelaySeconds: 30
             periodSeconds: 10
-
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -56,4 +59,4 @@ spec:
     - protocol: TCP
       port: 8085
       targetPort: 8085
-  type: ClusterIP  # Exposes the service internally within the cluster
+  type: LoadBalancer  # Exposes the service internally within the cluster

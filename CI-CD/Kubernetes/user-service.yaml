@@ -5,7 +5,7 @@ metadata:
   labels:
     app: echo-chat-user-service
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: echo-chat-user-service
@@ -20,8 +20,6 @@ spec:
           ports:
             - containerPort: 8081
           env:
-            # - name: FIREBASE_SERVICE_ACCOUNT_KEY
-            #   value: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
             - name: FIREBASE_SERVICE_ACCOUNT_KEY
               valueFrom:
                 configMapKeyRef:
@@ -29,6 +27,26 @@ spec:
                   key: firebase-service-account-key.json
             - name: MONGO_STRING_CONNECTION
               value: mongodb+srv://ltgiang21:hySGOZ65nKuLhboI@cluster0.xe3sy.mongodb.net/?retryWrites=true&w=majority&appName=cluster0
+          resources:
+            requests:
+              cpu: "500m"        # Yêu cầu tài nguyên CPU tối thiểu
+              memory: "512Mi"    # Yêu cầu bộ nhớ tối thiểu
+            limits:
+              cpu: "1000m"       # Giới hạn tài nguyên CPU tối đa
+              memory: "1Gi"      # Giới hạn bộ nhớ tối đa
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
 ---
 apiVersion: v1
 kind: Service
@@ -41,4 +59,4 @@ spec:
     - protocol: TCP
       port: 8081
       targetPort: 8081
-  type: ClusterIP  # Exposes the service internally within the cluster
+  type: LoadBalancer
