@@ -31,12 +31,10 @@ public class MongoMessageRepository implements MessageRepository {
     // contentText, List<String> attachments
 
     @Override
-    public List<Message> findByChannel(String serverId, String channelId, long offset, long limit) {
+    public List<Message> findByChannel(String serverId, String channelId, int amount, String timestamp); {
         System.out.println("MongoMessageRepository findByChannel called with serverId: " + serverId + ", channelId: " + channelId);
 
-        Instant fifteenDaysAgo = Instant.now().minusSeconds(15 * 24 * 60 * 60); // 15 days in seconds
-
-        return mongoRepository.findByChannel(serverId, channelId, )
+        return mongoRepository.findByChannel(serverId,channelId,timestamp);
                 .stream()
                 .skip(offset) // Apply pagination offset
                 .limit(limit) // Apply pagination limit

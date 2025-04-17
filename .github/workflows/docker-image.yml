@@ -55,13 +55,13 @@ jobs:
           push: true
           tags: huukhanh0653/echo-chat-manage-server:latest
 
-      # - name: Build and Push GCS Service
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: ./Discord-GCS-Service
-      #     file: ./Discord-GCS-Service/Dockerfile
-      #     push: true
-      #     tags: huukhanh0653/echo-chat-gcs-service:latest
+      - name: Build and Push GCS Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Discord-GCS-Service
+          file: ./Discord-GCS-Service/Dockerfile
+          push: true
+          tags: huukhanh0653/echo-chat-gcs-service:latest
       
       - name: Build and Push Front-end Service
         uses: docker/build-push-action@v4
@@ -71,10 +71,10 @@ jobs:
           push: true
           tags: huukhanh0653/echo-chat-front-end-service:latest
 
-      # - name: Build and Push Notification Service
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: ./Discord-Notification-Service
-      #     file: ./Discord-Notification-Service/Dockerfile
-      #     push: true
-      #     tags: huukhanh0653/echo-chat-notification-service:latest
+      - name: Build and Push Notification Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Discord-Notification-Service
+          file: ./Discord-Notification-Service/Dockerfile
+          push: true
+          tags: huukhanh0653/echo-chat-notification-service:latest

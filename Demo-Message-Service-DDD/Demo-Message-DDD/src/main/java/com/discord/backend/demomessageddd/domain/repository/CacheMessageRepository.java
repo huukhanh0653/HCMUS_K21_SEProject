@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface CacheMessageRepository {
     void save(Message message);
-    List<Message> findCache(String serverId, String channelId, long offset, long limit);
+    List<Message> findByChannel(String serverId, String channelId, int amount, String timestamp);
 }
