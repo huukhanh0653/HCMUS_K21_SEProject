@@ -14,7 +14,6 @@ const DMSidebar = ({
   friends,
   handleFriendAction,
   getStatusColor,
-  onProfileClick,
   user
 }) => {
   const { t } = useTranslation();
@@ -135,7 +134,7 @@ const DMSidebar = ({
       </div>
 
       {/* Friends List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-16">
         <div className="px-2 py-1">
           {friends.map((friend, index) => (
             <FriendContextMenu key={index} friend={friend} onAction={handleFriendAction}>
@@ -175,9 +174,6 @@ const DMSidebar = ({
           ))}
         </div>
       </div>
-
-      {/* User Panel */}
-      <UserPanel user={user} onProfileClick={onProfileClick} />
     </div>
   );
 };
