@@ -1,75 +1,75 @@
-name: Deploy to GKE
+# name: Deploy to GKE
+
+# # on:
+# #   workflow_run:
+# #     workflows: ["Build Docker Images"]
+# #     types:
+# #       - completed
 
 # on:
-#   workflow_run:
-#     workflows: ["Build Docker Images"]
-#     types:
-#       - completed
+#   push:
+#     branches: [ "master" ]
+#   pull_request:
+#     branches: [ "master" ]
 
-on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+# jobs:
+#   deploy:
+#     name: Deploy to Google Kubernetes Engine
+#     runs-on: ubuntu-latest
 
-jobs:
-  deploy:
-    name: Deploy to Google Kubernetes Engine
-    runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#       - name: Authenticate to Google Cloud
+#         uses: google-github-actions/auth@v1
+#         with:
+#           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+#       - name: Setup gcloud SDK
+#         uses: google-github-actions/setup-gcloud@v1
+#         with:
+#           project_id: ${{ secrets.GCP_PROJECT_ID }}
+#           install_components: 'gke-gcloud-auth-plugin'
 
-      - name: Setup gcloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          install_components: 'gke-gcloud-auth-plugin'
+#       - name: Get GKE credentials
+#         run: |
+#           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_ZONE }}
 
-      - name: Get GKE credentials
-        run: |
-          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_ZONE }}
+#       - name: Install Helm
+#         uses: azure/setup-helm@v3
 
-      - name: Install Helm
-        uses: azure/setup-helm@v3
+#       # ✅ Cài Strimzi Kafka nếu chưa có
+#       - name: Install Strimzi Kafka Operator (if needed)
+#         run: |
+#           if ! kubectl get crd kafkas.kafka.strimzi.io &> /dev/null; then
+#             echo "Installing Strimzi Kafka Operator..."
+#             kubectl apply -f https://strimzi.io/install/latest?namespace=default -n default
+#           else
+#             echo "Strimzi Kafka Operator already installed."
+#           fi
 
-      # ✅ Cài Strimzi Kafka nếu chưa có
-      - name: Install Strimzi Kafka Operator (if needed)
-        run: |
-          if ! kubectl get crd kafkas.kafka.strimzi.io &> /dev/null; then
-            echo "Installing Strimzi Kafka Operator..."
-            kubectl apply -f https://strimzi.io/install/latest?namespace=default -n default
-          else
-            echo "Strimzi Kafka Operator already installed."
-          fi
+#       # ✅ Cài Ingress Controller nếu chưa có
+#       - name: Install Ingress Controller (if needed)
+#         run: |
+#           if ! kubectl get ns ingress-nginx &> /dev/null; then
+#             echo "Installing ingress-nginx..."
+#             kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.4/deploy/static/provider/cloud/deploy.yaml
+#           else
+#             echo "Ingress controller already exists."
+#           fi
 
-      # ✅ Cài Ingress Controller nếu chưa có
-      - name: Install Ingress Controller (if needed)
-        run: |
-          if ! kubectl get ns ingress-nginx &> /dev/null; then
-            echo "Installing ingress-nginx..."
-            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.4/deploy/static/provider/cloud/deploy.yaml
-          else
-            echo "Ingress controller already exists."
-          fi
+#       # ✅ Cài Redis Cluster nếu chưa có
+#       - name: Install Redis Cluster (if needed)
+#         run: |
+#           if ! kubectl get statefulset redis-cluster &> /dev/null; then
+#             echo "Installing Redis Cluster..."
+#             kubectl apply -f ./CI-CD/Kubernetes/redis/redis-cluster.yaml
+#           else
+#             echo "Redis Cluster already exists."
+#           fi
 
-      # ✅ Cài Redis Cluster nếu chưa có
-      - name: Install Redis Cluster (if needed)
-        run: |
-          if ! kubectl get statefulset redis-cluster &> /dev/null; then
-            echo "Installing Redis Cluster..."
-            kubectl apply -f ./CI-CD/Kubernetes/redis/redis-cluster.yaml
-          else
-            echo "Redis Cluster already exists."
-          fi
-
-      # ✅ Deploy ứng dụng chính
-      - name: Deploy to GKE
-        run: |
-          kubectl apply -f ./CI-CD/Kubernetes/ .
+#       # ✅ Deploy ứng dụng chính
+#       - name: Deploy to GKE
+#         run: |
+#           kubectl apply -f ./CI-CD/Kubernetes/ .

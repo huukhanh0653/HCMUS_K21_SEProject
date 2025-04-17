@@ -1,34 +1,41 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: echo-chat-front-end-service
-  labels:
-    app: echo-chat-front-end-service
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: echo-chat-front-end-service
-  template:
-    metadata:
-      labels:
-        app: echo-chat-front-end-service
-    spec:
-      containers:
-      - name: echo-chat-front-end-service
-        image: huukhanh0653/echo-chat-front-end-service:latest
-        ports:
-        - containerPort: 5173
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: echo-chat-front-end-service
-spec:
-  selector:
-    app: echo-chat-front-end-service
-  ports:
-    - protocol: TCP
-      port: 5173
-      targetPort: 5173
-  type: ClusterIP  # Exposes the service internally within the cluster
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: echo-chat-front-end-service
+#   labels:
+#     app: echo-chat-front-end-service
+# spec:
+#   replicas: 3
+#   selector:
+#     matchLabels:
+#       app: echo-chat-front-end-service
+#   template:
+#     metadata:
+#       labels:
+#         app: echo-chat-front-end-service
+#     spec:
+#       containers:
+#       - name: echo-chat-front-end-service
+#         image: huukhanh0653/echo-chat-front-end-service:latest
+#         ports:
+#         - containerPort: 5173
+#         resources:
+#           requests:
+#             memory: "64Mi"
+#             cpu: "100m"
+#           limits:
+#             memory: "128Mi"
+#             cpu: "200m"
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: echo-chat-front-end-service
+# spec:
+#   selector:
+#     app: echo-chat-front-end-service
+#   ports:
+#     - protocol: TCP
+#       port: 5173
+#       targetPort: 5173
+#   type: LoadBalancer

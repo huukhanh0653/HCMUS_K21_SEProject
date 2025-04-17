@@ -5,7 +5,7 @@ metadata:
   labels:
     app: echo-chat-manage-server-service
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: echo-chat-manage-server-service
@@ -15,17 +15,37 @@ spec:
         app: echo-chat-manage-server-service
     spec:
       containers:
-      - name: echo-chat-manage-server-service
-        image: huukhanh0653/echo-chat-manage-server:latest
-        ports:
-        - containerPort: 8084
-        env:
-        - name: POSTGRES_SINGAPORE_CONNECTION_STRING
-          value: postgresql://postgres.iuaklcffbnuipnfxeshq:_3guQc4jik-zmWs@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
-        - name: ELASTIC_NODE
-          value: https://discord-project-dc6a33.es.us-east-1.aws.elastic.cloud:443
-        - name: ELASTIC_API_KEY
-          value: "aVVlTlpaVUJmdFRLNEtJV19jZHM6QVRxWF82U2FRYjg5WXc0TWt4a0kwdw=="
+        - name: echo-chat-manage-server-service
+          image: huukhanh0653/echo-chat-manage-server:latest
+          ports:
+            - containerPort: 8084
+          env:
+            - name: POSTGRES_SINGAPORE_CONNECTION_STRING
+              value: postgresql://postgres.iuaklcffbnuipnfxeshq:_3guQc4jik-zmWs@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+            - name: ELASTIC_NODE
+              value: https://discord-project-dc6a33.es.us-east-1.aws.elastic.cloud:443
+            - name: ELASTIC_API_KEY
+              value: "aVVlTlpaVUJmdFRLNEtJV19jZHM6QVRxWF82U2FRYjg5WXc0TWt4a0kwdw=="
+          resources:
+            requests:
+              cpu: "500m"        # Yêu cầu tài nguyên CPU tối thiểu
+              memory: "512Mi"    # Yêu cầu bộ nhớ tối thiểu
+            limits:
+              cpu: "1000m"       # Giới hạn tài nguyên CPU tối đa
+              memory: "1Gi"      # Giới hạn bộ nhớ tối đa
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
 ---
 apiVersion: v1
 kind: Service
@@ -38,5 +58,4 @@ spec:
     - protocol: TCP
       port: 8084
       targetPort: 8084
-  type: ClusterIP
----
+  type: LoadBalancer

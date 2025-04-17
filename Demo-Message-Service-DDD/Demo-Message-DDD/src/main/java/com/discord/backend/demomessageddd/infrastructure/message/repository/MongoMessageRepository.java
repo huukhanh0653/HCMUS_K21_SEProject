@@ -7,6 +7,7 @@ import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageD
 import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageMongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,16 +30,20 @@ public class MongoMessageRepository implements MessageRepository {
     // String messageId, String senderId, String serverId, String channelId, String
     // contentText, List<String> attachments
 
-//    @Override
-//    public List<Message> findByChannel(String serverId, String channelId) {
-//
-//        System.out.println("MongoMessageRepository findByChannel called with serverId: " + serverId + ", channelId: " + channelId);
-//
-//        return mongoRepository.findByServerIdAndChannelId(serverId,channelId).stream()
-//                .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(), doc.getChannelId(),
-//                        new MessageContent(doc.getContent()), doc.getAttachments()))
-//                .collect(Collectors.toList());
-//    }
+    @Override
+    public List<Message> findByChannel(String serverId, String channelId, long offset, long limit) {
+        System.out.println("MongoMessageRepository findByChannel called with serverId: " + serverId + ", channelId: " + channelId);
+
+        Instant fifteenDaysAgo = Instant.now().minusSeconds(15 * 24 * 60 * 60); // 15 days in seconds
+
+        return mongoRepository.findByChannel(serverId, channelId, )
+                .stream()
+                .skip(offset) // Apply pagination offset
+                .limit(limit) // Apply pagination limit
+                .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(), doc.getChannelId(),
+                        new MessageContent(doc.getContent()), doc.getAttachments()))
+                .collect(Collectors.toList());
+    }
 
 
 }

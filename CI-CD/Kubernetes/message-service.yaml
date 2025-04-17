@@ -25,9 +25,28 @@ spec:
             - name: REDIS_USERNAME
               value: default
             - name: REDIS_HOST
-              value: localhost
+              value: echo-chat-redis-master.default.svc.cluster.local  # ← Hostname của Redis service nếu chạy trong cluster
             - name: REDIS_PORT
               value: "6379"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 15
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
@@ -40,4 +59,4 @@ spec:
     - protocol: TCP
       port: 8082
       targetPort: 8082
-  type: ClusterIP  # Exposes the service internally within the cluster
+  type: LoadBalancer
