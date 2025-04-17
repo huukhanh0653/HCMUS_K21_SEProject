@@ -75,9 +75,9 @@ const getServers = async (userId, query) => {
  * @param {string} serverId - ID của server.
  * @returns {Promise<Object>}
  */
-const getServerById = async (serverId, query) => {
+const getServerById = async (serverId) => {
   try {
-    const response = await axios.get(`${Server_API}/servers/${serverId}`, {
+    const response = await axios.get(`${Server_API}/servers/${serverId}/one`, {
       headers: { "Content-Type": "application/json" },
     });
     return response.data.data;

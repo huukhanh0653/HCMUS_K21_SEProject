@@ -138,7 +138,7 @@ export class ServerController {
     return this.serverService.getServers(userId, query);
   }
 
-  @Get(':serverId')
+  @Get(':serverId/one')
   @ApiOperation({ summary: 'Get a server by ID' })
   @ApiResponse({ status: 200, description: 'A server with input ID' })
   @ApiParam({ name: 'serverId', description: 'ID of the server' })

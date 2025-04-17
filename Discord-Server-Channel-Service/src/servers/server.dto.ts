@@ -23,6 +23,7 @@ export class ServerDto {
     required: false,
   })
   @IsOptional()
+  @IsString()
   @IsUrl()
   serverPic?: string;
 }

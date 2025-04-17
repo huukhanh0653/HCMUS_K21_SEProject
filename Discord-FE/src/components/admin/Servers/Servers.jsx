@@ -86,14 +86,7 @@ export default function ServerManagement() {
       const configServers = await Promise.all(
         servers.map(async (server) => {
           const owner = await UserService.getUserByID(server.owner_id);
-          return {
-            id: server.id,
-            name: server.name,
-            owner: owner.username,
-            owner_id: server.owner_id,
-            created_at: server.created_at,
-            server_pic: server.server_pic,
-          };
+          return { ...server, owner: owner.username };
         })
       );
 
@@ -133,7 +126,7 @@ export default function ServerManagement() {
     try {
       await ServerChannelService.createServer(userId, {
         name: newServer.serverName,
-        server_pic: newServer.serverPic || undefined,
+        serverPic: newServer.serverPic,
       });
       toast.success(t("Server created successfully"));
       setAddServerOpen(false);
@@ -147,8 +140,9 @@ export default function ServerManagement() {
     try {
       await ServerChannelService.updateServer(updatedServer.id, userId, {
         name: updatedServer.serverName,
-        server_pic: updatedServer.serverPic || undefined,
+        serverPic: updatedServer.serverPic,
       });
+
       toast.success(t("Server updated successfully"));
       setEditServerOpen(false);
       setCurrentServer(null);
@@ -366,9 +360,11 @@ export default function ServerManagement() {
       <Dialog open={deleteServerOpen} onOpenChange={setDeleteServerOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("Confirm Delete")}</DialogTitle>
+            <DialogTitle>
+              {t("Confirm")} {t("delete")}
+            </DialogTitle>
             <DialogDescription>
-              {t("Are you sure you want to delete this server?")}
+              {t("Are you sure you want to")} {t("delete")} server?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
