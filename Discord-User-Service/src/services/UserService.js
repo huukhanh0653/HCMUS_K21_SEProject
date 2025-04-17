@@ -1,21 +1,25 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
-const admin = require("../config/firebaseAdmin"); // Correct import
+const admin = require("../config/firebaseAdmin");
+
 class UserService {
-  async createUser(username, email, password, avatar, isAdmin) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({
-      username,
-      email,
-      password: hashedPassword,
-      avatar,
-      isAdmin,
-    });
-    return user.save();
+  async createUser(username, email, password, avatar, background) {
+    try {
+      const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+      return await User.create({
+        username,
+        email,
+        password: hashedPassword,
+        avatar,
+        background,
+      });
+    } catch (error) {
+      throw new Error(`Failed to create user: ${error.message}`);
+    }
   }
 
   async getAllUsers() {
-    return User.find().select("-password");
+    return await User.findAll({ attributes: { exclude: ["password"] } });
   }
 
   async getAllFirebaseUsers() {
@@ -36,34 +40,20 @@ class UserService {
 
   async syncFirebaseUsers() {
     try {
-      User.deleteMany({}); // Clear the User collection before syncing
-      const firebaseUsers = await this.getAllFirebaseUsers(); // Ensure this works
-<<<<<<< HEAD
-      const emails = firebaseUsers.map(user => user.email);
-      const existingUsers = await User.find({ email: { $in: emails } }); // Fetch all at once
-      const existingEmails = new Set(existingUsers.map(user => user.email));
-      
-=======
-
+      const firebaseUsers = await this.getAllFirebaseUsers();
       const emails = firebaseUsers.map((user) => user.email);
-      const existingUsers = await User.find({ email: { $in: emails } }); // Fetch all at once
+      const existingUsers = await User.findAll({ where: { email: emails } });
       const existingEmails = new Set(existingUsers.map((user) => user.email));
 
->>>>>>> 8122bc607127f61a34d0ff217fddca21be8062e5
       for (const user of firebaseUsers) {
         if (!existingEmails.has(user.email)) {
           try {
             await User.create({
-              username: user.displayName || "Unknown",
+              username: user.displayName,
               email: user.email,
-              password: null, // Handled by Firebase
-              avatar: user.photoURL || "",
-              background: user.photoURL || "",
-<<<<<<< HEAD
-              isActivated: true,
-=======
-              isAdmin: false,
->>>>>>> 8122bc607127f61a34d0ff217fddca21be8062e5
+              password: null,
+              avatar: user.photoURL,
+              background: user.photoURL,
             });
           } catch (createError) {
             console.error(`Failed to create user ${user.email}:`, createError);
@@ -71,38 +61,47 @@ class UserService {
         }
       }
 
-      return { message: "Firebase users synchronized with MongoDB" };
+      return { message: "Firebase users synchronized with PostgreSQL" };
     } catch (error) {
       console.error("Error syncing Firebase users:", error);
       throw error;
     }
   }
 
-  async getUserById(id) {
-    return User.findById(id).select("-password");
+  async getUserBy_id(id) {
+    return await User.findByPk(id, { attributes: { exclude: ["password"] } });
   }
+
   async getUsersByUsername(username) {
-    return User.find({ username }).select("-password");
+    return await User.findAll({
+      where: { username },
+      attributes: { exclude: ["password"] },
+    });
   }
 
   async getUserByEmail(email) {
-    return User.findOne({ email: email }).select("-password");
+    return await User.findOne({
+      where: { email },
+      attributes: { exclude: ["password"] },
+    });
   }
 
   async updateUser(id, updates) {
-    if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, 10);
+    try {
+      if (updates.password) {
+        updates.password = await bcrypt.hash(updates.password, 10);
+      }
+      const [updatedCount, updatedUsers] = await User.update(updates, {
+        where: { id },
+        returning: true,
+      });
+      if (updatedCount === 0) {
+        throw new Error("User not found");
+      }
+      return updatedUsers[0];
+    } catch (error) {
+      throw new Error(`Failed to update user: ${error.message}`);
     }
-    return User.findByIdAndUpdate(id, updates, { new: true }).select(
-      "-password"
-    );
-  }
-
-  async deleteUser(id) {
-    return User.findByIdAndDelete(id);
-  }
-  async deactivateUser(id) {
-    return User.findByIdAndUpdate(id, { isActivated: false }, { new: true }).select('-password');
   }
 }
 

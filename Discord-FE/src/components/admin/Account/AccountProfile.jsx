@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
@@ -11,31 +11,12 @@ import UserService from "../../../services/UserService";
 export default function AccountProfile() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const userId = JSON.parse(localStorage.getItem("user"))?.id;
-  const [user, setUser] = useState({ username: "", email: "", avatar: "" });
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const userId = storedUser?.id;
+  const [user, setUser] = useState(
+    storedUser || { username: "", email: "", avatar: "" }
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      setIsLoading(true);
-      try {
-        const userData = await UserService.getUserByID(userId);
-        setUser(userData);
-      } catch (error) {
-        setError(t("Failed to load user data"));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (userId) {
-      fetchUser();
-    } else {
-      setError(t("No user ID found"));
-      setIsLoading(false);
-    }
-  }, [userId]);
 
   const handleInputChange = (e) => {
     setUser((prev) => ({
@@ -50,14 +31,10 @@ export default function AccountProfile() {
       const response = await UserService.updateUser(userId, user);
       const updatedUser = response.data;
       setUser(updatedUser);
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ ...storedUser, ...updatedUser })
-      );
+      localStorage.setItem("user", JSON.stringify(updatedUser));
       toast.success(t("Profile updated successfully!"));
+      navigate("/admin");
     } catch (error) {
-      console.error("Error updating user:", error);
       toast.error(t("Failed to update profile"));
     } finally {
       setIsLoading(false);
@@ -75,14 +52,12 @@ export default function AccountProfile() {
         <CardContent>
           {isLoading ? (
             <div className="text-center">{t("Loading...")}</div>
-          ) : error ? (
-            <div className="text-center text-red-500">{error}</div>
           ) : (
             <>
               <div className="flex justify-center mb-6">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 text-sm">
                   <img
-                    src={user?.avatar || adminAvatar}
+                    src={user.avatar || adminAvatar}
                     alt={t("Avatar")}
                     className="w-full h-full rounded-full object-cover"
                     onError={(e) => (e.target.src = adminAvatar)}

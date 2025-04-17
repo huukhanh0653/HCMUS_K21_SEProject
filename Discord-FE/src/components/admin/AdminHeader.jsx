@@ -16,31 +16,16 @@ import {
 } from "../ui/breadcrumb";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { useTranslation } from "react-i18next";
 import adminAvatar from "../../assets/admin-avatar.png";
-import UserService from "../../services/UserService";
 
 export default function AdminHeader() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const userId = JSON.parse(localStorage.getItem("user"))?.id;
-  const [user, setUser] = useState({ username: "", avatar: "" });
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await UserService.getUserByID(userId);
-        setUser(userData);
-      } catch (error) {
-        setError(t("Failed to load user data"));
-      }
-    };
-
-    fetchUser();
-  }, [userId]);
+  const user = JSON.parse(localStorage.getItem("user"));
 
   // Handle Logout
   const handleLogout = async () => {

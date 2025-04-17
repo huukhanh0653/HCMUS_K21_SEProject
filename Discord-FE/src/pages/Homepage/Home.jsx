@@ -16,6 +16,7 @@ import {
   setSelectedChannel,
   setShowCreateServer,
   setShowAddFriend,
+  setPrevRequests,
   setPendingRequests,
   setNewRequests,
 } from "../../redux/homeSlice";
@@ -27,15 +28,25 @@ import ServerChannelService from "../../services/ServerChannelService";
 // Lazy components
 const ServerList = lazy(() => import("../../components/server/ServerList"));
 const Server = lazy(() => import("../../components/server/Server"));
-const CreateServerModal = lazy(() => import("../../components/server/CreateServerModal"));
+const CreateServerModal = lazy(() =>
+  import("../../components/server/CreateServerModal")
+);
 const DMSidebar = lazy(() => import("../../components/friends/DMSidebar"));
 const FriendList = lazy(() => import("../../components/friends/FriendList"));
 const AddFriend = lazy(() => import("../../components/friends/AddFriend"));
-const FriendRequests = lazy(() => import("../../components/friends/FriendRequests"));
-const DirectMessage = lazy(() => import("../../components/friends/DirectMessage/DirectMessage"));
+const FriendRequests = lazy(() =>
+  import("../../components/friends/FriendRequests")
+);
+const DirectMessage = lazy(() =>
+  import("../../components/friends/DirectMessage/DirectMessage")
+);
 const FriendsView = lazy(() => import("../../components/friends/FriendsView"));
-const FriendRequestModal = lazy(() => import("../../components/friends/FriendRequestModal"));
-const NotificationModal = lazy(() => import("../../components/user/NotificationModal"));
+const FriendRequestModal = lazy(() =>
+  import("../../components/friends/FriendRequestModal")
+);
+const NotificationModal = lazy(() =>
+  import("../../components/user/NotificationModal")
+);
 const UserProfile = lazy(() => import("../../components/user/UserProfile"));
 
 // Component không lazy
@@ -216,12 +227,21 @@ export default function Home({ user }) {
   // Routing tự động dựa trên nội dung chính
   useEffect(() => {
     if (selectedServer && selectedChannel) {
-      navigate(`/server/${selectedServer.id}/${selectedChannel.id}`, { replace: true });
+      navigate(`/server/${selectedServer.id}/${selectedChannel.id}`, {
+        replace: true,
+      });
     } else if (activeTab === "friend" && selectedFriend) {
-      const f = friends.find(x => x.username === selectedFriend);
+      const f = friends.find((x) => x.username === selectedFriend);
       if (f) navigate(`/direct_message/${f._id}`, { replace: true });
     } else navigate("/", { replace: true });
-  }, [selectedServer, selectedChannel, activeTab, selectedFriend, navigate, friends]);
+  }, [
+    selectedServer,
+    selectedChannel,
+    activeTab,
+    selectedFriend,
+    navigate,
+    friends,
+  ]);
 
   return (
     <div
@@ -264,7 +284,9 @@ export default function Home({ user }) {
                 setActiveTab={(tab) => dispatch(setActiveTab(tab))}
                 setShowAddFriend={(show) => dispatch(setShowAddFriend(show))}
                 selectedFriend={selectedFriend}
-                setSelectedFriend={(friend) => dispatch(setSelectedFriend(friend))}
+                setSelectedFriend={(friend) =>
+                  dispatch(setSelectedFriend(friend))
+                }
                 friends={friends}
                 handleFriendAction={handleFriendAction}
                 getStatusColor={getStatusColor}

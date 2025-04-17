@@ -1,60 +1,52 @@
-require('dotenv').config(); // Load environment variables from .env file
-
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors'); // Import CORS
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
-const userRoutes = require('./src/routes/userRoutes');
-const friendshipRoutes = require('./src/routes/friendshipRoutes');
+require("dotenv").config();
+const PORT = 8087;
+const express = require("express");
+const cors = require("cors");
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+const userRoutes = require("./src/routes/userRoutes");
+const friendRoutes = require("./src/routes/friendRoutes");
+const sequelize = require("./src/config/postgres");
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET, POST, PUT, DELETE",
+    allowedHeaders: "Content-Type, Authorization",
+  })
+);
 
-// ✅ Allow all origins with CORS
-app.use(cors({ 
-  origin: '*', 
-  methods: 'GET, POST, PUT, DELETE', 
-  allowedHeaders: 'Content-Type, Authorization' 
-}));
+// Kiểm tra kết nối PostgreSQL
+sequelize
+  .authenticate()
+  .then(() => console.log("PostgreSQL connected"))
+  .catch((err) => console.error("PostgreSQL connection error:", err));
 
-// ✅ Manually set CORS headers in responses (optional)
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
-
-const mongoConnectionString = process.env.MONGO_STRING_CONNECTION;
-
-if (!mongoConnectionString) {
-  console.error('MONGO_STRING_CONNECTION is not defined in the .env file.');
-  process.exit(1);
-}
-
-mongoose.connect(mongoConnectionString, {})
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Đồng bộ models với database
+sequelize
+  .sync({ force: false })
+  .then(() => console.log("Database synced"))
+  .catch((err) => console.error("Database sync error:", err));
 
 const swaggerOptions = {
   swaggerDefinition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'User and Friendship API',
-      version: '1.0.0',
-      description: 'API for managing users and friendships',
+      title: "User and Friend API",
+      version: "1.0.0",
+      description: "API for managing users and friends",
     },
-    servers: [{ url: 'http://localhost:8087' }],
+    servers: [{ url: `http://localhost:${PORT}` }],
   },
-  apis: ['./src/routes/*.js'],
+  apis: ["./src/routes/*.js"],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-app.use('/api/users', userRoutes);
-app.use('/api/friendships', friendshipRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/friends", friendRoutes);
 
-const PORT = 8087;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
