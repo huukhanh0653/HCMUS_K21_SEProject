@@ -21,9 +21,21 @@ public class Notification {
     private String type; // DIRECT_MESSAGE, SERVER_ALERT, MENTION, etc.
     private String content;
     private String sourceId; // channel/server/user
-    private LocalDateTime timestamp;
+    private String timestamp;
 
     public String getSourceId() {
         return sourceId;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public String getReceiverId() {
+        return receiverId;
+    }
+
+    public String getType() {
+        return type;
     }
 }

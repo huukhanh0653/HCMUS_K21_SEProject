@@ -14,5 +14,5 @@ COPY --from=builder /app/target/*.jar app.jar
 # Redis config (password injected at runtime)
 ENV SPRING_REDIS_CLUSTER_NODES="34.30.20.102:6379,35.224.133.162:6379,34.29.228.136:6379"
 
-EXPOSE 8080
+EXPOSE 8085
 ENTRYPOINT ["java", "-jar", "app.jar"]

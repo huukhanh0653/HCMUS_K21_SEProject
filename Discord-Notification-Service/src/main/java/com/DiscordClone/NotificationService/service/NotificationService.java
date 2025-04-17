@@ -30,7 +30,7 @@ public class NotificationService {
         }
 
         notification.setId(UUID.randomUUID().toString());
-        notification.setTimestamp(LocalDateTime.now());
+        notification.setTimestamp(LocalDateTime.now().toString());
         notificationRepo.save(notification);
 
         // Use custom WebSocket handler
