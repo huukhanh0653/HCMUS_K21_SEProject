@@ -13,7 +13,7 @@ const router = express.Router();
  * @swagger
  * /api/users/sync-firebase:
  *   post:
- *     summary: Sync Firebase users with MongoDB
+ *     summary: Sync Firebase users with Postgres
  *     tags: [Users]
  *     responses:
  *       200:
@@ -95,12 +95,13 @@ router.get("/", async (req, res) => {
  */
 router.post("/", async (req, res) => {
   try {
-    const { username, email, password, avatar } = req.body;
+    const { username, email, password, avatar, background } = req.body;
     const user = await UserService.createUser(
       username,
       email,
       password,
-      avatar
+      avatar,
+      background
     );
     res.status(201).json(user);
   } catch (error) {
@@ -187,7 +188,7 @@ router.get("/username/:username", async (req, res) => {
  */
 router.get("/:id", async (req, res) => {
   try {
-    const user = await UserService.getUserById(req.params.id);
+    const user = await UserService.getUserBy_id(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {
@@ -225,7 +226,7 @@ router.get("/:id", async (req, res) => {
  *                 type: string
  *               background:
  *                 type: string
- *               isAdmin:
+ *               is_admin:
  *                 type: boolean
  *     responses:
  *       200:
@@ -242,67 +243,5 @@ router.put("/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-/**
- * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Delete a user by ID
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The user ID
- *     responses:
- *       200:
- *         description: User deleted successfully
- *       404:
- *         description: User not found
- */
-router.delete("/:id", async (req, res) => {
-  try {
-    const user = await UserService.deleteUser(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    res.json({ message: "User deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-
-/**
- * @swagger
- * /api/users/deactivate/{id}:
- *   post:
- *     summary: Deactivate a user by ID
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The user ID
- *     responses:
- *       200:
- *         description: User deactivated successfully
- *       404:
- *         description: User not found
- */
-
-
-router.post("/deactivate/:id", async (req, res) => {
-  try {
-    const user = await UserService.deactivateUser(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    res.json({ message: "User deactivated successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}
-);
 
 module.exports = router;

@@ -17,6 +17,8 @@
     "express": "^4.21.2",
     "firebase-admin": "^13.2.0",
     "mongoose": "^8.12.2",
+    "pg": "^8.14.1",
+    "sequelize": "^6.37.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },

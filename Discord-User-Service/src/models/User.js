@@ -1,16 +1,57 @@
-const mongoose = require("mongoose");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/postgres");
 
-const UserSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, },
-  status: { type: String, enum: ['online', 'offline'], default: 'offline' },
-  avatar: { type: String },
-  background: { type: String },
-  role: { type: String, enum: ['admin', 'user'], default: 'user' },
-  isActivated: { type: Boolean, default: true },
-  createdAt : { type: Date, default: Date.now },
-  updatedAt : { type: Date, default: Date.now }
-}, { timestamps: true });
+const User = sequelize.define(
+  "User",
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    username: {
+      type: DataTypes.STRING,
+      defaultValue: "",
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING,
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: "offline",
+    },
+    avatar: {
+      type: DataTypes.STRING,
+    },
+    background: {
+      type: DataTypes.STRING,
+    },
+    is_admin: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    tableName: "users",
+    timestamps: false,
+  }
+);
 
-module.exports = mongoose.model("User", UserSchema);
+User.beforeUpdate((user) => {
+  user.updated_at = new Date();
+});
+
+module.exports = User;

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../layout/ThemeProvider";
 import UserService from "../../services/UserService";
+import defaultAvatar from "../../assets/discord-logo.png";
 
 export default function AddFriend() {
   const [email, setEmail] = useState("");
@@ -109,9 +110,7 @@ export default function AddFriend() {
               }`}
             >
               <img
-                src={
-                  searchResult.avatar || "/placeholder.svg?height=32&width=32"
-                }
+                src={searchResult.avatar || defaultAvatar}
                 alt={searchResult.username}
                 className="w-full h-full object-cover rounded-full"
               />

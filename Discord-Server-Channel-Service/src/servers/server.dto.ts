@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsString,
-  IsOptional,
-  MaxLength,
-  IsUrl,
-} from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, MaxLength } from 'class-validator';
 
 export class ServerDto {
   @ApiProperty({
@@ -24,6 +18,5 @@ export class ServerDto {
   })
   @IsOptional()
   @IsString()
-  @IsUrl()
   serverPic?: string;
 }

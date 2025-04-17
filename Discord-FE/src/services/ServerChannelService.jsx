@@ -55,7 +55,7 @@ const getAllServers = async (userId, query) => {
  * @param {string} query - Từ khóa tìm kiếm.
  * @returns {Promise<Object>}
  */
-const getServers = async (userId, query='') => {
+const getServers = async (userId, query = "") => {
   try {
     const response = await axios.get(
       `${Server_API}/servers/${userId}?query=${encodeURIComponent(query)}`,
