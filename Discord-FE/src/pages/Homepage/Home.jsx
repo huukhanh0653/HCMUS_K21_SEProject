@@ -41,6 +41,7 @@ const DirectMessage = lazy(() =>
   import("../../components/friends/DirectMessage/DirectMessage")
 );
 const FriendsView = lazy(() => import("../../components/friends/FriendsView"));
+const FriendProfile = lazy(() => import("../../components/friends/FriendProfile"));
 const FriendRequestModal = lazy(() =>
   import("../../components/friends/FriendRequestModal")
 );

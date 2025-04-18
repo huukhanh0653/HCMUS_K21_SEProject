@@ -29,7 +29,7 @@ io.on("connection", (socket) => {
 
     socket.to(channelId).emit("user-joined", {
       socketId: socket.id,
-      userId
+      userId: userId || 'Anonymous',
     });
   });
 
@@ -40,8 +40,8 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("disconnect", () => {
-    if (!channelId || !channels[channelId]) return;
+    socket.on("disconnect", () => {
+      if (!channelId || !channels[channelId]) return;
 
     channels[channelId] = channels[channelId].filter(p => p.socketId !== socket.id);
     socket.to(channelId).emit("user-left", { socketId: socket.id });
