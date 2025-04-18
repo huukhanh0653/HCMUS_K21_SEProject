@@ -11,27 +11,24 @@ const connectMessageService = (
   channelId
 ) => {
   console.log("Opening Web Socket...");
-  const socket = new SockJS(`/ws`);
+  const socket = new SockJS("/ws");
   const stompClient = Stomp.over(socket);
   stompClientRef.current = stompClient;
 
   stompClient.connect({}, () => {
-    console.log("Connected to STOMP");
-    // Subscribe vào topic để nhận các tin nhắn từ backend
-    const subscription = stompClient.subscribe(
+    console.log("✅ STOMP connected");
+    stompClient.subscribe(
       `/topic/server/${serverId}/channel/${channelId}`,
       (msg) => {
         const received = JSON.parse(msg.body);
-        // Chuyển object content: { text: "kak" } -> "kak"
-        const updatedReceived = {
-          ...received,
-          content:
-            typeof received.content === "object" && received.content.text
-              ? received.content.text
-              : received.content,
-        };
-
-        setChatMessages((prev) => [...prev, updatedReceived]);
+        const content =
+          typeof received.content === "object" && received.content.text
+            ? received.content.text
+            : received.content;
+        setChatMessages((prev) => [
+          ...prev,
+          { ...received, content }
+        ]);
       }
     );
   });
@@ -51,11 +48,9 @@ const connectMessageService = (
 const disconnectMessageService = (stompClientRef) => {
   console.log("Disconnecting STOMP client...");
   if (stompClientRef.current && stompClientRef.current.connected) {
-    stompClientRef.current.disconnect(() => {
-      console.log(">>> DISCONNECT");
-    });
+    stompClientRef.current.disconnect(() => console.log(">>> STOMP disconnected"));
   }
-}
+};
 
 // GrapQL API URL
 

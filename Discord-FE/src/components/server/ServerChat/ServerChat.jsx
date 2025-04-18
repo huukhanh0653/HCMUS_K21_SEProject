@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Plus,
   SmilePlus,
@@ -17,6 +17,9 @@ import MessageInput from "./Components/MessageInput";
 import {
   connectMessageService,
   disconnectMessageService,
+  useSearchMessages,
+  useFetchMessagesBefore,
+  useFetchMessagesAfter,
   useEditMessage,
   useDeleteMessage,
 } from "../../../services/newMessageService";
@@ -26,21 +29,22 @@ export default function ServerChat(props) {
   const { t } = useTranslation();
 
   // user info
-  const [storedUser, setStoredUser] = useState(null);
   const user = JSON.parse(localStorage.getItem("user"));
-  const username = user.username || "Unknown User";
-  const avatarSrc = storedUser?.avatar || SampleAvt;
 
   // chat state
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editedContent, setEditedContent] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [lastTimestamp, setLastTimestamp] = useState(new Date().toISOString());
+  const [hasMore, setHasMore] = useState(false);
 
   // refs
   const stompClientRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const ListRef = useRef(null);
 
   const serverId = server.id || '';
   const channelId = channel.id;
@@ -48,6 +52,29 @@ export default function ServerChat(props) {
   // GraphQL mutations
   const [editMessageMutation] = useEditMessage();
   const [deleteMessageMutation] = useDeleteMessage();
+
+  // Fetch initial batch of messages (latest 'amount')
+  const {
+    data: beforeData,
+    loading: beforeLoading,
+    error: beforeError,
+    refetch: refetchBefore,
+    fetchMore: fetchMoreBefore,
+  } = useFetchMessagesBefore({ serverId, channelId, amount: 20, timestamp: lastTimestamp });
+    
+  // chỉ để debug: log kết quả của hook mỗi khi thay đổi
+  useEffect(() => {
+    console.group("[useFetchMessagesBefore]");
+    console.log("   → loading:", beforeLoading);
+    console.log("   → error:", beforeError);
+    console.log("   → data:", beforeData);
+    console.groupEnd();
+  }, [beforeLoading, beforeError, beforeData]);
+
+  // Fetch new messages after last known timestamp
+  const { 
+    fetchMore: fetchMoreAfter 
+  } = useFetchMessagesAfter({ serverId, channelId, amount: 20, timestamp: lastTimestamp });
 
   // Kết nối WebSocket STOMP
   useEffect(() => {
@@ -59,16 +86,50 @@ export default function ServerChat(props) {
       serverId,
       channelId
     );
+
+    // Khi vừa kết nối xong, lấy luôn batch tin mới nhất
+    refetchBefore();
+    console.log("Messages:", messages);
+
     return () => {
       disconnect();
       disconnectMessageService(stompClientRef);
     };
-  }, [serverId, channelId]);
+  }, [serverId, channelId, refetchBefore]);
+
+  // Khởi tạo tin nhắn khi dữ liệu trước đó đến.
+  useEffect(() => {
+    if (beforeData?.fetchMessagesBefore) {
+      const { messages: fetched, hasMore: more, lastMessageTimestamp } = beforeData.fetchMessagesBefore;
+      console.log("Fetched:", fetched);
+      setMessages(fetched);
+      setHasMore(more);
+      setLastTimestamp(lastMessageTimestamp);
+    }
+  }, [beforeData]);
 
   // Auto-scroll khi có tin mới
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Load tin nhắn cũ (infinite scroll)
+  const loadOlder = useCallback(async () => {
+    if (!hasMore) return;
+    const { data } = await fetchMoreBefore({ variables: { serverId, channelId, amount: 20, timestamp: lastTimestamp } });
+    const { messages: older, hasMore: more, lastMessageTimestamp } = data.fetchMessagesBefore;
+    setMessages((prev) => [...older, ...prev]);
+    setHasMore(more);
+    setLastTimestamp(lastMessageTimestamp);
+  }, [hasMore, lastTimestamp, fetchMoreBefore, serverId, channelId]);
+
+  // Load tin nhắn mới
+  const loadNewer = useCallback(async () => {
+    const { data } = await fetchMoreAfter({ variables: { serverId, channelId, amount: 20, timestamp: lastTimestamp } });
+    const { messages: newer, lastMessageTimestamp } = data.fetchMessagesAfter;
+    setMessages((prev) => [...prev, ...newer]);
+    setLastTimestamp(lastMessageTimestamp);
+  }, [lastTimestamp, fetchMoreAfter, serverId, channelId]);
 
   // Gửi tin nhắn qua STOMP
   const handleSendMessage = async () => {
@@ -148,8 +209,8 @@ export default function ServerChat(props) {
     <div className="flex flex-col h-full min-h-0 relative">
       <MessageList
         messages={messages}
-        username={username}
-        avatarSrc={avatarSrc}
+        username={user.username}
+        avatarSrc={user.avatar}
         editingMessageId={editingMessageId}
         editedContent={editedContent}
         setEditedContent={setEditedContent}

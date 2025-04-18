@@ -18,8 +18,8 @@ export default defineConfig({
         changeOrigin: true,
       },
       // Nếu bạn có GraphQL tại /graphql
-      "/graphql": {
-        target: "http://localhost:8082",
+      '/graphql': {
+        target: 'http://localhost:8082',
         changeOrigin: true,
       },
     },
