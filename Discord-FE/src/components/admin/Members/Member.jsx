@@ -38,9 +38,7 @@ export default function Member() {
       setIsLoading(true);
       try {
         const data = await UserService.getUsers();
-        const filteredData = userId
-          ? data.filter((user) => user.id !== userId)
-          : data;
+        const filteredData = data.filter((user) => user.id !== userId);
         setMembers(filteredData);
         setTotalSize(filteredData.length);
       } catch (error) {

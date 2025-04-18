@@ -28,7 +28,7 @@ const sendFriendRequest = async (userId, friendId) => {
         headers: { "Content-Type": "application/json" },
       }
     );
-    return response.data; // Contains the response from your backend
+    return response.data;
   } catch (error) {
     console.error("Error sending friend request:", error);
     throw error;
