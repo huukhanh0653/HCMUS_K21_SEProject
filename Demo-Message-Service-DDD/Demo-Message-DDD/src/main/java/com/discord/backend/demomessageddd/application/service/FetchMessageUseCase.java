@@ -28,7 +28,10 @@ public class FetchMessageUseCase {
 
         long count = cacheMessageRepository.countByChannelBefore(serverId, channelId, timestamp);
         System.out.println("FetchBefore execute called with count: " + count);
-        // Fetch from cache first
+
+        if (count == 0) {
+            return new FetchMessage(List.of(), 0, timestamp, false);
+        }
         List<Message> messages = cacheMessageRepository.findByChannel(serverId, channelId,
                 (int) Math.min(amount, count),
                 timestamp);
