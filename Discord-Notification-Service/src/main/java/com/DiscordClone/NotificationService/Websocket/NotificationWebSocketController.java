@@ -19,17 +19,4 @@ public class NotificationWebSocketController {
     public void receiveMessage(Notification notification) {
         notificationService.sendNotification(notification);
     }
-
-    @GetMapping("/ws/test/{userId}")
-    @ResponseBody
-    public String testNotification(@PathVariable String userId) {
-        Notification test = Notification.builder()
-                .receiverId(userId)
-                .type("DIRECT_MESSAGE")
-                .content("This is a test notification.")
-                .sourceId("system")
-                .build();
-        notificationService.sendNotification(test);
-        return "Sent!";
-    }
 }
