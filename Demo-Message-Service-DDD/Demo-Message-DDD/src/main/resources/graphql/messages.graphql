@@ -20,6 +20,6 @@ type Message {
     senderId: String!
     content: String!
     attachments: [String!]!
-    mentions: [String!]!
+    mentions: [String]
     timestamp: String!
 }

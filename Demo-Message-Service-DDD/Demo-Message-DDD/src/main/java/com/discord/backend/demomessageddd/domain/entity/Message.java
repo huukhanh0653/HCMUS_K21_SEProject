@@ -97,7 +97,7 @@ public class Message {
         this.timestamp = timestamp;
         this.lastEdited = timestamp;
         this.mentions = mentions;
-        System.out.println("3 Message constructor called with id: " + id);
+
     }
 
     public String getMessageId() {

@@ -5,6 +5,7 @@ import com.discord.backend.demomessageddd.domain.repository.CacheMessageReposito
 import com.discord.backend.demomessageddd.domain.valueobject.FetchMessage;
 
 import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
+import com.discord.backend.demomessageddd.infrastructure.config.RedisKeyUtil;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,10 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Repository
 public class RedisMessageRepository implements CacheMessageRepository {
@@ -55,26 +53,33 @@ public class RedisMessageRepository implements CacheMessageRepository {
     @Override
     public List<Message> findByChannel(String serverId, String channelId, int amount, String timestamp) {
 
-        // 1. Lấy danh sách ID từ sorted set theo channel
-        String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
-        Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(zsetKey, 0,
-                Instant.parse(timestamp).toEpochMilli(), 0,
-                amount);
+        System.out.println("find by " + serverId + " by " + channelId + " by " + timestamp);
 
-        // 2. Lấy nội dung message từ key riêng cũ hơn timestamp
-        // (dùng Instant.parse để so sánh timestamp)
-        List<Message> messages = new ArrayList<>();
-        if (messageIds != null) {
-            for (Object messageId : messageIds) {
-                String messageKey = "message:" + messageId;
-                Object value = redisTemplate.opsForValue().get(messageKey);
+        try {
+            // Validate input parameters
+            if (serverId == null || channelId == null) {
+                throw new IllegalArgumentException("Server ID and Channel ID cannot be null");
+            }
+            if (timestamp == null) {
+                throw new IllegalArgumentException("Timestamp cannot be null");
+            }
 
-                if (value != null) {
-                    System.out.println("Value: " + value);
-                    System.out.println("Type: " + value.getClass().getName());
+            // 1. Construct the Redis key
+            String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
 
-                    if (value instanceof LinkedHashMap) {
+            // 2. Retrieve message IDs from the sorted set
+            long offset = 0; // Start from the beginning
+            Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(zsetKey, 0,
+                    Instant.parse(timestamp).toEpochMilli(), offset, amount);
 
+            // 3. Retrieve message content from individual keys
+            List<Message> messages = new ArrayList<>();
+            if (messageIds != null) {
+                for (Object messageId : messageIds) {
+                    String messageKey = "message:" + messageId;
+                    Object value = redisTemplate.opsForValue().get(messageKey);
+
+                    if (value != null && value instanceof LinkedHashMap) {
                         LinkedHashMap<String, Object> map = (LinkedHashMap<String, Object>) value;
                         Message message = mapToMessage(map);
 
@@ -82,83 +87,103 @@ public class RedisMessageRepository implements CacheMessageRepository {
                             messages.add(message);
                         }
                     }
-                } else {
-                    System.out.println("Type: null (value is null)");
                 }
             }
+
+            // 4. Sort messages by timestamp in descending order
+            messages.sort((m1, m2) -> Long.compare(Instant.parse(m2.getTimestamp()).toEpochMilli(),
+                    Instant.parse(m1.getTimestamp()).toEpochMilli()));
+            return messages;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        // 3. Sort lại danh sách message theo timestamp giảm dần
-        messages.sort((m1, m2) -> Long.compare(Instant.parse(m2.getTimestamp()).toEpochMilli(),
-                Instant.parse(m1.getTimestamp()).toEpochMilli()));
-
-        return messages;
     }
 
     @Override
     public List<Message> findByChannelAfter(String serverId, String channelId, int amount, String timestamp) {
+        try {
+            // Validate input parameters
+            if (serverId == null || channelId == null || timestamp == null) {
+                throw new IllegalArgumentException("Server ID, Channel ID, and Timestamp cannot be null");
+            }
 
-        // 1. Lấy danh sách ID từ sorted set theo channel
-        String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
-        Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(zsetKey, 0,
-                Instant.parse(timestamp).toEpochMilli(), 0,
-                amount);
+            // 1. Construct the Redis key
+            String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
 
-        // 2. Lấy nội dung message từ key riêng cũ hơn timestamp
-        // (dùng Instant.parse để so sánh timestamp)
-        List<Message> messages = new ArrayList<>();
-        if (messageIds != null) {
-            for (Object messageId : messageIds) {
-                String messageKey = "message:" + messageId;
-                Object value = redisTemplate.opsForValue().get(messageKey);
+            // 2. Retrieve message IDs from the sorted set
+            long offset = 0; // Start from the beginning
+            long count = amount; // Limit the number of results
+            Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(zsetKey, 0,
+                    Instant.parse(timestamp).toEpochMilli(), offset, count);
 
-                if (value != null) {
-                    System.out.println("Value: " + value);
-                    System.out.println("Type: " + value.getClass().getName());
+            // 3. Retrieve message content from individual keys
+            List<Message> messages = new ArrayList<>();
+            if (messageIds != null) {
+                for (Object messageId : messageIds) {
+                    String messageKey = "message:" + messageId;
+                    Object value = redisTemplate.opsForValue().get(messageKey);
 
-                    if (value instanceof LinkedHashMap) {
-                        LinkedHashMap<String, Object> map = (LinkedHashMap<String, Object>) value;
+                    if (value != null) {
+                        System.out.println("Value: " + value);
+                        System.out.println("Type: " + value.getClass().getName());
 
-                        // Map fields from LinkedHashMap to Message
-                        String _msgId = (String) map.get("messageId");
-                        String _senderId = (String) map.get("senderId");
-                        String _serverId = (String) map.get("serverId");
-                        String _channelId = (String) map.get("channelId");
-                        List<String> _attachments = (List<String>) map.get("attachments");
-                        List<String> _mentions = (List<String>) map.get("mentions");
-                        LinkedHashMap<String, Object> _contentMap = (LinkedHashMap<String, Object>) map.get("content");
-                        MessageContent _content = new MessageContent((String) _contentMap.get("text"));
-                        String _timestamp = (String) map.get("timestamp");
-                        Message message = new Message(_msgId, _senderId, _serverId, _channelId, _content, _attachments, _mentions, _timestamp);
+                        if (value instanceof LinkedHashMap<?, ?> map) {
+                            Message message = mapToMessage((LinkedHashMap<String, Object>) map);
 
-
-                        if (Instant.parse(message.getTimestamp()).isBefore(Instant.parse(timestamp))) {
-                            messages.add(message);
+                            if (Instant.parse(message.getTimestamp()).isBefore(Instant.parse(timestamp))) {
+                                messages.add(message);
+                            }
                         }
+                    } else {
+                        System.out.println("Type: null (value is null)");
                     }
-                } else {
-                    System.out.println("Type: null (value is null)");
                 }
             }
+
+            // 4. Sort messages by timestamp in descending order
+            messages.sort((m1, m2) -> Long.compare(Instant.parse(m2.getTimestamp()).toEpochMilli(),
+                    Instant.parse(m1.getTimestamp()).toEpochMilli()));
+
+            return messages;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        // 3. Sort lại danh sách message theo timestamp giảm dần
-        messages.sort((m1, m2) -> Long.compare(Instant.parse(m2.getTimestamp()).toEpochMilli(),
-                Instant.parse(m1.getTimestamp()).toEpochMilli()));
-
-        return messages;
     }
 
     @Override
-    public long countByChannel(String serverId, String channelId, String timestamp) {
-        // 1. Lấy danh sách ID từ sorted set theo channel
-        String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
-        Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(zsetKey, 0,
-                Instant.parse(timestamp).toEpochMilli());
+    public long countByChannelBefore(String serverId, String channelId, String timestamp) {
+        System.out.println("CountByChannel called with serverId: " + serverId + ", channelId: " + channelId + ", timestamp: " + timestamp);
 
-        // 2. Trả về số lượng ID
-        return messageIds != null ? messageIds.size() : 0;
+        // 1. Construct the Redis key
+        String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
+
+        // 2. Parse timestamp into milliseconds (epoch time)
+        long maxScore = Instant.parse(timestamp).toEpochMilli();
+
+        // 3. Use ZCOUNT to count messages with score < timestamp
+        long count = redisTemplate.opsForZSet().count(zsetKey, 0, maxScore - 1); // < timestamp
+
+        System.out.println("Counted " + count + " messages for key: " + zsetKey + " before timestamp: " + maxScore);
+
+        return count;
     }
+
+
+    @Override
+    public long countByChannelAfter(String serverId, String channelId, String timestamp) {
+        System.out.println("Counting NEWER messages with serverId: " + serverId + ", channelId: " + channelId + ", timestamp: " + timestamp);
+
+        String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
+        long minScore = Instant.parse(timestamp).toEpochMilli();
+
+        // ZCOUNT với min = timestamp + 1 để đảm bảo "mới hơn"
+        long count = redisTemplate.opsForZSet().count(zsetKey, minScore + 1, Long.MAX_VALUE);
+
+        System.out.println("Found " + count + " newer messages for key: " + zsetKey);
+
+        return count;
+    }
+
 
     @Override
     public void deleteByChannel(String serverId, String channelId, String timestamp) {

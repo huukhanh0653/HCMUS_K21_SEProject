@@ -5,6 +5,7 @@ import com.discord.backend.demomessageddd.domain.repository.MessageRepository;
 import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
 import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageDocument;
 import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageMongoRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
