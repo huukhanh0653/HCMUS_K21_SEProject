@@ -123,6 +123,25 @@ export class ServerMemberController {
     return this.serverMemberService.joinServer(serverId, data);
   }
 
+  @Delete(':memberId')
+  @ApiOperation({ summary: 'A member exit a server' })
+  @ApiResponse({ status: 201, description: 'Member exited successfully' })
+  @ApiResponse({ status: 400, description: 'Validation failed' })
+  @ApiParam({
+    name: 'serverId',
+    description: 'ID of the server',
+  })
+  @ApiParam({
+    name: 'memberId',
+    description: 'ID of the member',
+  })
+  async outServerRest(
+    @Param('serverId') serverId: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.serverMemberService.outServer(serverId, memberId);
+  }
+
   @Delete(':userId/:memberId')
   @ApiOperation({ summary: 'Remove a member from a server' })
   @ApiResponse({ status: 200, description: 'Member removed successfully' })

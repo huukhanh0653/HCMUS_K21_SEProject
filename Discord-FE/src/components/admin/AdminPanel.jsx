@@ -41,7 +41,7 @@ export default function AdminPanel() {
   const [error, setError] = useState(null);
   const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff6f61"];
 
-  const userId = JSON.parse(localStorage.getItem("user"))?.id;
+  const userId = JSON.parse(localStorage.getItem("user")).id;
 
   useEffect(() => {
     const fetchData = async () => {
