@@ -5,6 +5,9 @@ import com.discord.backend.demomessageddd.domain.repository.MessageRepository;
 import com.discord.backend.demomessageddd.domain.repository.CacheMessageRepository;
 import com.discord.backend.demomessageddd.domain.event.MessageEventPublisher;
 import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
+
+import java.time.Instant;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -54,9 +57,9 @@ public class EditMessageUseCase {
     /**
      * Edits a message in a specific channel with attachments.
      *
-     * @param messageId   The ID of the message.
-     * @param serverId    The ID of the server.
-     * @param channelId   The ID of the channel.
+     * @param messageId The ID of the message.
+     * @param serverId  The ID of the server.
+     * @param channelId The ID of the channel.
      * @return The edited message.
      */
 
@@ -67,9 +70,25 @@ public class EditMessageUseCase {
         messageRepository.deleteById(messageId, serverId, channelId);
         cacheMessageRepository.deleteById(messageId, serverId, channelId);
 
-//       // Publish the message event
-//       messageEventPublisher.delete(messageId, serverId, channelId);
+        // messageEventPublisher.delete(messageId, serverId, channelId);
         return messageRepository.findById(messageId, serverId, channelId);
+    }
+
+    public void deleteByChannel(String serverId, String channelId) {
+        System.out.println("EditMessageUseCase execute called with senderId: ");
+
+        // Save the message to the database and cache
+        messageRepository.deleteByChannel(serverId, channelId);
+        cacheMessageRepository.deleteByChannel(serverId, channelId, Instant.now().toString());
+    }
+
+    public void deleteByServer(String serverId) {
+        System.out.println("EditMessageUseCase execute called with senderId: ");
+
+        // Save the message to the database and cache
+        messageRepository.deleteByServer(serverId);
+        cacheMessageRepository.deleteByServer(serverId, Instant.now().toString());
+
     }
 
 }

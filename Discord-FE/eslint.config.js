@@ -32,7 +32,6 @@ export default tseslint.config(
       // React-specific rules
       'react/jsx-uses-react': 'warn',
       'react/jsx-uses-vars': 'warn',
-      'react/react-in-jsx-scope': 'off', // Not needed with React 17+
       'react-hooks/rules-of-hooks': 'error', // Checks rules of Hooks
       'react-hooks/exhaustive-deps': 'warn', // Checks effect dependencies
       

@@ -2,7 +2,6 @@ package com.discord.backend.demomessageddd.infrastructure.message.schema;
 
 import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
 import lombok.Data;
-import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
@@ -60,7 +59,9 @@ public class MessageDocument {
         return attachments;
     }
 
-    public List<String> getMentions() { return mentions; }
+    public List<String> getMentions() {
+        return mentions;
+    }
 
     public String getTimestamp() {
         return timestamp;
