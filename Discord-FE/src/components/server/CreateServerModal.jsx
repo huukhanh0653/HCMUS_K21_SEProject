@@ -46,6 +46,7 @@ export default function CreateServerModal({ onClose, onCreated }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Tạo server mới
   const handleCreate = async () => {
     if (!validate()) return;
     setIsLoading(true);
@@ -119,10 +120,31 @@ export default function CreateServerModal({ onClose, onCreated }) {
     }
   };
 
-  // Join server action
-  const handleJoin = () => {
-    // implement join action using ServerChannelService.addServerMember
-    console.log('Joining server', foundServer?.id);
+  // Tham gia server
+  const handleJoin = async () => {
+    if (!foundServer) return;
+    setIsLoading(true);
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user?.id;
+      if (!userId) throw new Error(t("User not logged in"));
+
+      // Thêm thành viên vào server với role Member
+      await ServerChannelService.addServerMember(
+        foundServer.id,
+        userId,
+        { memberId: userId, role: "Member" }
+      );
+
+      // Sau khi join thành công, gọi callback và đóng modal
+      onCreated?.(foundServer);
+      onClose();
+    } catch (err) {
+      console.error(err);
+      setJoinError(err.response?.data?.message || err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -263,13 +285,6 @@ export default function CreateServerModal({ onClose, onCreated }) {
                 {isLoading ? t("Creating...") : t("Create")}
               </button>
             </div>
-          </>
-        )}
-
-{modalType === "main" && (
-          // ... main create/join selectors
-          <>
-            {/* existing main UI omitted for brevity */}
           </>
         )}
 

@@ -168,11 +168,14 @@ export default function ServerChannels({
         user.id,
         payload
       );
+      // Lấy object channel từ response.data
+      const channel = created.channel;
+      // Map sang format của frontend
       const mapped = {
-        id: created.id,
-        name: created.name,
-        type: created.type,
-        isPrivate: created.is_private,
+        id: channel.id,
+        name: channel.name,
+        type: channel.type,
+        isPrivate: channel.is_private,
       };
       setChannels([...safeChannels, mapped]);
     } catch (err) {
