@@ -8,6 +8,7 @@ import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
 import com.discord.backend.demomessageddd.infrastructure.config.RedisKeyUtil;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.*;
 
 @Repository
+@RedisHash(value = "message", timeToLive = 1296000) // 15 days in seconds
 public class RedisMessageRepository implements CacheMessageRepository {
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -232,7 +234,7 @@ public class RedisMessageRepository implements CacheMessageRepository {
 
     @Override
     public List<Message> findByContent(String content, String timestamp, int amount, String serverId,
-                                       String channelId) {
+            String channelId) {
         // 1. Tìm kiếm nội dung message theo content
         String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
         Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(zsetKey, 0,
@@ -245,7 +247,8 @@ public class RedisMessageRepository implements CacheMessageRepository {
             for (Object messageId : messageIds) {
                 String messageKey = "message:" + messageId;
                 Object value = redisTemplate.opsForValue().get(messageKey);
-                if (value != null && value instanceof Message message && message.getContent().getText().contains(content)) {
+                if (value != null && value instanceof Message message
+                        && message.getContent().getText().contains(content)) {
                     messages.add(message);
                 }
             }
