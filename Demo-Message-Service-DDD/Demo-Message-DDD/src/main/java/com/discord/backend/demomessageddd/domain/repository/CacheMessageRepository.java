@@ -11,7 +11,9 @@ public interface CacheMessageRepository {
 
     List<Message> findByChannelAfter(String serverId, String channelId, int amount, String timestamp);
 
-    long countByChannel(String serverId, String channelId, String timestamp);
+    long countByChannelBefore(String serverId, String channelId, String timestamp);
+
+    long countByChannelAfter(String serverId, String channelId, String timestamp);
 
     void deleteByChannel(String serverId, String channelId, String timestamp);
 

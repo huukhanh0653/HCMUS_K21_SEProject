@@ -6,12 +6,22 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/messages': {
-        target: 'http://localhost:8089',
+      // Proxy tất cả request /send về http://localhost:8082/send
+      "/send": {
+        target: "http://localhost:8082",
         changeOrigin: true,
-        secure: false,
       },
-      // Nếu có các endpoint khác cũng cần proxy, bạn có thể thêm tại đây
+      // Proxy SockJS endpoint
+      "/ws": {
+        target: "http://localhost:8082",
+        ws: true,
+        changeOrigin: true,
+      },
+      // Nếu bạn có GraphQL tại /graphql
+      "/graphql": {
+        target: "http://localhost:8082",
+        changeOrigin: true,
+      },
     },
   },
-})
+});

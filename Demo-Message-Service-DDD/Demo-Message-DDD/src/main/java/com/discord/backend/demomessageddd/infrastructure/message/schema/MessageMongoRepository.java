@@ -4,9 +4,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
 import org.springframework.data.mongodb.repository.CountQuery;
-// Removed incorrect import
-
-import com.discord.backend.demomessageddd.domain.entity.Message;
 
 import java.util.List;
 
@@ -15,8 +12,9 @@ public interface MessageMongoRepository extends MongoRepository<MessageDocument,
     @Query("{ 'serverId': ?0, 'channelId': ?1, 'timestamp': { $lt: ?2 } }")
     List<MessageDocument> findByServerIdAndChannelIdBefore(String serverId, String channelId, String timestamp);
 
-    @Query("{ 'serverId': ?0, 'channelId': ?1, 'timestamp': { $gt: ?2 }, sort: { 'timestamp': 1 } }")
+    @Query("{ 'serverId': ?0, 'channelId': ?1, 'timestamp': { $gt: ?2 }}")
     List<MessageDocument> findByServerIdAndChannelIdAfter(String serverId, String channelId, String timestamp);
+
 
     @Query("{ 'serverId': ?0, 'channelId': ?1, '_id': ?2 }")
     MessageDocument findByServerIdAndChannelIdAndId(String serverId, String channelId, String messageId);

@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Hash, Pin } from "lucide-react";
 import { useTheme } from "../../components/layout/ThemeProvider";
 import ServerChannels from "./ServerChannels";
@@ -7,6 +7,7 @@ import ServerChat from "./ServerChat/ServerChat";
 import ServerMembers from "./ServerMembers";
 import PinnedMessagesModal from "./PinnedMessagesModal";
 import ServerChannelService from "../../services/ServerChannelService";
+import { setServerMembers } from "../../redux/homeSlice";
 
 export default function Server({
   selectedServer,
@@ -29,10 +30,16 @@ export default function Server({
     { id: 5, user: "Eve", message: "Check out this cool resource." },
   ];
 
+  // Lấy state từ Redux
+  const {
+    serverMembers,
+  } = useSelector((state) => state.home);
+
   // Khi server được chọn hoặc thay đổi, load channels từ API
   useEffect(() => {
     if (!selectedServer?.id) return;
 
+    // Gọi API để lấy danh sách kênh của server
     ServerChannelService.getChannelsByServer(selectedServer.id)
       .then((response) => {
         // API trả về { data: { message, channels: [...] } }
@@ -47,7 +54,17 @@ export default function Server({
         setChannels(mapped);
       })
       .catch((err) => console.error("Failed to load channels", err));
-  }, [selectedServer]);
+    console.log("Selected server:", selectedServer);
+
+    // Load server members
+    ServerChannelService.searchServerMember(selectedServer.id)
+      .then((res) => {
+        const members = res.members || [];
+        dispatch(setServerMembers(members));
+      })
+      .catch((err) => console.error("Failed to load members", err));
+    console.log("Server members:", serverMembers);
+  }, [selectedServer,  dispatch]);
 
   // Xác định kênh text hiện hành (nếu có)
   const textChannel =
@@ -62,7 +79,6 @@ export default function Server({
         <Suspense fallback={<div>Loading Channels...</div>}>
           <ServerChannels
             server={selectedServer}
-            user={user}
             channels={channels}
             onChannelSelect={onChannelSelect}
             selectedChannelId={selectedChannel?.id}
@@ -94,7 +110,10 @@ export default function Server({
 
         <div className="flex-1 overflow-x-hidden overflow-y-auto">
           {textChannel ? (
-            <ServerChat channel={textChannel} />
+            <ServerChat 
+              server={selectedServer}
+              channel={textChannel}
+            />
           ) : (
             <div className="flex items-center justify-center h-full">
               <p>Please select a text channel.</p>
@@ -106,7 +125,9 @@ export default function Server({
       {/* Sidebar phải: thành viên */}
       {selectedServer && textChannel && (
         <div className="w-60 h-full bg-white border-l border-gray-200 dark:bg-[#2b2d31] overflow-x-hidden overflow-y-auto">
-          <ServerMembers />
+          <ServerMembers 
+            serverMembers={serverMembers}
+          />
         </div>
       )}
 

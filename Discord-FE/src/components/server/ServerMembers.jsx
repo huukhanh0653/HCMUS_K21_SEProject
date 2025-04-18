@@ -1,81 +1,13 @@
+import React from "react";
 import { useTheme } from "../layout/ThemeProvider";
+import SampleAvt from "../../assets/sample_avatar.svg";
+import { useTranslation } from "react-i18next";
 
-export default function ServerMembers() {
+export default function ServerMembers({ serverMembers }) {
   const { isDarkMode } = useTheme();
+  const { t, i18n } = useTranslation();
 
-  const members = [
-    {
-      section: "ONLINE — 1",
-      users: [
-        {
-          name: "Gengar_B",
-          status: "online",
-          avatar: "https://i.pravatar.cc/50?img=39",
-        },
-      ],
-    },
-    {
-      section: "OFFLINE — 8",
-      users: [
-        {
-          name: "Cò",
-          status: "offline",
-          avatar: "https://i.pravatar.cc/50?img=31",
-        },
-        {
-          name: "Giang",
-          status: "offline",
-          avatar: "https://i.pravatar.cc/50?img=32",
-          role: "crown",
-        },
-        {
-          name: "Hữu Khánh",
-          status: "offline",
-          avatar: "https://i.pravatar.cc/50?img=33",
-        },
-        {
-          name: "Nguyễn Hoàng Nhật Q...",
-          status: "offline",
-          avatar: "https://i.pravatar.cc/50?img=34",
-        },
-        {
-          name: "Nguyễn Đỗ Nguyên P...",
-          status: "offline",
-          avatar: "https://i.pravatar.cc/50?img=35",
-        },
-        {
-          name: "Nhat Quang",
-          status: "offline",
-          avatar: "https://i.pravatar.cc/50?img=36",
-        },
-        {
-          name: "qduyisme",
-          status: "offline",
-          avatar: "https://i.pravatar.cc/50?img=37",
-        },
-        {
-          name: "Shin4ko",
-          status: "offline",
-          avatar: "https://i.pravatar.cc/50?img=38",
-        },
-      ],
-    },
-  ];
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "online":
-        return "bg-green-500";
-      case "idle":
-        return "bg-yellow-500";
-      case "dnd":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  // Classes based on the theme:
+  // Classes based on theme
   const containerClass = isDarkMode
     ? "bg-[#2b2d31] text-gray-100"
     : "bg-white text-gray-800";
@@ -87,43 +19,46 @@ export default function ServerMembers() {
   const statusBorderClass = isDarkMode ? "border-[#2b2d31]" : "border-white";
   const userNameClass = isDarkMode ? "text-gray-300" : "text-gray-900";
 
+  // Date formatting options
+  const dateOptions = { year: "numeric", month: "long", day: "numeric" };
+
   return (
     <div className={`w-60 ${containerClass} flex flex-col overflow-hidden`}>
       <div className="flex-1 overflow-y-auto p-2">
-        {members.map((section) => (
-          <div key={section.section} className="mb-4">
-            <h3 className={`text-xs font-semibold ${headingClass} px-2 mb-1`}>
-              {section.section}
-            </h3>
-            {section.users.map((user) => (
+        {serverMembers.map((member) => (
+          <div
+            key={member.id}
+            className={`flex items-center gap-2 px-2 py-1 rounded ${userHoverClass} cursor-pointer`}
+          >
+            <div className="relative">
               <div
-                key={user.name}
-                className={`flex items-center gap-2 px-2 py-1 rounded ${userHoverClass} cursor-pointer`}
+                className={`w-8 h-8 rounded-full ${avatarBgClass} overflow-hidden`}
               >
-                <div className="relative">
-                  <div
-                    className={`w-8 h-8 rounded-full ${avatarBgClass} overflow-hidden`}
-                  >
-                    <img
-                      src={user.avatar || "/placeholder.svg"}
-                      alt={user.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div
-                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 ${statusBorderClass} ${getStatusColor(
-                      user.status
-                    )}`}
-                  ></div>
-                </div>
-                <span className={`text-sm ${userNameClass} truncate`}>
-                  {user.name}
+                <img
+                  src={member.avatar || SampleAvt}
+                  alt={member.username}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className={`text-sm font-semibold ${userNameClass} truncate`}>
+                  {member.username}
                 </span>
-                {user.role === "crown" && (
+                {member.role === "Owner" && (
                   <span className="text-yellow-500 text-sm">👑</span>
                 )}
               </div>
-            ))}
+              <span className="text-xs text-gray-400 truncate">
+                {t("Joined")}:{" "}
+                  {new Date(member.joinedAt).toLocaleDateString(
+                    i18n.language,
+                    dateOptions
+                  )
+                }
+              </span>
+            </div>
           </div>
         ))}
       </div>
