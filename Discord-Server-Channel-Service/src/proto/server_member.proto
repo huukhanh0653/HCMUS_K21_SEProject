@@ -4,6 +4,7 @@ package server_member;
 
 service ServerMemberService {
   rpc AddMember (ChangeMemberRequest) returns (ChangeServerMemberResponse) {}
+  rpc JoinServer (JoinServerRequest) returns (ChangeServerMemberResponse) {}
   rpc RemoveMember (RemoveMemberRequest) returns (ServerMemberResponse) {}
   rpc UpdateMemberRole (ChangeMemberRequest) returns (ChangeServerMemberResponse) {}
   rpc SearchMember (SearchMemberRequest) returns (ServerMemberListResponse) {}
@@ -14,6 +15,12 @@ message ChangeMemberRequest {
   string userId = 2;
   string memberId = 3;
   string role = 4;
+}
+
+message JoinServerRequest {
+  string serverId = 1;
+  string memberId = 2;
+  string role = 3;
 }
 
 message RemoveMemberRequest {

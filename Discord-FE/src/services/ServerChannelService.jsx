@@ -159,6 +159,28 @@ const addServerMember = async (serverId, userId, memberData) => {
 };
 
 /**
+ * Thành viên gia nhập vào server.
+ * @param {string} serverId - ID của server.
+ * @param {Object} memberData - Dữ liệu thành viên (memberId, role).
+ * @returns {Promise<Object>}
+ */
+const joinServer = async (serverId, memberData) => {
+  try {
+    const response = await axios.post(
+      `${Server_API}/server-members/${serverId}`,
+      memberData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error adding server member:", error);
+    throw error;
+  }
+};
+
+/**
  * Xóa thành viên khỏi server.
  * @param {string} serverId - ID của server.
  * @param {string} userId - ID của người dùng thực hiện.
@@ -266,6 +288,23 @@ const getRoleByName = async (serverId, name) => {
         headers: { "Content-Type": "application/json" },
       }
     );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error getting role by name:", error);
+    throw error;
+  }
+};
+
+/**
+ * Lấy vai trò theo ID.
+ * @param {string} name - ID của vai trò.
+ * @returns {Promise<Object>}
+ */
+const getRoleById = async (roleId) => {
+  try {
+    const response = await axios.get(`${Server_API}/roles/${roleId}`, {
+      headers: { "Content-Type": "application/json" },
+    });
     return response.data.data;
   } catch (error) {
     console.error("Error getting role by name:", error);
@@ -506,6 +545,7 @@ const ServerChannelService = {
 
   // Server Member
   addServerMember,
+  joinServer,
   removeServerMember,
   updateServerMemberRole,
   searchServerMember,
@@ -513,6 +553,7 @@ const ServerChannelService = {
   // Role
   createRole,
   getRoleByName,
+  getRoleById,
   getRolesByServer,
   updateRole,
   deleteRole,
