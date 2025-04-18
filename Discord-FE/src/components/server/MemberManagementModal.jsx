@@ -130,7 +130,7 @@ export default function MemberManagementModal({
 
           {/* Members List */}
           <div
-            className="max-h-60 overflow-y-auto pt-3"
+            className="max-h-60 overflow-y-auto overflow-x-hidden pt-3"
             style={{
               scrollbarWidth: "thin",
               scrollbarColor: "grey transparent",
