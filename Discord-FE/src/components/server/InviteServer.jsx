@@ -1,16 +1,36 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { X, Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
-export default function InviteServerModal({ isOpen, onClose, serverCode }) {
+import Hashids from "hashids";
+
+export default function InviteServerModal({ server, isOpen, onClose }) {
   if (!isOpen) return null;
-  const {t} = useTranslation();
+  const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
+
   const friendsNotInServer = [
     { id: 1, name: "Duy", avatar: "https://i.pravatar.cc/50?img=8" },
     { id: 2, name: "Linh", avatar: "https://i.pravatar.cc/50?img=9" },
     { id: 3, name: "Nam", avatar: "https://i.pravatar.cc/50?img=10" },
   ];
 
-  const [copied, setCopied] = useState(false);
+  // Lấy KEY từ import.meta.env.VITE_SERVER_HASH_KEY
+  const hashids = useMemo(() => {
+    const key = import.meta.env.VITE_SERVER_HASH_KEY || "";
+    return new Hashids(key, 8);
+  }, []);
+
+  const serverCode = useMemo(() => {
+    try {
+      const hex = server.id.replace(/-/g, "").toLowerCase();
+      const code = hashids.encodeHex(hex);
+      return code;
+    } catch {
+      return hashids.encode(
+        ...server.id.split("").map((ch) => ch.charCodeAt(0))
+      );
+    }
+  }, [hashids, server.id]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(serverCode);

@@ -31,7 +31,7 @@ export default function ChannelManagementModal({ isOpen, onClose, channels, onDe
                   type="text"
                   value={editedName}
                   onChange={(e) => setEditedName(e.target.value)}
-                  className="bg-[#2b2d31] text-white px-2 py-1 rounded-md flex-1 focus:outline-none"
+                  className="bg-[#2b2d31] text-white px-2 py-1 mr-2 rounded-md flex-1 focus:outline-none"
                 />
               ) : (
                 <span className="text-white">{channel.name} ({channel.type})</span>
@@ -42,7 +42,7 @@ export default function ChannelManagementModal({ isOpen, onClose, channels, onDe
                   <button
                     className="p-1 bg-green-600 hover:bg-green-500 text-white rounded-md"
                     onClick={() => {
-                      onRenameChannel(channel.id, editedName);
+                      onRenameChannel(channel, editedName);
                       setEditingChannelId(null);
                       setEditedName("");
                     }}
