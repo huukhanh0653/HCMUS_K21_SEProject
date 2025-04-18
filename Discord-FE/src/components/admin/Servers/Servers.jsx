@@ -125,7 +125,7 @@ export default function ServerManagement() {
   const handleAddServer = async (newServer) => {
     try {
       await ServerChannelService.createServer(userId, {
-        name: newServer.serverName,
+        name: newServer.serverName.trim(),
         serverPic: newServer.serverPic,
       });
       toast.success(t("Server created successfully"));
@@ -139,7 +139,7 @@ export default function ServerManagement() {
   const handleEditServer = async (updatedServer) => {
     try {
       await ServerChannelService.updateServer(updatedServer.id, userId, {
-        name: updatedServer.serverName,
+        name: updatedServer.serverName.trim(),
         serverPic: updatedServer.serverPic,
       });
 

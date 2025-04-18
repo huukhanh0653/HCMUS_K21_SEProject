@@ -54,7 +54,7 @@ export class ChannelService {
     });
 
     await this.channelRepository.save(channel);
-    await this.channelMemberService.addMember(channel.id, userId, userId);
+    await this.channelMemberService.addMember(channel.id, userId);
 
     return { message: 'Channel created successfully' };
   }

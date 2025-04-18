@@ -15,15 +15,11 @@ export class ChannelMemberService {
     private userService: UserService,
   ) {}
 
-  async addMember(channelId: string, userId: string, memberId: string) {
+  async addMember(channelId: string, memberId: string) {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
     });
     if (!channel) return { message: 'Channel not found' };
-
-    const channel_owner = await this.searchMember(channelId, '')[0];
-    if (channel_owner.id !== userId)
-      return { message: 'Only the owner can add members' };
 
     const memberToAdd = await this.userService.getUser(memberId);
     if (!memberToAdd) return { message: 'User to add not found' };
@@ -46,15 +42,11 @@ export class ChannelMemberService {
     };
   }
 
-  async removeMember(channelId: string, userId: string, memberId: string) {
+  async removeMember(channelId: string, memberId: string) {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
     });
     if (!channel) return { message: 'Channel not found' };
-
-    const channel_owner = await this.searchMember(channelId, '')[0];
-    if (channel_owner.id !== userId)
-      return { message: 'Only the owner can add members' };
 
     const member = await this.channelMemberRepository.findOne({
       where: { channel_id: channelId, user_id: memberId },
