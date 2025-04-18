@@ -8,13 +8,23 @@ import { Role } from 'src/roles/role.entity';
 import { UserModule } from 'src/users/user.module';
 import { ServerMemberModule } from 'src/server_members/server_member.module';
 import { RoleModule } from 'src/roles/role.module';
+import { Channel } from 'src/channels/channel.entity';
+import { ChannelMember } from 'src/channel_members/channel_member.entity';
+import { ChannelModule } from 'src/channels/channel.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Server, ServerMember, Role]),
+    TypeOrmModule.forFeature([
+      Server,
+      ServerMember,
+      Role,
+      Channel,
+      ChannelMember,
+    ]),
     UserModule,
     ServerMemberModule,
     RoleModule,
+    ChannelModule,
   ],
   controllers: [ServerController],
   providers: [ServerService],
