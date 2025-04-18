@@ -30,6 +30,7 @@
     "date-fns": "^4.1.0",
     "firebase": "^11.4.0",
     "graphql": "^16.10.0",
+    "hashids": "^2.3.0",
     "i18next": "^24.2.2",
     "jest-fetch-mock": "^3.0.3",
     "lucide-react": "^0.475.0",

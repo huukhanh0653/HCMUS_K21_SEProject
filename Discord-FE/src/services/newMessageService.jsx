@@ -86,41 +86,6 @@ function useSearchMessages({ serverId, channelId, keyword }) {
   });
 }
 
-function useFetchMessagesBefore({ serverId, channelId, amount, timestamp }) {
-  const FETCH_MESSAGES_BEFORE = gql`
-    query FetchMessagesBefore(
-      $serverId: String!
-      $channelId: String!
-      $amount: Int!
-      $timestamp: String!
-    ) {
-      fetchMessagesBefore(
-        serverId: $serverId
-        channelId: $channelId
-        amount: $amount
-        timestamp: $timestamp
-      ) {
-        messages {
-          messageId
-          content
-          senderId
-          timestamp
-          serverId
-          channelId
-          attachments
-          mentions
-        }
-        hasMore
-        lastMessageTimestamp
-        amount
-      }
-    }
-  `;
-
-  return useQuery(FETCH_MESSAGES_BEFORE, {
-    variables: { serverId, channelId, amount, timestamp },
-  });
-}
 
 function useFetchMessagesBefore({ serverId, channelId, amount, timestamp }) {
   const FETCH_MESSAGES_BEFORE = gql`

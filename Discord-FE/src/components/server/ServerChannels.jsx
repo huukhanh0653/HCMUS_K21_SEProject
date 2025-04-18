@@ -135,21 +135,21 @@ export default function ServerChannels({
     }
   };
 
-  const handleRenameChannel = async (channelId, newName) => {
+  const handleRenameChannel = async (channel, newName) => {
     try {
       const updated = await ServerChannelService.updateChannel(
-        channelId,
+        channel.id,
         user.id,
         { name: newName }
       );
       const mapped = {
-        id: updated.id,
-        name: updated.name,
-        type: updated.type,
-        isPrivate: updated.is_private,
+        id: channel.id,
+        name: newName,
+        type: channel.type,
+        isPrivate: channel.isPrivate,
       };
       setChannels(
-        safeChannels.map((c) => (c.id === channelId ? mapped : c))
+        safeChannels.map((c) => (c.id === channel.id ? mapped : c))
       );
     } catch (err) {
       console.error("Failed to rename channel", err);
@@ -271,7 +271,7 @@ export default function ServerChannels({
 
       {/* Invite Server Modal */}
       <InviteServer
-        serverCode="ABC123XYZ"
+        server={server}
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
       />
