@@ -67,7 +67,7 @@ class FriendService {
           {
             model: User,
             as: "sender",
-            attributes: ["username", "email", "avatar"],
+            attributes: { exclude: ["password"] },
           },
         ],
       });
@@ -135,12 +135,12 @@ class FriendService {
           {
             model: User,
             as: "user",
-            attributes: ["username", "email", "avatar"],
+            attributes: { exclude: ["password"] },
           },
           {
             model: User,
             as: "friend",
-            attributes: ["username", "email", "avatar"],
+            attributes: { exclude: ["password"] },
           },
         ],
       });

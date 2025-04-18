@@ -55,7 +55,42 @@ export class ServerMemberService {
     await this.serverMemberRepository.save(member);
 
     return {
-      message: `Member added to server ${server.name} with role ${role.name}`,
+      message: `Member added to server \"${server.name}\" with role \"${role.name}\"`,
+      member: memberToAdd,
+    };
+  }
+
+  async joinServer(serverId: string, data: ServerMemberDto) {
+    const serverMemberDto = plainToClass(ServerMemberDto, data);
+    const errors = await validate(serverMemberDto);
+    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+
+    const server = await this.serverRepository.findOne({
+      where: { id: serverId },
+    });
+    if (!server) return { message: 'Server not found' };
+
+    const role = await this.roleService.getRoleByName(serverId, data.role!);
+    if (!role) return { message: 'Role not found' };
+
+    const memberToAdd = await this.userService.getUser(data.memberId!);
+    if (!memberToAdd) return { message: 'User to add not found' };
+
+    const existingMember = await this.serverMemberRepository.findOne({
+      where: { server_id: serverId, user_id: data.memberId },
+    });
+    if (existingMember) return { message: 'User is already a member' };
+
+    const member = this.serverMemberRepository.create({
+      server_id: serverId,
+      user_id: data.memberId,
+      role_id: role.id,
+    });
+
+    await this.serverMemberRepository.save(member);
+
+    return {
+      message: `Member added to server \"${server.name}\" with role \"${role.name}\"`,
       member: memberToAdd,
     };
   }
@@ -79,7 +114,7 @@ export class ServerMemberService {
 
     const memberToRemove = await this.userService.getUser(memberId);
     return {
-      message: `${memberToRemove.username} removed from server ${server.name}`,
+      message: `\"${memberToRemove.username}\" removed from server \"${server.name}\"`,
     };
   }
 

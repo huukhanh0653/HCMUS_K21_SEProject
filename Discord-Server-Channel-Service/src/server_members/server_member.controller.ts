@@ -39,6 +39,15 @@ export class ServerMemberController {
     return { ...response };
   }
 
+  @GrpcMethod('ServerMemberService', 'JoinServer')
+  async joinServer(data: { serverId: string } & ServerMemberDto) {
+    const response = await this.serverMemberService.joinServer(data.serverId, {
+      memberId: data.memberId,
+      role: data.role,
+    });
+    return { ...response };
+  }
+
   @GrpcMethod('ServerMemberService', 'RemoveMember')
   async removeMember(data: {
     serverId: string;
@@ -97,6 +106,21 @@ export class ServerMemberController {
     @Body() data: ServerMemberDto,
   ) {
     return this.serverMemberService.addMember(serverId, userId, data);
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'A member join in a server' })
+  @ApiResponse({ status: 201, description: 'Member added successfully' })
+  @ApiResponse({ status: 400, description: 'Validation failed' })
+  @ApiParam({
+    name: 'serverId',
+    description: 'ID of the server',
+  })
+  async joinServerRest(
+    @Param('serverId') serverId: string,
+    @Body() data: ServerMemberDto,
+  ) {
+    return this.serverMemberService.joinServer(serverId, data);
   }
 
   @Delete(':userId/:memberId')

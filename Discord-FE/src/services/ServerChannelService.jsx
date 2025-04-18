@@ -33,7 +33,7 @@ const createServer = async (userId, serverData) => {
  * @param {string} query - Từ khóa tìm kiếm.
  * @returns {Promise<Object>}
  */
-const getAllServers = async (userId, query) => {
+const getAllServers = async (userId, query = "") => {
   try {
     const response = await axios.get(
       `${Server_API}/servers/${userId}/all?query=${encodeURIComponent(query)}`,
@@ -146,6 +146,28 @@ const addServerMember = async (serverId, userId, memberData) => {
   try {
     const response = await axios.post(
       `${Server_API}/server-members/${serverId}/${userId}`,
+      memberData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error adding server member:", error);
+    throw error;
+  }
+};
+
+/**
+ * Thành viên gia nhập vào server.
+ * @param {string} serverId - ID của server.
+ * @param {Object} memberData - Dữ liệu thành viên (memberId, role).
+ * @returns {Promise<Object>}
+ */
+const joinServer = async (serverId, memberData) => {
+  try {
+    const response = await axios.post(
+      `${Server_API}/server-members/${serverId}`,
       memberData,
       {
         headers: { "Content-Type": "application/json" },
@@ -274,6 +296,23 @@ const getRoleByName = async (serverId, name) => {
 };
 
 /**
+ * Lấy vai trò theo ID.
+ * @param {string} name - ID của vai trò.
+ * @returns {Promise<Object>}
+ */
+const getRoleById = async (roleId) => {
+  try {
+    const response = await axios.get(`${Server_API}/roles/${roleId}`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error("Error getting role by name:", error);
+    throw error;
+  }
+};
+
+/**
  * Lấy danh sách vai trò trong server.
  * @param {string} serverId - ID của server.
  * @returns {Promise<Object>}
@@ -357,15 +396,15 @@ const createChannel = async (serverId, userId, channelData) => {
 };
 
 /**
- * Lấy danh sách channel trong server.
- * @param {string} serverId - ID của server.
+ * Lấy danh sách channel của người dùng.
+ * @param {string} userId - ID của người dùng.
  * @param {string} query - Từ khóa tìm kiếm.
  * @returns {Promise<Object>}
  */
-const getChannelsByServer = async (serverId, query = "") => {
+const getChannels = async (userId, query = "") => {
   try {
     const response = await axios.get(
-      `${Server_API}/channels/${serverId}?query=${encodeURIComponent(query)}`,
+      `${Server_API}/channels/${userId}?query=${encodeURIComponent(query)}`,
       {
         headers: { "Content-Type": "application/json" },
       }
@@ -506,6 +545,7 @@ const ServerChannelService = {
 
   // Server Member
   addServerMember,
+  joinServer,
   removeServerMember,
   updateServerMemberRole,
   searchServerMember,
@@ -513,13 +553,14 @@ const ServerChannelService = {
   // Role
   createRole,
   getRoleByName,
+  getRoleById,
   getRolesByServer,
   updateRole,
   deleteRole,
 
   // Channel
   createChannel,
-  getChannelsByServer,
+  getChannels,
   updateChannel,
   deleteChannel,
 

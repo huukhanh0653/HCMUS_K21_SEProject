@@ -18,7 +18,7 @@ export class ServerService {
     private serverRepository: Repository<Server>,
     private userService: UserService,
     @InjectRepository(ServerMember)
-    private serverMemeberRepository: Repository<ServerMember>,
+    private serverMemberRepository: Repository<ServerMember>,
     private serverMemberService: ServerMemberService,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
@@ -104,9 +104,16 @@ export class ServerService {
     const user = await this.userService.getUser(userId);
     if (!user) return { message: 'User not found', servers: [] };
 
-    const servers = await this.serverRepository.find({
-      where: { owner_id: userId, name: Like(`%${query}%`) },
+    const serverMembers = await this.serverMemberRepository.find({
+      where: { user_id: userId },
+      relations: ['server'],
     });
+
+    const servers = serverMembers
+      .map((member) => member.server)
+      .filter((server) =>
+        server.name.toLowerCase().includes(query.toLowerCase()),
+      );
 
     const users = await this.userService.getUsers();
     const serversWithOwner = servers.map((server) => {
@@ -144,7 +151,7 @@ export class ServerService {
     if (server.owner_id !== userId)
       return { message: 'Only the owner can delete the server' };
 
-    await this.serverMemeberRepository.delete({ server_id: serverId });
+    await this.serverMemberRepository.delete({ server_id: serverId });
     await this.roleRepository.delete({ server_id: serverId });
     await this.serverRepository.delete({ id: serverId });
 

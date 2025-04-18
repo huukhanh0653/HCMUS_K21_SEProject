@@ -22,7 +22,7 @@ import {
 
 @ApiTags('channels')
 @ApiBearerAuth()
-@Controller('channels')
+@Controller('channels/:userId')
 export class ChannelController {
   constructor(private readonly channelService: ChannelService) {}
 
@@ -37,10 +37,10 @@ export class ChannelController {
     return { ...response };
   }
 
-  @GrpcMethod('ChannelService', 'GetChannelsByServer')
-  async getChannelsByServer(data: { serverId: string; query: string }) {
-    const { message, channels } = await this.channelService.getChannelsByServer(
-      data.serverId,
+  @GrpcMethod('ChannelService', 'GetChannels')
+  async getChannels(data: { userId: string; query: string }) {
+    const { message, channels } = await this.channelService.getChannels(
+      data.userId,
       data.query,
     );
     return {
@@ -85,7 +85,7 @@ export class ChannelController {
   }
 
   // RESTful Methods
-  @Post(':userId/:serverId')
+  @Post(':serverId')
   @ApiOperation({ summary: 'Create a new channel' })
   @ApiResponse({ status: 201, description: 'Channel created successfully' })
   @ApiResponse({ status: 400, description: 'Validation failed' })
@@ -102,12 +102,12 @@ export class ChannelController {
     return this.channelService.createChannel(serverId, userId, data);
   }
 
-  @Get(':serverId')
-  @ApiOperation({ summary: 'Get channels by server' })
+  @Get()
+  @ApiOperation({ summary: 'Get channels the user belongs to' })
   @ApiResponse({ status: 200, description: 'List of channels' })
   @ApiParam({
-    name: 'serverId',
-    description: 'ID of the server',
+    name: 'userId',
+    description: 'ID of the user',
   })
   @ApiQuery({
     name: 'query',
@@ -115,13 +115,13 @@ export class ChannelController {
     required: false,
   })
   async getChannelsByServerRest(
-    @Param('serverId') serverId: string,
+    @Param('userId') userId: string,
     @Query('query') query: string = '',
   ) {
-    return this.channelService.getChannelsByServer(serverId, query);
+    return this.channelService.getChannels(userId, query);
   }
 
-  @Put(':userId/:channelId')
+  @Put(':channelId')
   @ApiOperation({ summary: 'Update a channel' })
   @ApiResponse({ status: 200, description: 'Channel updated successfully' })
   @ApiResponse({ status: 404, description: 'Channel not found' })
@@ -138,7 +138,7 @@ export class ChannelController {
     return this.channelService.updateChannel(channelId, userId, data);
   }
 
-  @Delete(':userId/:channelId')
+  @Delete(':channelId')
   @ApiOperation({ summary: 'Delete a channel' })
   @ApiResponse({ status: 200, description: 'Channel deleted successfully' })
   @ApiResponse({ status: 404, description: 'Channel not found' })
