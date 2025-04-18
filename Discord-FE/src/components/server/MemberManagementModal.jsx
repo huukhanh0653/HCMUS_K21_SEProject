@@ -1,15 +1,41 @@
 import { useState, useEffect } from "react";
 import { Search, UserX, ShieldOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
-export default function MemberManagementModal({ members, isOpen, onClose }) {
+import ServerChannelService from "../../services/ServerChannelService";
+import UserService from "../../services/UserService";
+import toast from "react-hot-toast";
+
+export default function MemberManagementModal({
+  serverId,
+  members,
+  isOpen,
+  onClose,
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [memberList, setMemberList] = useState(members); // Danh sách thành viên có thể cập nhật
-  const {t} = useTranslation();
+  const [confirmationModal, setConfirmationModal] = useState({
+    isOpen: false,
+    action: null,
+    memberId: null,
+    memberUsername: null,
+  });
+  const { t } = useTranslation();
+  const userId = JSON.parse(localStorage.getItem("user")).id;
+
   // Đóng modal khi ấn ESC
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        onClose();
+        if (confirmationModal.isOpen) {
+          setConfirmationModal({
+            isOpen: false,
+            action: null,
+            memberId: null,
+            memberUsername: null,
+          });
+        } else {
+          onClose();
+        }
       }
     };
 
@@ -20,90 +46,200 @@ export default function MemberManagementModal({ members, isOpen, onClose }) {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, confirmationModal.isOpen]);
+
+  // Cập nhật memberList khi members prop thay đổi
+  useEffect(() => {
+    setMemberList(members);
+  }, [members]);
 
   if (!isOpen) return null;
 
   // Hàm xử lý kick
-  const handleKick = (id) => {
-    setMemberList(memberList.filter((member) => member.id !== id));
+  const handleKick = async (id) => {
+    try {
+      await ServerChannelService.removeServerMember(serverId, userId, id);
+      setMemberList(memberList.filter((member) => member.id !== id));
+      toast.success(t("Member kicked successfully"));
+    } catch (error) {
+      toast.error(`${error.message}`);
+    }
   };
 
   // Hàm xử lý ban
-  const handleBan = (id) => {
-    setMemberList(memberList.filter((member) => member.id !== id));
+  const handleBan = async (id) => {
+    try {
+      const user = await UserService.getUserByID(id);
+      await UserService.updateUser(id, {
+        ...user,
+        status: "banned",
+      });
+      setMemberList(memberList.filter((member) => member.id !== id));
+      toast.success(t("Member banned successfully"));
+    } catch (error) {
+      toast.error(`${error.message}`);
+    }
+  };
+
+  // Hàm mở modal xác nhận
+  const openConfirmationModal = (action, memberId, memberUsername) => {
+    setConfirmationModal({
+      isOpen: true,
+      action,
+      memberId,
+      memberUsername,
+    });
+  };
+
+  // Hàm xử lý xác nhận hành động
+  const confirmAction = async () => {
+    const { action, memberId } = confirmationModal;
+    if (action === "kick") {
+      await handleKick(memberId);
+    } else if (action === "ban") {
+      await handleBan(memberId);
+    }
+    setConfirmationModal({
+      isOpen: false,
+      action: null,
+      memberId: null,
+      memberUsername: null,
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
-      <div className="bg-[#2b2d31] p-4 rounded-md w-96 shadow-lg">
-        <h2 className="text-white text-lg font-semibold mb-2">{t("Manage Members")}</h2>
+    <>
+      {/* Modal chính */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+        <div className="bg-[#2b2d31] p-4 rounded-md w-96 shadow-lg">
+          <h2 className="text-white text-lg font-semibold mb-2">
+            {t("Manage Members")}
+          </h2>
 
-        {/* Search Bar */}
-        <div className="flex items-center bg-[#1e1f22] p-2 rounded-md mb-2">
-          <Search size={20} className="text-gray-400" />
-          <input
-            type="text"
-            placeholder={t('Find member....')}
-            className="bg-transparent text-white flex-1 ml-2 outline-none"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+          {/* Search Bar */}
+          <div className="flex items-center bg-[#1e1f22] p-2 rounded-md mb-2">
+            <Search size={20} className="text-gray-400" />
+            <input
+              type="text"
+              placeholder={t("Find member....")}
+              className="bg-transparent text-white flex-1 ml-2 outline-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
-        {/* Members List */}
-        <div 
-          className="max-h-60 overflow-y-auto pt-3"
-          style={{
-            scrollbarWidth: "thin", // Firefox
-            scrollbarColor: "grey transparent", // Firefox
-          }}
-        >
-          {memberList
-            .filter((member) =>
-              member.name.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-            .map((member) => (
-              <div key={member.id} className="flex items-center justify-between p-2 hover:bg-[#35373c] rounded-md">
-                <div className="flex items-center gap-2">
-                  <img src={member.avatar} alt={member.name} className="w-8 h-8 rounded-full" />
-                  <span className="text-white">{member.name}</span>
+          {/* Members List */}
+          <div
+            className="max-h-60 overflow-y-auto overflow-x-hidden pt-3"
+            style={{
+              scrollbarWidth: "thin",
+              scrollbarColor: "grey transparent",
+            }}
+          >
+            {memberList
+              .filter((member) =>
+                member.username.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+              .map((member) => (
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between p-2 hover:bg-[#35373c] rounded-md"
+                >
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={member.avatar}
+                      alt={member.username}
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <span className="text-white">{member.username}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    {/* Kick Button */}
+                    <button
+                      className="text-red-500 hover:text-red-700 relative group"
+                      onClick={() =>
+                        openConfirmationModal(
+                          "kick",
+                          member.id,
+                          member.username
+                        )
+                      }
+                    >
+                      <UserX size={20} />
+                      <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                        {t("Kick")}
+                      </span>
+                    </button>
+
+                    {/* Ban Button */}
+                    <button
+                      className="text-yellow-500 hover:text-yellow-700 relative group"
+                      onClick={() =>
+                        openConfirmationModal("ban", member.id, member.username)
+                      }
+                    >
+                      <ShieldOff size={20} />
+                      <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                        {t("Ban")}
+                      </span>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  {/* Kick Button */}
-                  <button 
-                    className="text-red-500 hover:text-red-700 relative group"
-                    onClick={() => handleKick(member.id)}
-                  >
-                    <UserX size={20} />
-                    <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
-                      {t('Kick')}
-                    </span>
-                  </button>
-                  
-                  {/* Ban Button */}
-                  <button 
-                    className="text-yellow-500 hover:text-yellow-700 relative group"
-                    onClick={() => handleBan(member.id)}
-                  >
-                    <ShieldOff size={20} />
-                    <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
-                      {t('Ban')}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            ))}
-        </div>
+              ))}
+          </div>
 
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
-        >
-          {t('Close')}
-        </button>
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
+          >
+            {t("Close")}
+          </button>
+        </div>
       </div>
-    </div>
+
+      {/* Modal xác nhận */}
+      {confirmationModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30">
+          <div className="bg-[#2b2d31] p-4 rounded-md w-80 shadow-lg text-white">
+            <h3 className="text-lg font-semibold mb-2">
+              {t("Confirm")} {t(`${confirmationModal.action}`)}
+            </h3>
+            <p className="text-gray-300 mb-4">
+              {t("Are you sure you want to")} {t(`${confirmationModal.action}`)}{" "}
+              <span className="font-semibold">
+                {confirmationModal.memberUsername}
+              </span>
+              ?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={confirmAction}
+                className={`flex-1 py-2 rounded-md ${
+                  confirmationModal.action === "kick"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-yellow-600 hover:bg-yellow-700"
+                } text-white`}
+              >
+                {t("Confirm")}
+              </button>
+              <button
+                onClick={() =>
+                  setConfirmationModal({
+                    isOpen: false,
+                    action: null,
+                    memberId: null,
+                    memberUsername: null,
+                  })
+                }
+                className="flex-1 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md"
+              >
+                {t("Cancel")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
