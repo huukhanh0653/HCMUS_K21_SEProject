@@ -58,6 +58,8 @@ router.post("/add", async (req, res) => {
 router.get("/:user_id", async (req, res) => {
   try {
     const friends = await FriendService.getFriends(req.params.user_id);
+    console.log(friends);
+
     res.json(friends.map((friend) => friend.get({ plain: true })));
   } catch (error) {
     res.status(500).json({ error: error.message });
