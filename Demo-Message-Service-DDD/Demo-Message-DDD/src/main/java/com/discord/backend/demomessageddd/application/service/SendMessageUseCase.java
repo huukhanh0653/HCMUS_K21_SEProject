@@ -67,6 +67,14 @@ public class SendMessageUseCase {
         // Publish to Kafka
         messageEventPublisher.publish(message);
 
+        if (message.getMentions() != null) {
+            for (String mention : message.getMentions()) {
+                System.out.println("Mentioned user: " + mention);
+            }
+        } else {
+            System.out.println("No mentions found.");
+        }
+
         return message;
     }
 

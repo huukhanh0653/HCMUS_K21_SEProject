@@ -30,11 +30,12 @@ public class Message {
     private List<String> attachments;
     private List<String> mentions;
     private MessageContent content;
-    private final String timestamp;
+    private String timestamp;
+    private String lastEdited;
 
     public Message(String messageId, String senderId, String serverId,
-                   String channelId, List<String> attachments,
-                   List<String> mentions, MessageContent content) {
+            String channelId, List<String> attachments,
+            List<String> mentions, MessageContent content) {
         if (messageId == null) {
             this.messageId = UUID.randomUUID().toString();
         } else {
@@ -55,11 +56,12 @@ public class Message {
         }
         this.content = content;
         this.timestamp = Instant.now().toString();
+        this.lastEdited = timestamp;
         System.out.println("1 Message constructor called with id:");
     }
 
     public Message(String senderId, String serverId,
-                   String channelId, MessageContent content) {
+            String channelId, MessageContent content) {
 
         this.messageId = serverId + Instant.now().toString();
         this.senderId = senderId;
@@ -67,6 +69,7 @@ public class Message {
         this.serverId = serverId;
         this.content = content;
         this.timestamp = Instant.now().toString();
+        this.lastEdited = timestamp;
         System.out.println("2 Message constructor called with id:");
     }
 
@@ -92,6 +95,7 @@ public class Message {
         this.content = content;
         this.attachments = attachments;
         this.timestamp = timestamp;
+        this.lastEdited = timestamp;
         this.mentions = mentions;
         System.out.println("3 Message constructor called with id: " + id);
     }
@@ -128,6 +132,10 @@ public class Message {
         return mentions;
     }
 
+    public String getLastEdited() {
+        return lastEdited;
+    }
+
     public void setAttachments(List<String> attachments) {
         this.attachments = attachments;
     }
@@ -138,6 +146,10 @@ public class Message {
 
     public void setMentions(List<String> mentions) {
         this.mentions = mentions;
+    }
+
+    public void setLastEdited(String lastEdited) {
+        this.lastEdited = lastEdited;
     }
 
 }
