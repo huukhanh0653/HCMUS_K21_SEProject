@@ -123,7 +123,7 @@ export class ServerController {
   }
 
   @Get(':userId')
-  @ApiOperation({ summary: 'Search servers of the user' })
+  @ApiOperation({ summary: 'Get servers the user belongs to' })
   @ApiResponse({ status: 200, description: 'List of servers of the user' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiQuery({
