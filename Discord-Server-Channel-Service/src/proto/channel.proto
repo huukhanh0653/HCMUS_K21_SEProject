@@ -4,6 +4,7 @@ package channel;
 
 service ChannelService {
   rpc CreateChannel (CreateChannelRequest) returns (ChangeChannelResponse) {}
+  rpc GetChannelsByServer (GetChannelsByServerRequest) returns (ChannelListResponse) {}
   rpc GetChannels (GetChannelsRequest) returns (ChannelListResponse) {}
   rpc UpdateChannel (UpdateChannelRequest) returns (ChangeChannelResponse) {}
   rpc DeleteChannel (DeleteChannelRequest) returns (ChannelResponse) {}
@@ -15,6 +16,11 @@ message CreateChannelRequest {
   string name = 3;
   string type = 4;
   bool isPrivate = 5;
+}
+
+message GetChannelsByServerRequest {
+  string serverId = 1;
+  string query = 2;
 }
 
 message GetChannelsRequest {

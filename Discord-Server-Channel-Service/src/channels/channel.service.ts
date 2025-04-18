@@ -100,6 +100,19 @@ export class ChannelService {
     return { message: 'Channel updated successfully', channel: updatedData };
   }
 
+  async getChannelsByServer(serverId: string, query: string) {
+    const server = await this.serverRepository.findOne({
+      where: { id: serverId },
+    });
+    if (!server) return { message: 'Server not found', channels: [] };
+
+    const channels = await this.channelRepository.find({
+      where: { server_id: serverId, name: Like(`%${query}%`) },
+    });
+
+    return { message: 'Get channels successfully', channels };
+  }
+
   async getChannels(userId: string, query: string) {
     const channelMembers = await this.channelMemberRepository.find({
       where: { user_id: userId },
