@@ -6,7 +6,7 @@ import StorageService from "../../services/StorageService";
 
 import Hashids from "hashids";
 
-export default function CreateServerModal({ onClose, onCreated }) {
+export default function CreateServerModal({ onClose, onCreated, onLoad }) {
   const [modalType, setModalType] = useState("main");
   const [serverName, setServerName] = useState("");
   const [serverImageFile, setServerImageFile] = useState(null);
@@ -55,13 +55,13 @@ export default function CreateServerModal({ onClose, onCreated }) {
       const userId = user?.id;
       if (!userId) throw new Error(t("User not logged in"));
 
-      let imageUrl = "";
-      if (serverImageFile) {
+      let imageUrl = "https://lh3.googleusercontent.com/a/ACg8ocKmMo19Vt1WHo_oM9THY1GmiP2JzCHh2LAbFy_6ErY0Q8OpAQ=s96-c";
+      /*if (serverImageFile) {
         imageUrl = await StorageService.uploadFile(serverImageFile);
         if (!imageUrl) {
           throw new Error(t("Failed to upload server icon"));
         }
-      }
+      }*/
 
       const payload = {
         name: serverName.trim(),
@@ -75,6 +75,7 @@ export default function CreateServerModal({ onClose, onCreated }) {
         payload
       );
       if (onCreated) onCreated(newServer);
+      onLoad(); // Load lại danh sách server
       onClose();
     } catch (err) {
       console.error(err);
@@ -130,14 +131,14 @@ export default function CreateServerModal({ onClose, onCreated }) {
       if (!userId) throw new Error(t("User not logged in"));
 
       // Thêm thành viên vào server với role Member
-      await ServerChannelService.addServerMember(
+      await ServerChannelService.joinServer(
         foundServer.id,
-        userId,
         { memberId: userId, role: "Member" }
       );
 
       // Sau khi join thành công, gọi callback và đóng modal
       onCreated?.(foundServer);
+      onLoad(); // Load lại danh sách server
       onClose();
     } catch (err) {
       console.error(err);

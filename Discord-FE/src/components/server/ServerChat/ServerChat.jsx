@@ -21,19 +21,14 @@ import {
   useDeleteMessage,
 } from "../../../services/newMessageService";
 
-export default function ServerChat({ server, channel }) {
+export default function ServerChat(props) {
+  const { server, channel } = props;
   const { t } = useTranslation();
 
   // user info
   const [storedUser, setStoredUser] = useState(null);
-  const [storedUsername, setStoredUsername] = useState(null);
-  useEffect(() => {
-    const u = localStorage.getItem("user_info");
-    const name = localStorage.getItem("username");
-    if (u) setStoredUser(JSON.parse(u));
-    if (name) setStoredUsername(name);
-  }, []);
-  const username = storedUsername || storedUser?.name || "User";
+  const user = JSON.parse(localStorage.getItem("user"));
+  const username = user.username || "Unknown User";
   const avatarSrc = storedUser?.avatar || SampleAvt;
 
   // chat state
@@ -47,7 +42,7 @@ export default function ServerChat({ server, channel }) {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  const serverId = server.id;
+  const serverId = server.id || '';
   const channelId = channel.id;
 
   // GraphQL mutations
@@ -56,6 +51,7 @@ export default function ServerChat({ server, channel }) {
 
   // Kết nối WebSocket STOMP
   useEffect(() => {
+    console.log("Connecting to STOMP client...", server);
     if (!serverId || !channelId) return;
     const disconnect = connectMessageService(
       stompClientRef,
@@ -80,7 +76,7 @@ export default function ServerChat({ server, channel }) {
     if (!content) return;
 
     const payload = {
-      senderId: storedUser?.id || "unknown",
+      senderId: user.id || "unknown",
       serverId,
       channelId,
       content,
@@ -89,7 +85,7 @@ export default function ServerChat({ server, channel }) {
     };
 
     try {
-      const res = await fetch("http://localhost:8082/send", {
+      const res = await fetch("/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

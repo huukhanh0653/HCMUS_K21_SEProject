@@ -14,6 +14,8 @@ export default function MessageList({
     messagesWrapperRef,
     messagesEndRef,
 }) {
+
+  const user = JSON.parse(localStorage.getItem("user"));
   const { i18n } = useTranslation(); // ✅ Di chuyển vào trong đây
 
   return (
@@ -69,15 +71,25 @@ export default function MessageList({
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden flex-shrink-0">
                     <img
-                      src={message.sender_avatar || SampleAvt}
-                      alt={message.sender_name || "User"}
+                      src={
+                        message.senderId === user.id
+                          ? user.avatar
+                          : SampleAvt
+                      }
+                      alt={message.id || "User"}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold">{message.sender_id}</span>
-                      <span className="text-xs text-gray-400">{formattedTime}</span>
+                      <span className="font-semibold">
+                        {message.senderId === user.id
+                          ? user.username
+                          : "User"}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {formattedTime}
+                      </span>
                     </div>
                   </div>
                 </div>

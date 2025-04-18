@@ -159,21 +159,21 @@ export default function Home({ user }) {
     }
   };
 
+  const load = async () => {
+    setLoadingServers(true);
+    try {
+      const currentUser = JSON.parse(localStorage.getItem("user"));
+      const resp = await ServerChannelService.getServers(currentUser.id);
+      setServers(resp.servers || []);
+    } catch (err) {
+      console.error("Error loading servers", err);
+      setServersError(err.message);
+    } finally {
+      setLoadingServers(false);
+    }
+  };
   // Fetch servers
   useEffect(() => {
-    const load = async () => {
-      setLoadingServers(true);
-      try {
-        const currentUser = JSON.parse(localStorage.getItem("user"));
-        const resp = await ServerChannelService.getServers(currentUser.id);
-        setServers(resp.servers || []);
-      } catch (err) {
-        console.error("Error loading servers", err);
-        setServersError(err.message);
-      } finally {
-        setLoadingServers(false);
-      }
-    };
     load();
   }, []);
 
@@ -403,6 +403,7 @@ export default function Home({ user }) {
         {showCreateServer && (
           <CreateServerModal
             onClose={() => dispatch(setShowCreateServer(false))}
+            onLoad={() =>load()}
           />
         )}
       </Suspense>
