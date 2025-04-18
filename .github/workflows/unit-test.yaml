@@ -1,48 +1,48 @@
-# name: Run Unit Tests
+name: Run Unit Tests
 
-# on:
-#   push:
-#     branches: [ "master" ]
-#   pull_request:
-#     branches: [ "master" ]
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
-# jobs:
-#   unit-test:
-#     runs-on: ubuntu-latest
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-#       # 👉 Cài đặt Java (cho Spring Boot)
-#       - name: Set up Java
-#         uses: actions/setup-java@v3
-#         with:
-#           distribution: 'temurin'
-#           java-version: '17'
+      # 👉 Cài đặt Java (cho Spring Boot)
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-#       # 👉 Cài đặt Node.js (cho frontend & các service Node.js)
-#       - name: Set up Node.js
-#         uses: actions/setup-node@v3
-#         with:
-#           node-version: '22.12.0'
+      # 👉 Cài đặt Node.js (cho frontend & các service Node.js)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.12.0'
 
-#       # # 👉 Chạy Unit Test cho Java Spring Boot services
-#       # - name: Run Unit Test - Java Services
-#       #   run: |
-#       #     for service in Discord-User-Service Discord-Message-Service Discord-Manage-Server-Service; do
-#       #       echo "Running tests for $service..."
-#       #       cd $service && mvn test || exit 1
-#       #       cd ..
-#       #     done
+      # # 👉 Chạy Unit Test cho Java Spring Boot services
+      # - name: Run Unit Test - Java Services
+      #   run: |
+      #     for service in Discord-User-Service Discord-Message-Service Discord-Manage-Server-Service; do
+      #       echo "Running tests for $service..."
+      #       cd $service && mvn test || exit 1
+      #       cd ..
+      #     done
 
-#       # 👉 Chạy Unit Test cho Node.js services
-#       - name: Run Unit Test - Node.js Services
-#         run: |
-#           cd Discord-User-Service && npm install && npm test || exit 1
-#           cd ../Discord-Message-Service && npm install && npm test || exit 1
-#           cd ../Discord-Manage-Server-Service && npm install && npm test || exit 1
-#           cd ../Discord-Message-Service && npm install && npm test || exit 1
-#           cd ..
-#           ls
-#           done
+      # 👉 Chạy Unit Test cho Node.js services
+      - name: Run Unit Test - Node.js Services
+        run: |
+          cd Discord-User-Service && npm install && npm test || exit 1
+          cd ../Discord-Message-Service && npm install && npm test || exit 1
+          cd ../Discord-Manage-Server-Service && npm install && npm test || exit 1
+          cd ../Discord-Message-Service && npm install && npm test || exit 1
+          cd ..
+          ls
+          done

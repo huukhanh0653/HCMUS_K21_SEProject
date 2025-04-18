@@ -8,9 +8,6 @@ public class MessageContent {
     private final String text;
 
     public MessageContent(String text) {
-
-        System.out.println("MessageContent constructor called with text: " + text);
-
         // Validate the message content
         if (text == null || text.trim().isEmpty()) {
             throw new IllegalArgumentException("Message content cannot be empty");
