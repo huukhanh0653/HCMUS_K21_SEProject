@@ -28,10 +28,11 @@ export class ServerService {
   async createServer(userId: string, data: ServerDto) {
     const serverDto = plainToClass(ServerDto, data);
     const errors = await validate(serverDto);
-    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+    if (errors.length > 0)
+      return { message: `Validation failed: ${errors}`, server: {} };
 
     const user = await this.userService.getUser(userId);
-    if (!user) return { message: 'User not found' };
+    if (!user) return { message: 'User not found', server: {} };
 
     const server = this.serverRepository.create({
       name: data.name,
@@ -47,20 +48,21 @@ export class ServerService {
       role: 'Owner',
     });
 
-    return { message: 'Server created successfully' };
+    return { message: 'Server created successfully', server };
   }
 
   async updateServer(serverId: string, userId: string, data: ServerDto) {
     const serverDto = plainToClass(ServerDto, data);
     const errors = await validate(serverDto, { skipMissingProperties: true });
-    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+    if (errors.length > 0)
+      return { message: `Validation failed: ${errors}`, server: {} };
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
     if (!server) return { message: 'Server not found' };
     if (server.owner_id !== userId)
-      return { message: 'Only the owner can update the server' };
+      return { message: 'Only the owner can update the server', server: {} };
 
     const updatedData = {
       name: data.name || server.name,
@@ -70,7 +72,7 @@ export class ServerService {
 
     await this.serverRepository.update(serverId, updatedData);
 
-    return { message: 'Server updated successfully' };
+    return { message: 'Server updated successfully', server: updatedData };
   }
 
   async getAllServers(userId: string, query: string) {
@@ -86,7 +88,16 @@ export class ServerService {
       where: { name: Like(`%${query}%`) },
     });
 
-    return { message: 'Get servers successfully', servers };
+    const users = await this.userService.getUsers();
+    const serversWithOwner = servers.map((server) => {
+      const owner = users.find((u: any) => u.id === server.owner_id);
+      return {
+        ...server,
+        owner_username: owner.username,
+      };
+    });
+
+    return { message: 'Get servers successfully', servers: serversWithOwner };
   }
 
   async getServers(userId: string, query: string) {
@@ -97,7 +108,16 @@ export class ServerService {
       where: { owner_id: userId, name: Like(`%${query}%`) },
     });
 
-    return { message: 'Get servers successfully', servers };
+    const users = await this.userService.getUsers();
+    const serversWithOwner = servers.map((server) => {
+      const owner = users.find((u: any) => u.id === server.owner_id);
+      return {
+        ...server,
+        owner_username: owner.username,
+      };
+    });
+
+    return { message: 'Get servers successfully', servers: serversWithOwner };
   }
 
   async getServerById(serverId: string) {
@@ -105,7 +125,15 @@ export class ServerService {
       where: { id: serverId },
     });
 
-    return { message: 'Get server successfully', server };
+    if (!server) return { message: 'Server not found', server: null };
+
+    const owner = await this.userService.getUser(server.owner_id);
+    const serverWithOwner = {
+      ...server,
+      owner_username: owner.username,
+    };
+
+    return { message: 'Get server successfully', server: serverWithOwner };
   }
 
   async deleteServer(serverId: string, userId: string) {

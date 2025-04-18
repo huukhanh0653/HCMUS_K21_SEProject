@@ -53,8 +53,6 @@ export default function CreateServerModal({ onClose, onCreated }) {
           "https://lh3.googleusercontent.com/a/ACg8ocKmMo19Vt1WHo_oM9THY1GmiP2JzCHh2LAbFy_6ErY0Q8OpAQ=s96-c",
       };
 
-      console.log(payload);
-
       const newServer = await ServerChannelService.createServer(
         userId,
         payload

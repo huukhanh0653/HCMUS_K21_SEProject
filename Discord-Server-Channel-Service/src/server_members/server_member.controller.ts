@@ -31,12 +31,12 @@ export class ServerMemberController {
   async addMember(
     data: { serverId: string; userId: string } & ServerMemberDto,
   ) {
-    const message = await this.serverMemberService.addMember(
+    const response = await this.serverMemberService.addMember(
       data.serverId,
       data.userId,
       { memberId: data.memberId, role: data.role },
     );
-    return { message };
+    return { ...response };
   }
 
   @GrpcMethod('ServerMemberService', 'RemoveMember')
@@ -57,12 +57,12 @@ export class ServerMemberController {
   async updateMemberRole(
     data: { serverId: string; userId: string } & ServerMemberDto,
   ) {
-    const message = await this.serverMemberService.updateMemberRole(
+    const response = await this.serverMemberService.updateMemberRole(
       data.serverId,
       data.userId,
       { memberId: data.memberId, role: data.role },
     );
-    return { message };
+    return { ...response };
   }
 
   @GrpcMethod('ServerMemberService', 'SearchMember')
@@ -78,12 +78,7 @@ export class ServerMemberController {
   }
 
   private mapMemberToInfo(member: any) {
-    return {
-      username: member.username,
-      roleName: member.role_name || '',
-      profilePic: member.profile_pic || '',
-      joinedAt: member.joined_at,
-    };
+    return { ...member };
   }
 
   // RESTful Methods

@@ -29,8 +29,8 @@ export class ServerController {
   // gRPC Methods
   @GrpcMethod('ServerService', 'CreateServer')
   async createServer(data: { userId: string } & ServerDto) {
-    const message = await this.serverService.createServer(data.userId, data);
-    return { message };
+    const response = await this.serverService.createServer(data.userId, data);
+    return { ...response };
   }
 
   @GrpcMethod('ServerService', 'GetAllServers')
@@ -67,12 +67,12 @@ export class ServerController {
 
   @GrpcMethod('ServerService', 'UpdateServer')
   async updateServer(data: { serverId: string; userId: string } & ServerDto) {
-    const message = await this.serverService.updateServer(
+    const response = await this.serverService.updateServer(
       data.serverId,
       data.userId,
       data,
     );
-    return { message };
+    return { ...response };
   }
 
   @GrpcMethod('ServerService', 'DeleteServer')
