@@ -10,6 +10,7 @@ import { useTheme } from "../../components/layout/ThemeProvider";
 import { useDispatch, useSelector } from "react-redux";
 import { joinVoiceChannel } from "../../redux/homeSlice";
 import ServerChannelService from "../../services/ServerChannelService";
+import toast from "react-hot-toast";
 
 export default function ServerChannels({
   server,
@@ -22,13 +23,14 @@ export default function ServerChannels({
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const menuRef = useRef(null);
+  const [serverMembers, setServerMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Thêm trạng thái isLoading
 
   // Fetch channels and map snake_case to camelCase
   useEffect(() => {
     if (!server?.id) return;
     ServerChannelService.getChannelsByServer(server.id)
       .then((data) => {
-        // 'data' is response.data.data
         const apiChannels = data.channels || [];
         const mapped = apiChannels.map((ch) => ({
           id: ch.id,
@@ -51,29 +53,27 @@ export default function ServerChannels({
     if (!voiceChannel) setJoinedVoiceChannelId(null);
   }, [voiceChannel]);
 
-  // Tạo mảng thành viên mẫu với 20 người dùng.
-  const serverMembers = [
-    { id: 1, name: "Alice", avatar: "https://i.pravatar.cc/50?img=1" },
-    { id: 2, name: "Bob", avatar: "https://i.pravatar.cc/50?img=2" },
-    { id: 3, name: "Charlie", avatar: "https://i.pravatar.cc/50?img=3" },
-    { id: 4, name: "Cò", avatar: "https://i.pravatar.cc/50?img=4" },
-    { id: 5, name: "Giang", avatar: "https://i.pravatar.cc/50?img=5" },
-    { id: 6, name: "Bảo", avatar: "https://i.pravatar.cc/50?img=6" },
-    { id: 7, name: "Khánh", avatar: "https://i.pravatar.cc/50?img=7" },
-    { id: 8, name: "User 8", avatar: "https://i.pravatar.cc/50?img=8" },
-    { id: 9, name: "User 9", avatar: "https://i.pravatar.cc/50?img=9" },
-    { id: 10, name: "User 10", avatar: "https://i.pravatar.cc/50?img=10" },
-    { id: 11, name: "User 11", avatar: "https://i.pravatar.cc/50?img=11" },
-    { id: 12, name: "User 12", avatar: "https://i.pravatar.cc/50?img=12" },
-    { id: 13, name: "User 13", avatar: "https://i.pravatar.cc/50?img=13" },
-    { id: 14, name: "User 14", avatar: "https://i.pravatar.cc/50?img=14" },
-    { id: 15, name: "User 15", avatar: "https://i.pravatar.cc/50?img=15" },
-    { id: 16, name: "User 16", avatar: "https://i.pravatar.cc/50?img=16" },
-    { id: 17, name: "User 17", avatar: "https://i.pravatar.cc/50?img=17" },
-    { id: 18, name: "User 18", avatar: "https://i.pravatar.cc/50?img=18" },
-    { id: 19, name: "User 19", avatar: "https://i.pravatar.cc/50?img=19" },
-    { id: 20, name: "User 20", avatar: "https://i.pravatar.cc/50?img=20" },
-  ];
+  // Lấy thành viên server
+  useEffect(() => {
+    const fetchServerMembers = async () => {
+      try {
+        setIsLoading(true); // Bắt đầu tải
+        const { members } = await ServerChannelService.searchServerMember(
+          server.id
+        );
+        const filteredMembers = members.filter(
+          (member) => member.role !== "Owner"
+        );
+        setServerMembers(filteredMembers);
+      } catch (error) {
+        toast.error("Failed to fetch server members:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchServerMembers();
+  }, [server]);
 
   // Auto-select first text channel
   useEffect(() => {
@@ -109,7 +109,8 @@ export default function ServerChannels({
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [selectedPrivateChannel, setSelectedPrivateChannel] = useState(null);
-  const [openNotificationDropdown, setOpenNotificationDropdown] = useState(null);
+  const [openNotificationDropdown, setOpenNotificationDropdown] =
+    useState(null);
 
   // Lấy user info
   const user = JSON.parse(localStorage.getItem("user"));
@@ -148,9 +149,7 @@ export default function ServerChannels({
         type: channel.type,
         isPrivate: channel.isPrivate,
       };
-      setChannels(
-        safeChannels.map((c) => (c.id === channel.id ? mapped : c))
-      );
+      setChannels(safeChannels.map((c) => (c.id === channel.id ? mapped : c)));
     } catch (err) {
       console.error("Failed to rename channel", err);
     }
@@ -202,6 +201,20 @@ export default function ServerChannels({
     a.type === "voice" && b.type !== "voice" ? 1 : b.type === "voice" ? -1 : 0
   );
 
+  // Nếu đang tải, hiển thị loading spinner hoặc giao diện tạm thời
+  if (isLoading) {
+    return (
+      <div
+        className={`h-full w-60 flex items-center justify-center ${
+          isDarkMode ? "bg-[#2b2d31]" : "bg-white"
+        }`}
+      >
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  // UI chính chỉ hiển thị khi isLoading là false
   return (
     <div
       className={`pb-16 h-full w-60 flex flex-col relative ${
@@ -214,12 +227,17 @@ export default function ServerChannels({
       <div
         ref={menuRef}
         className={`h-12 px-4 flex items-center justify-between border-b shadow-sm cursor-pointer relative ${
-          isDarkMode ? "border-[#1e1f22] hover:bg-[#35373c]" : "border-gray-300 hover:bg-gray-100"
+          isDarkMode
+            ? "border-[#1e1f22] hover:bg-[#35373c]"
+            : "border-gray-300 hover:bg-gray-100"
         }`}
         onClick={() => setIsMenuOpen((o) => !o)}
       >
         <h2 className="font-semibold truncate">{server.name}</h2>
-        <ChevronDown size={20} className={isDarkMode ? "text-gray-400" : "text-gray-500"} />
+        <ChevronDown
+          size={20}
+          className={isDarkMode ? "text-gray-400" : "text-gray-500"}
+        />
       </div>
 
       {/* Dropdown menu */}
@@ -257,6 +275,7 @@ export default function ServerChannels({
 
       {/* Member Management Modal */}
       <MemberManagementModal
+        serverId={server.id}
         members={serverMembers}
         isOpen={isMemberModalOpen}
         onClose={() => setIsMemberModalOpen(false)}
@@ -294,10 +313,14 @@ export default function ServerChannels({
               className={`flex items-center justify-between px-2 py-1.5 gap-2 ${
                 isDarkMode
                   ? `text-gray-400 hover:bg-[#35373c] hover:text-gray-200 ${
-                      selectedChannelId === channel.id ? "bg-[#35373c] text-white" : ""
+                      selectedChannelId === channel.id
+                        ? "bg-[#35373c] text-white"
+                        : ""
                     }`
                   : `text-gray-600 hover:bg-gray-100 hover:text-[#333333] ${
-                      selectedChannelId === channel.id ? "bg-[#1877F2] text-white" : ""
+                      selectedChannelId === channel.id
+                        ? "bg-[#1877F2] text-white"
+                        : ""
                     }`
               }`}
             >
@@ -328,7 +351,9 @@ export default function ServerChannels({
                     >
                       <Bell
                         size={16}
-                        className={isDarkMode ? "text-gray-400" : "text-gray-500"}
+                        className={
+                          isDarkMode ? "text-gray-400" : "text-gray-500"
+                        }
                       />
                     </button>
                     {openNotificationDropdown === channel.id && (
@@ -336,7 +361,9 @@ export default function ServerChannels({
                         {["open", "mention", "off"].map((opt) => (
                           <button
                             key={opt}
-                            onClick={() => handleNotificationChange(channel.id, opt)}
+                            onClick={() =>
+                              handleNotificationChange(channel.id, opt)
+                            }
                             className="block w-full text-left px-2 py-1 hover:bg-gray-200"
                           >
                             {t(
@@ -360,20 +387,23 @@ export default function ServerChannels({
                     >
                       <Plus
                         size={16}
-                        className={isDarkMode ? "text-gray-400" : "text-gray-500"}
+                        className={
+                          isDarkMode ? "text-gray-400" : "text-gray-500"
+                        }
                       />
                     </button>
                   )}
                 </div>
               )}
             </div>
-            {channel.type === "voice" && channel.id === joinedVoiceChannelId && (
-              <VoiceChat
-                user={JSON.parse(localStorage.getItem("user"))}
-                channel={channel}
-                onLeave={handleLeaveVoiceChannel}
-              />
-            )}
+            {channel.type === "voice" &&
+              channel.id === joinedVoiceChannelId && (
+                <VoiceChat
+                  user={JSON.parse(localStorage.getItem("user"))}
+                  channel={channel}
+                  onLeave={handleLeaveVoiceChannel}
+                />
+              )}
           </div>
         ))}
       </div>
