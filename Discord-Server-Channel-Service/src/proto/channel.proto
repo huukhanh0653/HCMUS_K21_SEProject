@@ -3,9 +3,9 @@ syntax = "proto3";
 package channel;
 
 service ChannelService {
-  rpc CreateChannel (CreateChannelRequest) returns (ChannelResponse) {}
+  rpc CreateChannel (CreateChannelRequest) returns (ChangeChannelResponse) {}
   rpc GetChannelsByServer (GetChannelsByServerRequest) returns (ChannelListResponse) {}
-  rpc UpdateChannel (UpdateChannelRequest) returns (ChannelResponse) {}
+  rpc UpdateChannel (UpdateChannelRequest) returns (ChangeChannelResponse) {}
   rpc DeleteChannel (DeleteChannelRequest) returns (ChannelResponse) {}
 }
 
@@ -40,8 +40,13 @@ message GetChannelResponse {
   string serverId = 2;
   string name = 3;
   string type = 4;
-  string createdAt = 5;
-  bool isPrivate = 6;
+  bool isPrivate = 5;
+  string createdAt = 6;
+}
+
+message ChangeChannelResponse {
+  string message = 1;
+  GetChannelResponse channel = 2;
 }
 
 message ChannelResponse {

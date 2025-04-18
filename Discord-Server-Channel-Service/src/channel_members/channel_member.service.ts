@@ -38,7 +38,8 @@ export class ChannelMemberService {
     await this.channelMemberRepository.save(member);
 
     return {
-      message: `${memberToAdd.username} added to channel ${channel.name}`,
+      message: `Member added to channel ${channel.name}`,
+      member: memberToAdd,
     };
   }
 
@@ -72,10 +73,22 @@ export class ChannelMemberService {
     });
     const users = await this.userService.getUsers();
 
-    const filteredMembers = members.filter((member) => {
-      const user = users.find((u: any) => u.id === member.user_id);
-      return user && user.username.toLowerCase().includes(query.toLowerCase());
-    });
+    const filteredMembers = members
+      .filter((member) => {
+        const user = users.find((u: any) => u.id === member.user_id);
+        return (
+          user && user.username.toLowerCase().includes(query.toLowerCase())
+        );
+      })
+      .map((member) => {
+        const user = users.find((u: any) => u.id === member.user_id);
+        return {
+          id: member.id,
+          username: user.username,
+          avatar: user.avatar,
+          createdAt: member.created_at,
+        };
+      });
 
     return { message: 'Get members successfully', members: filteredMembers };
   }

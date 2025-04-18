@@ -66,9 +66,9 @@ export const columns = (
       cell: ({ row }) => (
         <span
           className="text-xs sm:text-sm truncate pl-1 max-w-[120px] sm:max-w-[200px] block"
-          title={row.original.owner}
+          title={row.original.owner_username}
         >
-          {row.original.owner}
+          {row.original.owner_username}
         </span>
       ),
     },

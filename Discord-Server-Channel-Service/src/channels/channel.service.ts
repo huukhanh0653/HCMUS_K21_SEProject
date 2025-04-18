@@ -26,7 +26,8 @@ export class ChannelService {
   async createChannel(serverId: string, userId: string, data: ChannelDto) {
     const channelDto = plainToClass(ChannelDto, data);
     const errors = await validate(channelDto);
-    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+    if (errors.length > 0)
+      return { message: `Validation failed: ${errors}`, channel: {} };
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
@@ -38,13 +39,19 @@ export class ChannelService {
       userId,
     );
     if (!server_member)
-      return { message: 'Only the members of the server can create channel' };
+      return {
+        message: 'Only the members of the server can create channel',
+        channel: {},
+      };
 
     const existingChannel = await this.channelRepository.findOne({
       where: { server_id: serverId, name: data.name },
     });
     if (existingChannel)
-      return { message: 'Channel with this name already exists in the server' };
+      return {
+        message: 'Channel with this name already exists in the server',
+        channel: {},
+      };
 
     const channel = this.channelRepository.create({
       server_id: serverId,
@@ -56,13 +63,14 @@ export class ChannelService {
     await this.channelRepository.save(channel);
     await this.channelMemberService.addMember(channel.id, userId);
 
-    return { message: 'Channel created successfully' };
+    return { message: 'Channel created successfully', channel };
   }
 
   async updateChannel(channelId: string, userId: string, data: ChannelDto) {
     const channelDto = plainToClass(ChannelDto, data);
     const errors = await validate(channelDto, { skipMissingProperties: true });
-    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+    if (errors.length > 0)
+      return { message: `Validation failed: ${errors}`, channel: {} };
 
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
@@ -75,7 +83,10 @@ export class ChannelService {
       userId,
     );
     if (!server_member)
-      return { message: 'Only the members of the server can create channel' };
+      return {
+        message: 'Only the members of the server can create channel',
+        channel: {},
+      };
 
     const updatedData = {
       name: data.name || channel.name,
@@ -86,7 +97,7 @@ export class ChannelService {
 
     await this.channelRepository.update(channelId, updatedData);
 
-    return { message: 'Channel updated successfully' };
+    return { message: 'Channel updated successfully', channel: updatedData };
   }
 
   async getChannelsByServer(serverId: string, query: string) {

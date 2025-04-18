@@ -37,6 +37,12 @@ export class RoleController {
     return this.mapRoleToResponse(role);
   }
 
+  @GrpcMethod('RoleService', 'GetRoleById')
+  async getRoleById(data: { roleId: string }) {
+    const role = await this.roleService.getRoleById(data.roleId);
+    return this.mapRoleToResponse(role);
+  }
+
   @GrpcMethod('RoleService', 'GetRolesByServer')
   async getRolesByServer(data: { serverId: string }) {
     const { message, roles } = await this.roleService.getRolesByServer(
@@ -104,6 +110,18 @@ export class RoleController {
     @Param('name') name: string,
   ) {
     return this.roleService.getRoleByName(serverId, name);
+  }
+
+  @Get(':roleId')
+  @ApiOperation({ summary: 'Get a role by ID' })
+  @ApiResponse({ status: 200, description: 'Role details' })
+  @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiParam({
+    name: 'roleId',
+    description: 'The ID of the role',
+  })
+  async getRoleByIdRest(@Param('roleId') roleId: string) {
+    return this.roleService.getRoleById(roleId);
   }
 
   @Get(':serverId')

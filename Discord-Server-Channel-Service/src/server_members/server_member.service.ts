@@ -55,7 +55,8 @@ export class ServerMemberService {
     await this.serverMemberRepository.save(member);
 
     return {
-      message: `${memberToAdd.username} added to server ${server.name} with role ${role.name}`,
+      message: `Member added to server ${server.name} with role ${role.name}`,
+      member: memberToAdd,
     };
   }
 
@@ -115,6 +116,7 @@ export class ServerMemberService {
     const memberToUpdate = await this.userService.getUser(data.memberId);
     return {
       message: `Updated role of ${memberToUpdate.username} to ${role.name}`,
+      member: memberToUpdate,
     };
   }
 
@@ -133,13 +135,27 @@ export class ServerMemberService {
 
     const members = await this.serverMemberRepository.find({
       where: { server_id: serverId },
+      relations: ['role'],
     });
     const users = await this.userService.getUsers();
 
-    const filteredMembers = members.filter((member) => {
-      const user = users.find((u: any) => u.id === member.user_id);
-      return user && user.username.toLowerCase().includes(query.toLowerCase());
-    });
+    const filteredMembers = members
+      .filter((member) => {
+        const user = users.find((u: any) => u.id === member.user_id);
+        return (
+          user && user.username.toLowerCase().includes(query.toLowerCase())
+        );
+      })
+      .map((member) => {
+        const user = users.find((u: any) => u.id === member.user_id);
+        return {
+          id: member.id,
+          username: user.username || '',
+          avatar: user.avatar || '',
+          role: member.role.name || '',
+          joinedAt: member.joined_at,
+        };
+      });
 
     return { message: 'Get members successfully', members: filteredMembers };
   }

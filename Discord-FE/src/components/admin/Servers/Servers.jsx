@@ -53,15 +53,8 @@ export default function ServerManagement() {
         filterValue.all
       );
 
-      const configServers = await Promise.all(
-        servers.map(async (server) => {
-          const owner = await UserService.getUserByID(server.owner_id);
-          return { ...server, owner: owner.username };
-        })
-      );
-
-      setServers((prev) => ({ ...prev, all: configServers }));
-      setTotalSize((prev) => ({ ...prev, all: configServers.length }));
+      setServers((prev) => ({ ...prev, all: servers }));
+      setTotalSize((prev) => ({ ...prev, all: servers.length }));
     } catch (error) {
       console.error("Error fetching all servers:", error);
       toast.error(`${t("Failed to fetch servers")}: ${error.message}`);
@@ -83,15 +76,8 @@ export default function ServerManagement() {
         filterValue.my
       );
 
-      const configServers = await Promise.all(
-        servers.map(async (server) => {
-          const owner = await UserService.getUserByID(server.owner_id);
-          return { ...server, owner: owner.username };
-        })
-      );
-
-      setServers((prev) => ({ ...prev, my: configServers }));
-      setTotalSize((prev) => ({ ...prev, my: configServers.length }));
+      setServers((prev) => ({ ...prev, my: servers }));
+      setTotalSize((prev) => ({ ...prev, my: servers.length }));
     } catch (error) {
       console.error("Error fetching my servers:", error);
       toast.error(`${t("Failed to fetch servers")}: ${error.message}`);

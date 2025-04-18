@@ -19,11 +19,11 @@ export class ChannelMemberController {
   // gRPC Methods
   @GrpcMethod('ChannelMemberService', 'AddMember')
   async addMember(data: { channelId: string; memberId: string }) {
-    const message = await this.channelMemberService.addMember(
+    const response = await this.channelMemberService.addMember(
       data.channelId,
       data.memberId,
     );
-    return { message };
+    return { ...response };
   }
 
   @GrpcMethod('ChannelMemberService', 'RemoveMember')
@@ -48,11 +48,7 @@ export class ChannelMemberController {
   }
 
   private mapMemberToInfo(member: any) {
-    return {
-      username: member.username,
-      profilePic: member.profile_pic || '',
-      createdAt: member.created_at,
-    };
+    return { ...member };
   }
 
   // RESTful Methods

@@ -3,9 +3,9 @@ syntax = "proto3";
 package server_member;
 
 service ServerMemberService {
-  rpc AddMember (ChangeMemberRequest) returns (ServerMemberResponse) {}
+  rpc AddMember (ChangeMemberRequest) returns (ChangeServerMemberResponse) {}
   rpc RemoveMember (RemoveMemberRequest) returns (ServerMemberResponse) {}
-  rpc UpdateMemberRole (ChangeMemberRequest) returns (ServerMemberResponse) {}
+  rpc UpdateMemberRole (ChangeMemberRequest) returns (ChangeServerMemberResponse) {}
   rpc SearchMember (SearchMemberRequest) returns (ServerMemberListResponse) {}
 }
 
@@ -27,15 +27,21 @@ message SearchMemberRequest {
   string query = 2;
 }
 
+message ServerMemberInfo {
+  string id = 1;
+  string username = 2;
+  string avatar = 3;
+  string roleName = 4;
+  string joinedAt = 5;
+}
+
 message ServerMemberResponse {
   string message = 1;
 }
 
-message ServerMemberInfo {
-  string username = 1;
-  string roleName = 2;
-  string profilePic = 3;
-  string joinedAt = 4;
+message ChangeServerMemberResponse {
+  string message = 1;
+  ServerMemberInfo member = 2;
 }
 
 message ServerMemberListResponse {
