@@ -78,11 +78,7 @@ public class RedisMessageRepository implements CacheMessageRepository {
                 for (Object messageId : messageIds) {
                     String messageKey = "message:" + messageId;
                     Object value = redisTemplate.opsForValue().get(messageKey);
-
-                    if (value != null && value instanceof LinkedHashMap) {
-                        LinkedHashMap<String, Object> map = (LinkedHashMap<String, Object>) value;
-                        Message message = mapToMessage(map);
-
+                    if (value != null && value instanceof Message message) {
                         if (Instant.parse(message.getTimestamp()).isBefore(Instant.parse(timestamp))) {
                             messages.add(message);
                         }
@@ -127,10 +123,8 @@ public class RedisMessageRepository implements CacheMessageRepository {
                         System.out.println("Value: " + value);
                         System.out.println("Type: " + value.getClass().getName());
 
-                        if (value instanceof LinkedHashMap<?, ?> map) {
-                            Message message = mapToMessage((LinkedHashMap<String, Object>) map);
-
-                            if (Instant.parse(message.getTimestamp()).isBefore(Instant.parse(timestamp))) {
+                        if (value != null && value instanceof Message message) {
+                            if (Instant.parse(message.getTimestamp()).isAfter(Instant.parse(timestamp))) {
                                 messages.add(message);
                             }
                         }
@@ -152,7 +146,8 @@ public class RedisMessageRepository implements CacheMessageRepository {
 
     @Override
     public long countByChannelBefore(String serverId, String channelId, String timestamp) {
-        System.out.println("CountByChannel called with serverId: " + serverId + ", channelId: " + channelId + ", timestamp: " + timestamp);
+        System.out.println("CountByChannel called with serverId: " + serverId + ", channelId: " + channelId
+                + ", timestamp: " + timestamp);
 
         // 1. Construct the Redis key
         String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
@@ -168,10 +163,10 @@ public class RedisMessageRepository implements CacheMessageRepository {
         return count;
     }
 
-
     @Override
     public long countByChannelAfter(String serverId, String channelId, String timestamp) {
-        System.out.println("Counting NEWER messages with serverId: " + serverId + ", channelId: " + channelId + ", timestamp: " + timestamp);
+        System.out.println("Counting NEWER messages with serverId: " + serverId + ", channelId: " + channelId
+                + ", timestamp: " + timestamp);
 
         String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
         long minScore = Instant.parse(timestamp).toEpochMilli();
@@ -183,7 +178,6 @@ public class RedisMessageRepository implements CacheMessageRepository {
 
         return count;
     }
-
 
     @Override
     public void deleteByChannel(String serverId, String channelId, String timestamp) {
@@ -236,7 +230,6 @@ public class RedisMessageRepository implements CacheMessageRepository {
         redisTemplate.opsForValue().set(messageKey, message);
     }
 
-
     @Override
     public List<Message> findByContent(String content, String timestamp, int amount, String serverId,
                                        String channelId) {
@@ -251,8 +244,8 @@ public class RedisMessageRepository implements CacheMessageRepository {
         if (messageIds != null) {
             for (Object messageId : messageIds) {
                 String messageKey = "message:" + messageId;
-                Message message = (Message) redisTemplate.opsForValue().get(messageKey);
-                if (message != null && message.getContent().getText().contains(content)) {
+                Object value = redisTemplate.opsForValue().get(messageKey);
+                if (value != null && value instanceof Message message && message.getContent().getText().contains(content)) {
                     messages.add(message);
                 }
             }
