@@ -24,7 +24,8 @@ export default function ServerChannels({
   const { isDarkMode } = useTheme();
   const menuRef = useRef(null);
   const [serverMembers, setServerMembers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Thêm trạng thái isLoading
+  const [isLoading, setIsLoading] = useState(true);
+  const userId = JSON.parse(localStorage.getItem("user")).id;
 
   // Fetch channels and map snake_case to camelCase
   useEffect(() => {
@@ -57,12 +58,12 @@ export default function ServerChannels({
   useEffect(() => {
     const fetchServerMembers = async () => {
       try {
-        setIsLoading(true); // Bắt đầu tải
+        setIsLoading(true);
         const { members } = await ServerChannelService.searchServerMember(
           server.id
         );
         const filteredMembers = members.filter(
-          (member) => member.role !== "Owner"
+          (member) => member.role !== "Owner" && member.id !== userId
         );
         setServerMembers(filteredMembers);
       } catch (error) {
@@ -275,7 +276,7 @@ export default function ServerChannels({
 
       {/* Member Management Modal */}
       <MemberManagementModal
-        serverId={server.id}
+        server={server}
         members={serverMembers}
         isOpen={isMemberModalOpen}
         onClose={() => setIsMemberModalOpen(false)}

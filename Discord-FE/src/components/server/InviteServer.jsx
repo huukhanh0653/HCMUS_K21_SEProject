@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import Hashids from "hashids";
 import UserService from "../../services/UserService";
 import ServerChannelService from "../../services/ServerChannelService";
+import toast from "react-hot-toast";
 
 export default function InviteServerModal({ server, isOpen, onClose }) {
   const { t } = useTranslation();
@@ -59,13 +60,19 @@ export default function InviteServerModal({ server, isOpen, onClose }) {
     setInviteError(null);
     try {
       // Gọi đúng theo định nghĩa trong ServerChannelService:
-      await ServerChannelService.addServerMember(
+      const { message } = await ServerChannelService.addServerMember(
         server.id,
         user.id,
-        { memberId: friend.id, role: "Member" }
+        {
+          memberId: friend.id,
+          role: "Member",
+        }
       );
       // Sau khi mời thành công, loại bỏ bạn khỏi list
-      setFriends((prev) => prev.filter((f) => f.id !== friend.id));
+
+      message !== "This user has been banned in server"
+        ? setFriends((prev) => prev.filter((f) => f.id !== friend.id))
+        : toast.error(t(message));
     } catch (err) {
       console.error("Failed to invite:", err);
       setInviteError(err.response?.data?.message || err.message);
@@ -100,7 +107,9 @@ export default function InviteServerModal({ server, isOpen, onClose }) {
             <Copy size={18} />
           </button>
         </div>
-        {copied && <span className="text-green-400 block mb-2">{t("Copied")}</span>}
+        {copied && (
+          <span className="text-green-400 block mb-2">{t("Copied")}</span>
+        )}
 
         {/* Friends list */}
         <div className="max-h-60 overflow-y-auto space-y-2">
@@ -126,9 +135,7 @@ export default function InviteServerModal({ server, isOpen, onClose }) {
                     : "bg-green-500 hover:bg-green-600 text-white"
                 }`}
               >
-                {inviteLoading === friend.id
-                  ? t("Inviting...")
-                  : t("Invite")}
+                {inviteLoading === friend.id ? t("Inviting...") : t("Invite")}
               </button>
             </div>
           ))}

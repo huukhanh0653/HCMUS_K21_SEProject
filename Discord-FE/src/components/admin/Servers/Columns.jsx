@@ -5,11 +5,9 @@ import { useTranslation } from "react-i18next";
 import defaultAvatar from "../../../assets/discord-logo.png";
 
 export const columns = (
-  showActions = false,
   setEditServerOpen,
   setCurrentServer,
-  handleOpenDeleteModal,
-  userId
+  handleOpenDeleteModal
 ) => {
   const { t } = useTranslation();
 
@@ -111,35 +109,29 @@ export const columns = (
     {
       accessorKey: "actions",
       header: () => <span className="text-xs sm:text-sm">{t("Actions")}</span>,
-      cell: ({ row }) => {
-        const isOwner = row.original.owner_id === userId;
-        if (showActions || isOwner) {
-          return (
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setCurrentServer(row.original);
-                  setEditServerOpen(true);
-                }}
-                title={t("Edit")}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleOpenDeleteModal(row.original)}
-                title={t("Delete")}
-              >
-                <Trash2 className="h-4 w-4 text-red-500" />
-              </Button>
-            </div>
-          );
-        }
-        return null;
-      },
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              setCurrentServer(row.original);
+              setEditServerOpen(true);
+            }}
+            title={t("Edit")}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleOpenDeleteModal(row.original)}
+            title={t("Delete")}
+          >
+            <Trash2 className="h-4 w-4 text-red-500" />
+          </Button>
+        </div>
+      ),
     },
   ];
 

@@ -52,7 +52,9 @@ export default function UsedAccounts() {
   };
 
   const handleRemoveAccount = (emailToRemove) => {
-    const updatedAccounts = accounts.filter((acc) => acc.email !== emailToRemove);
+    const updatedAccounts = accounts.filter(
+      (acc) => acc.email !== emailToRemove
+    );
     localStorage.setItem("used_user", JSON.stringify(updatedAccounts));
     setAccounts(updatedAccounts);
     setShowDropdown(null);
@@ -62,7 +64,9 @@ export default function UsedAccounts() {
     <div
       className="flex flex-col items-center min-h-screen w-full py-10"
       style={{
-        backgroundImage: `url(${isDarkMode ? DarkBackground : LightBackground})`,
+        backgroundImage: `url(${
+          isDarkMode ? DarkBackground : LightBackground
+        })`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -121,7 +125,10 @@ export default function UsedAccounts() {
                 </div>
                 <div>
                   <div className="font-medium">{account.username}</div>
-                  <div className="text-xs" style={{ color: isDarkMode ? "#B9BBBE" : "#666666" }}>
+                  <div
+                    className="text-xs"
+                    style={{ color: isDarkMode ? "#B9BBBE" : "#666666" }}
+                  >
                     Vui lòng đăng nhập lại.
                   </div>
                 </div>
@@ -133,13 +140,18 @@ export default function UsedAccounts() {
                   style={{
                     background: isDarkMode ? "#4E5058" : "#007BFF",
                     color: "white",
-                    boxShadow: isDarkMode ? "none" : "0 2px 5px rgba(0, 0, 0, 0.1)",
+                    boxShadow: isDarkMode
+                      ? "none"
+                      : "0 2px 5px rgba(0, 0, 0, 0.1)",
                   }}
                 >
                   Đăng nhập
                 </button>
                 <div className="relative">
-                  <button onClick={() => toggleDropdown(account.id)} className="p-1 rounded">
+                  <button
+                    onClick={() => toggleDropdown(account.id)}
+                    className="p-1 rounded"
+                  >
                     <MoreVertical size={20} />
                   </button>
                   {showDropdown === account.id && (

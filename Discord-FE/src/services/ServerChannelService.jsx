@@ -181,6 +181,27 @@ const joinServer = async (serverId, memberData) => {
 };
 
 /**
+ * Thành viên rời khỏi server.
+ * @param {string} serverId - ID của server.
+ * @param {string} memberId - ID của thành viên.
+ * @returns {Promise<Object>}
+ */
+const outServer = async (serverId, memberId) => {
+  try {
+    const response = await axios.delete(
+      `${Server_API}/server-members/${serverId}/${memberId}`,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error adding server member:", error);
+    throw error;
+  }
+};
+
+/**
  * Xóa thành viên khỏi server.
  * @param {string} serverId - ID của server.
  * @param {string} userId - ID của người dùng thực hiện.
@@ -555,6 +576,27 @@ const searchChannelMember = async (channelId, query = "") => {
 };
 
 // --------------------
+// Các hàm gọi API liên quan đến Ban
+// --------------------
+
+/**
+ * Thêm lệnh ban.
+ * @param {Object} banData - Dữ liệu ban (serverId, userId, reason).
+ * @returns {Promise<Object>}
+ */
+const addBan = async (banData) => {
+  try {
+    const response = await axios.post(`${Server_API}/bans`, banData, {
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error("Error adding channel member:", error);
+    throw error;
+  }
+};
+
+// --------------------
 // Xuất đối tượng ServerChannelService gồm các hàm trên
 // --------------------
 const ServerChannelService = {
@@ -569,6 +611,7 @@ const ServerChannelService = {
   // Server Member
   addServerMember,
   joinServer,
+  outServer,
   removeServerMember,
   updateServerMemberRole,
   searchServerMember,
@@ -592,6 +635,9 @@ const ServerChannelService = {
   addChannelMember,
   removeChannelMember,
   searchChannelMember,
+
+  // Ban
+  addBan,
 };
 
 export default ServerChannelService;

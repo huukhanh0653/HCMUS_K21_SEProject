@@ -7,10 +7,11 @@ import { RoleModule } from 'src/roles/role.module';
 import { ServerMemberService } from './server_member.service';
 import { ServerMemberController } from './server_member.controller';
 import { ChannelMember } from 'src/channel_members/channel_member.entity';
+import { Ban } from 'src/bans/ban.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ServerMember, Server, ChannelMember]),
+    TypeOrmModule.forFeature([ServerMember, Server, ChannelMember, Ban]),
     UserModule,
     RoleModule,
   ],
