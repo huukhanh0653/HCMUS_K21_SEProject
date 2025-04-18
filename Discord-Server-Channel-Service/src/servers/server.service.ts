@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { Server } from './server.entity';
 import { ServerDto } from './server.dto';
 import { validate } from 'class-validator';
@@ -10,6 +10,9 @@ import { RoleService } from 'src/roles/role.service';
 import { UserService } from 'src/users/user.service';
 import { ServerMember } from 'src/server_members/server_member.entity';
 import { Role } from 'src/roles/role.entity';
+import { Channel } from 'src/channels/channel.entity';
+import { ChannelService } from 'src/channels/channel.service';
+import { ChannelMember } from 'src/channel_members/channel_member.entity';
 
 @Injectable()
 export class ServerService {
@@ -23,6 +26,11 @@ export class ServerService {
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
     private roleService: RoleService,
+    @InjectRepository(Channel)
+    private channelRepository: Repository<Channel>,
+    private channelService: ChannelService,
+    @InjectRepository(ChannelMember)
+    private channelMemberRepository: Repository<ChannelMember>,
   ) {}
 
   async createServer(userId: string, data: ServerDto) {
@@ -147,13 +155,24 @@ export class ServerService {
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found' };
+    if (!server) throw new Error('Server not found');
     if (server.owner_id !== userId)
-      return { message: 'Only the owner can delete the server' };
+      throw new Error('Only the owner can delete the server');
 
-    await this.serverMemberRepository.delete({ server_id: serverId });
-    await this.roleRepository.delete({ server_id: serverId });
-    await this.serverRepository.delete({ id: serverId });
+    const { channels } = await this.channelService.getChannelsByServer(
+      serverId,
+      '',
+    );
+
+    await Promise.all([
+      this.channelMemberRepository.delete({
+        channel_id: In(channels.map((c) => c.id)),
+      }),
+      this.channelRepository.delete({ server_id: serverId }),
+      this.serverMemberRepository.delete({ server_id: serverId }),
+      this.roleRepository.delete({ server_id: serverId }),
+      this.serverRepository.delete({ id: serverId }),
+    ]);
 
     return { message: 'Server deleted successfully' };
   }

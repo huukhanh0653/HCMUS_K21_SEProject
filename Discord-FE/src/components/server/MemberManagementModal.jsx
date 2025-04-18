@@ -2,22 +2,22 @@ import { useState, useEffect } from "react";
 import { Search, UserX, ShieldOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import ServerChannelService from "../../services/ServerChannelService";
-import UserService from "../../services/UserService";
 import toast from "react-hot-toast";
 
 export default function MemberManagementModal({
-  serverId,
+  server,
   members,
   isOpen,
   onClose,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [memberList, setMemberList] = useState(members); // Danh sách thành viên có thể cập nhật
+  const [memberList, setMemberList] = useState(members);
   const [confirmationModal, setConfirmationModal] = useState({
     isOpen: false,
     action: null,
     memberId: null,
     memberUsername: null,
+    reason: "",
   });
   const { t } = useTranslation();
   const userId = JSON.parse(localStorage.getItem("user")).id;
@@ -32,6 +32,7 @@ export default function MemberManagementModal({
             action: null,
             memberId: null,
             memberUsername: null,
+            reason: "",
           });
         } else {
           onClose();
@@ -58,7 +59,7 @@ export default function MemberManagementModal({
   // Hàm xử lý kick
   const handleKick = async (id) => {
     try {
-      await ServerChannelService.removeServerMember(serverId, userId, id);
+      await ServerChannelService.removeServerMember(server.id, userId, id);
       setMemberList(memberList.filter((member) => member.id !== id));
       toast.success(t("Member kicked successfully"));
     } catch (error) {
@@ -67,13 +68,14 @@ export default function MemberManagementModal({
   };
 
   // Hàm xử lý ban
-  const handleBan = async (id) => {
+  const handleBan = async (id, reason) => {
     try {
-      const user = await UserService.getUserByID(id);
-      await UserService.updateUser(id, {
-        ...user,
-        status: "banned",
+      await ServerChannelService.addBan({
+        serverId: server.id,
+        userId: id,
+        reason,
       });
+      await ServerChannelService.removeServerMember(server.id, userId, id);
       setMemberList(memberList.filter((member) => member.id !== id));
       toast.success(t("Member banned successfully"));
     } catch (error) {
@@ -88,23 +90,33 @@ export default function MemberManagementModal({
       action,
       memberId,
       memberUsername,
+      reason: "",
     });
   };
 
   // Hàm xử lý xác nhận hành động
   const confirmAction = async () => {
-    const { action, memberId } = confirmationModal;
+    const { action, memberId, reason } = confirmationModal;
     if (action === "kick") {
       await handleKick(memberId);
     } else if (action === "ban") {
-      await handleBan(memberId);
+      await handleBan(memberId, reason);
     }
     setConfirmationModal({
       isOpen: false,
       action: null,
       memberId: null,
       memberUsername: null,
+      reason: "",
     });
+  };
+
+  // Hàm xử lý thay đổi reason
+  const handleReasonChange = (e) => {
+    setConfirmationModal((prev) => ({
+      ...prev,
+      reason: e.target.value,
+    }));
   };
 
   return (
@@ -153,37 +165,43 @@ export default function MemberManagementModal({
                     />
                     <span className="text-white">{member.username}</span>
                   </div>
-                  <div className="flex gap-2">
-                    {/* Kick Button */}
-                    <button
-                      className="text-red-500 hover:text-red-700 relative group"
-                      onClick={() =>
-                        openConfirmationModal(
-                          "kick",
-                          member.id,
-                          member.username
-                        )
-                      }
-                    >
-                      <UserX size={20} />
-                      <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
-                        {t("Kick")}
-                      </span>
-                    </button>
+                  {server.owner_id === userId && (
+                    <div className="flex gap-2">
+                      {/* Kick Button */}
+                      <button
+                        className="text-red-500 hover:text-red-700 relative group"
+                        onClick={() =>
+                          openConfirmationModal(
+                            "kick",
+                            member.id,
+                            member.username
+                          )
+                        }
+                      >
+                        <UserX size={20} />
+                        <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                          {t("Kick")}
+                        </span>
+                      </button>
 
-                    {/* Ban Button */}
-                    <button
-                      className="text-yellow-500 hover:text-yellow-700 relative group"
-                      onClick={() =>
-                        openConfirmationModal("ban", member.id, member.username)
-                      }
-                    >
-                      <ShieldOff size={20} />
-                      <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
-                        {t("Ban")}
-                      </span>
-                    </button>
-                  </div>
+                      {/* Ban Button */}
+                      <button
+                        className="text-yellow-500 hover:text-yellow-700 relative group"
+                        onClick={() =>
+                          openConfirmationModal(
+                            "ban",
+                            member.id,
+                            member.username
+                          )
+                        }
+                      >
+                        <ShieldOff size={20} />
+                        <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                          {t("Ban")}
+                        </span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
           </div>
@@ -212,6 +230,20 @@ export default function MemberManagementModal({
               </span>
               ?
             </p>
+            {confirmationModal.action === "ban" && (
+              <div className="mb-4">
+                <label className="block text-gray-300 text-sm mb-1">
+                  {t("Reason")} ({t("optional")})
+                </label>
+                <input
+                  type="text"
+                  value={confirmationModal.reason}
+                  onChange={handleReasonChange}
+                  placeholder={t("Enter ban reason...")}
+                  className="w-full p-2 bg-[#1e1f22] text-white rounded-md outline-none"
+                />
+              </div>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={confirmAction}
@@ -230,6 +262,7 @@ export default function MemberManagementModal({
                     action: null,
                     memberId: null,
                     memberUsername: null,
+                    reason: "",
                   })
                 }
                 className="flex-1 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md"

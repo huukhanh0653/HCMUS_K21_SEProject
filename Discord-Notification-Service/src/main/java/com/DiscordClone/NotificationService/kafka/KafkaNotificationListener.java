@@ -16,7 +16,7 @@ public class KafkaNotificationListener {
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @KafkaListener(topics = "message-topic", groupId = "notification-service")
+    @KafkaListener(topics = {"message-topic", "mention-topic", "voice-channel"}, groupId = "notification-service")
     public void listen(String message) {
         log.info("📨 Received message from Kafka: {}", message);
 

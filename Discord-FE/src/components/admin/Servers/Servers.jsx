@@ -20,8 +20,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "../../ui/dialog";
-import UserService from "../../../services/UserService";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 
 export default function ServerManagement() {
   const [addServerOpen, setAddServerOpen] = useState(false);
@@ -29,13 +27,12 @@ export default function ServerManagement() {
   const [deleteServerOpen, setDeleteServerOpen] = useState(false);
   const [currentServer, setCurrentServer] = useState(null);
   const [serverToDelete, setServerToDelete] = useState(null);
-  const [currentPage, setCurrentPage] = useState({ all: 1, my: 1 });
-  const [totalSize, setTotalSize] = useState({ all: 0, my: 0 });
-  const [servers, setServers] = useState({ all: [], my: [] });
-  const [filterValue, setFilterValue] = useState({ all: "", my: "" });
-  const [sorting, setSorting] = useState({ all: [], my: [] });
-  const [isLoading, setIsLoading] = useState({ all: false, my: false });
-  const [activeTab, setActiveTab] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalSize, setTotalSize] = useState(0);
+  const [servers, setServers] = useState([]);
+  const [filterValue, setFilterValue] = useState("");
+  const [sorting, setSorting] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { language } = useLanguage();
   const { t } = useTranslation();
   const userId = JSON.parse(localStorage.getItem("user"))?.id;
@@ -46,66 +43,33 @@ export default function ServerManagement() {
       return;
     }
 
-    setIsLoading((prev) => ({ ...prev, all: true }));
+    setIsLoading(true);
     try {
       const { servers } = await ServerChannelService.getAllServers(
         userId,
-        filterValue.all
+        filterValue
       );
 
-      setServers((prev) => ({ ...prev, all: servers }));
-      setTotalSize((prev) => ({ ...prev, all: servers.length }));
+      setServers(servers);
+      setTotalSize(servers.length);
     } catch (error) {
       console.error("Error fetching all servers:", error);
       toast.error(`${t("Failed to fetch servers")}: ${error.message}`);
     } finally {
-      setIsLoading((prev) => ({ ...prev, all: false }));
-    }
-  };
-
-  const fetchMyServers = async () => {
-    if (!userId) {
-      toast.error(t("User ID not found"));
-      return;
-    }
-
-    setIsLoading((prev) => ({ ...prev, my: true }));
-    try {
-      const { servers } = await ServerChannelService.getServers(
-        userId,
-        filterValue.my
-      );
-
-      setServers((prev) => ({ ...prev, my: servers }));
-      setTotalSize((prev) => ({ ...prev, my: servers.length }));
-    } catch (error) {
-      console.error("Error fetching my servers:", error);
-      toast.error(`${t("Failed to fetch servers")}: ${error.message}`);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, my: false }));
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (activeTab === "all") {
-      fetchAllServers();
-    } else {
-      fetchMyServers();
-    }
-  }, [filterValue, userId, activeTab]);
+    fetchAllServers();
+  }, [filterValue, userId]);
 
   const handlePrevPage = () => {
-    setCurrentPage((prev) => ({
-      ...prev,
-      [activeTab]: Math.max(prev[activeTab] - 1, 1),
-    }));
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => ({
-      ...prev,
-      [activeTab]: Math.min(prev[activeTab] + 1, totalPages),
-    }));
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
   const handleAddServer = async (newServer) => {
@@ -116,7 +80,7 @@ export default function ServerManagement() {
       });
       toast.success(t("Server created successfully"));
       setAddServerOpen(false);
-      await Promise.all([fetchMyServers(), fetchAllServers()]);
+      await fetchAllServers();
     } catch (error) {
       toast.error(`${error.message}`);
     }
@@ -132,7 +96,7 @@ export default function ServerManagement() {
       toast.success(t("Server updated successfully"));
       setEditServerOpen(false);
       setCurrentServer(null);
-      await Promise.all([fetchMyServers(), fetchAllServers()]);
+      await fetchAllServers();
     } catch (error) {
       toast.error(`${error.message}`);
     }
@@ -148,7 +112,7 @@ export default function ServerManagement() {
       try {
         await ServerChannelService.deleteServer(serverToDelete.id, userId);
         toast.success(t("Server deleted successfully"));
-        await Promise.all([fetchMyServers(), fetchAllServers()]);
+        await fetchAllServers();
       } catch (error) {
         toast.error(`${error.message}`);
       }
@@ -163,18 +127,16 @@ export default function ServerManagement() {
   };
 
   const processedServers = useMemo(() => {
-    let filteredServers = [...servers[activeTab]];
+    let filteredServers = [...servers];
 
-    if (filterValue[activeTab]) {
+    if (filterValue) {
       filteredServers = filteredServers.filter((server) =>
-        server.name
-          ?.toLowerCase()
-          .includes(filterValue[activeTab].toLowerCase())
+        server.name?.toLowerCase().includes(filterValue.toLowerCase())
       );
     }
 
-    if (sorting[activeTab].length > 0) {
-      const { id, desc } = sorting[activeTab][0];
+    if (sorting.length > 0) {
+      const { id, desc } = sorting[0];
       filteredServers.sort((a, b) => {
         const aValue = a[id] || "";
         const bValue = b[id] || "";
@@ -188,33 +150,26 @@ export default function ServerManagement() {
       ...server,
       num: index + 1,
     }));
-  }, [servers, filterValue, sorting, activeTab]);
+  }, [servers, filterValue, sorting]);
 
   useEffect(() => {
-    setTotalSize((prev) => ({ ...prev, [activeTab]: processedServers.length }));
-    setCurrentPage((prev) => ({ ...prev, [activeTab]: 1 }));
-  }, [processedServers, activeTab]);
+    setTotalSize(processedServers.length);
+    setCurrentPage(1);
+  }, [processedServers]);
 
   const pageSize = 10;
   const totalPages = Math.ceil(processedServers.length / pageSize);
   const paginatedServers = processedServers.slice(
-    (currentPage[activeTab] - 1) * pageSize,
-    currentPage[activeTab] * pageSize
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
   return (
     <DefaultLayout>
       <div className="flex justify-between items-center mb-7 mt-0 pt-[10px] px-4">
         <h1 className="text-2xl font-normal">
-          {t("Servers")} ({totalSize[activeTab]})
+          {t("Servers")} ({totalSize})
         </h1>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="all">{t("All Servers")}</TabsTrigger>
-            <TabsTrigger value="my">{t("My Servers")}</TabsTrigger>
-          </TabsList>
-        </Tabs>
 
         <Button
           className="px-6 py-0 text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 rounded-lg"
@@ -224,69 +179,33 @@ export default function ServerManagement() {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsContent value="all">
-          <DataTable
-            columns={columns(
-              false,
-              setEditServerOpen,
-              setCurrentServer,
-              handleOpenDeleteModal,
-              userId
-            )}
-            data={paginatedServers}
-            filterProps={{
-              column: "name",
-              placeholder:
-                language === "en"
-                  ? "Find Server by name..."
-                  : "Tìm Server bằng tên...",
-              value: filterValue.all,
-              onChange: (value) =>
-                setFilterValue((prev) => ({ ...prev, all: value })),
-            }}
-            buildInSearch={false}
-            onSortingChange={(newSorting) =>
-              setSorting((prev) => ({ ...prev, all: newSorting }))
-            }
-            isLoading={isLoading.all}
-          />
-        </TabsContent>
-        <TabsContent value="my">
-          <DataTable
-            columns={columns(
-              true,
-              setEditServerOpen,
-              setCurrentServer,
-              handleOpenDeleteModal,
-              userId
-            )}
-            data={paginatedServers}
-            filterProps={{
-              column: "name",
-              placeholder:
-                language === "en"
-                  ? "Find Server by name..."
-                  : "Tìm Server bằng tên...",
-              value: filterValue.my,
-              onChange: (value) =>
-                setFilterValue((prev) => ({ ...prev, my: value })),
-            }}
-            buildInSearch={false}
-            onSortingChange={(newSorting) =>
-              setSorting((prev) => ({ ...prev, my: newSorting }))
-            }
-            isLoading={isLoading.my}
-          />
-        </TabsContent>
-      </Tabs>
+      <DataTable
+        columns={columns(
+          setEditServerOpen,
+          setCurrentServer,
+          handleOpenDeleteModal
+        )}
+        data={paginatedServers}
+        filterProps={{
+          column: "name",
+          placeholder:
+            language === "en"
+              ? "Find Server by name..."
+              : "Tìm Server bằng tên...",
+          value: filterValue,
+          onChange: (value) => setFilterValue(value),
+        }}
+        buildInSearch={false}
+        onSortingChange={(newSorting) => setSorting(newSorting)}
+        isLoading={isLoading}
+      />
 
       <div className="flex items-center justify-end space-x-2 py-4 px-4">
         <Button
           variant="outline"
           size="sm"
           onClick={handlePrevPage}
-          disabled={currentPage[activeTab] === 1 || isLoading[activeTab]}
+          disabled={currentPage === 1 || isLoading}
         >
           {t("Previous")}
         </Button>
@@ -294,9 +213,7 @@ export default function ServerManagement() {
           variant="outline"
           size="sm"
           onClick={handleNextPage}
-          disabled={
-            currentPage[activeTab] === totalPages || isLoading[activeTab]
-          }
+          disabled={currentPage === totalPages || isLoading}
         >
           {t("Next")}
         </Button>

@@ -32,7 +32,8 @@ export default function ServerChannels({
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [selectedPrivateChannel, setSelectedPrivateChannel] = useState(null);
-  const [openNotificationDropdown, setOpenNotificationDropdown] = useState(null);
+  const [openNotificationDropdown, setOpenNotificationDropdown] =
+    useState(null);
   const [joinedVoiceChannelId, setJoinedVoiceChannelId] = useState(null);
 
   // Lấy user info
@@ -66,9 +67,10 @@ export default function ServerChannels({
         const { members } = await ServerChannelService.searchServerMember(
           server.id
         );
-        // exclude owners
-        const filtered = members.filter((member) => member.role !== "Owner");
-        setServerMembers(filtered);
+        const filteredMembers = members.filter(
+          (member) => member.role !== "Owner" && member.id !== user.id
+        );
+        setServerMembers(filteredMembers);
       } catch (error) {
         toast.error("Failed to fetch server members");
       } finally {
@@ -97,9 +99,7 @@ export default function ServerChannels({
 
   // Confirmation & action for leaving server
   const handleLeaveServer = async () => {
-    const confirmed = window.confirm(
-      "Bạn có chắc muốn rời server này không?"
-    );
+    const confirmed = window.confirm("Bạn có chắc muốn rời server này không?");
     if (!confirmed) return;
     try {
       await ServerChannelService.leaveServer(server.id, user.id);
@@ -138,9 +138,13 @@ export default function ServerChannels({
 
   const handleRenameChannel = async (channel, newName) => {
     try {
-      await ServerChannelService.updateChannel(channel.id, user.id, { name: newName });
+      await ServerChannelService.updateChannel(channel.id, user.id, {
+        name: newName,
+      });
       const safe = Array.isArray(channels) ? channels : [];
-      setChannels(safe.map((c) => (c.id === channel.id ? { ...c, name: newName } : c)));
+      setChannels(
+        safe.map((c) => (c.id === channel.id ? { ...c, name: newName } : c))
+      );
     } catch (err) {
       console.error("Failed to rename channel", err);
     }
@@ -159,7 +163,12 @@ export default function ServerChannels({
         payload
       );
       const ch = created.channel;
-      const mapped = { id: ch.id, name: ch.name, type: ch.type, isPrivate: ch.is_private };
+      const mapped = {
+        id: ch.id,
+        name: ch.name,
+        type: ch.type,
+        isPrivate: ch.is_private,
+      };
       const safe = Array.isArray(channels) ? channels : [];
       setChannels([...safe, mapped]);
     } catch (err) {
@@ -198,7 +207,12 @@ export default function ServerChannels({
   // Determine dropdown options based on role
   const menuOptions = isMember
     ? ["Invite to server", "Leave server"]
-    : ["Manage Members", "Manage Channels", "Invite to server", "Delete server"];
+    : [
+        "Manage Members",
+        "Manage Channels",
+        "Invite to server",
+        "Delete server",
+      ];
 
   return (
     <div
@@ -219,7 +233,10 @@ export default function ServerChannels({
         onClick={() => setIsMenuOpen((o) => !o)}
       >
         <h2 className="font-semibold truncate">{server.name}</h2>
-        <ChevronDown size={20} className={isDarkMode ? "text-gray-400" : "text-gray-500"} />
+        <ChevronDown
+          size={20}
+          className={isDarkMode ? "text-gray-400" : "text-gray-500"}
+        />
       </div>
 
       {/* Dropdown menu */}
@@ -235,7 +252,9 @@ export default function ServerChannels({
           {menuOptions.map((option, idx) => (
             <button
               key={idx}
-              className={`w-full text-left px-4 py-2 ${getMenuButtonClasses(option)}`}
+              className={`w-full text-left px-4 py-2 ${getMenuButtonClasses(
+                option
+              )}`}
               onClick={() => {
                 if (option === "Manage Members") setIsMemberModalOpen(true);
                 if (option === "Manage Channels") setIsChannelModalOpen(true);
@@ -252,7 +271,7 @@ export default function ServerChannels({
 
       {/* Modals */}
       <MemberManagementModal
-        serverId={server.id}
+        server={server}
         members={serverMembers}
         isOpen={isMemberModalOpen}
         onClose={() => setIsMemberModalOpen(false)}
@@ -342,9 +361,12 @@ export default function ServerChannels({
                           )
                         }
                       >
-                        <Bell size={16} className={
-                          isDarkMode ? "text-gray-400" : "text-gray-500"
-                        } />
+                        <Bell
+                          size={16}
+                          className={
+                            isDarkMode ? "text-gray-400" : "text-gray-500"
+                          }
+                        />
                       </button>
                       {openNotificationDropdown === channel.id && (
                         <div className="absolute right-0 mt-1 w-32 rounded-md shadow-lg z-20 bg-white border border-gray-200">
@@ -355,7 +377,9 @@ export default function ServerChannels({
                           ].map((opt) => (
                             <button
                               key={opt.key}
-                              onClick={() => handleNotificationChange(channel.id, opt.key)}
+                              onClick={() =>
+                                handleNotificationChange(channel.id, opt.key)
+                              }
                               className="block w-full text-left px-2 py-1 hover:bg-gray-100"
                             >
                               {opt.label}
@@ -371,22 +395,26 @@ export default function ServerChannels({
                           setIsAddMemberModalOpen(true);
                         }}
                       >
-                        <Plus size={16} className={
-                          isDarkMode ? "text-gray-400" : "text-gray-500"
-                        } />
+                        <Plus
+                          size={16}
+                          className={
+                            isDarkMode ? "text-gray-400" : "text-gray-500"
+                          }
+                        />
                       </button>
                     )}
                   </div>
                 )}
               </div>
 
-              {channel.type === "voice" && channel.id === joinedVoiceChannelId && (
-                <VoiceChat
-                  user={JSON.parse(localStorage.getItem("user"))}
-                  channel={channel}
-                  onLeave={handleLeaveVoiceChannel}
-                />
-              )}
+              {channel.type === "voice" &&
+                channel.id === joinedVoiceChannelId && (
+                  <VoiceChat
+                    user={JSON.parse(localStorage.getItem("user"))}
+                    channel={channel}
+                    onLeave={handleLeaveVoiceChannel}
+                  />
+                )}
             </div>
           ))}
       </div>

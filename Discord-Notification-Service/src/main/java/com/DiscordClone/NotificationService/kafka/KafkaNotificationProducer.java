@@ -13,18 +13,36 @@ import org.springframework.stereotype.Service;
 public class KafkaNotificationProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("message-topic")
-    private String topic;
+    @Value("${spring.notification.kafka.message-topic}")
+    private String messageTopic;
 
-    public void sendNotificationToKafka(Notification notification) {
+    @Value("${spring.notification.kafka.mention-topic}")
+    private String mentionTopic;
+
+    @Value("${spring.notification.kafka.voice-channel-topic}")
+    private String voiceChannelTopic;
+
+    public void sendToMessageTopic(Notification notification) {
+        sendNotificationToTopic(notification, messageTopic);
+    }
+
+    public void sendToMentionTopic(Notification notification) {
+        sendNotificationToTopic(notification, mentionTopic);
+    }
+
+    public void sendToVoiceChannelTopic(Notification notification) {
+        sendNotificationToTopic(notification, voiceChannelTopic);
+    }
+
+    private void sendNotificationToTopic(Notification notification, String topic) {
         try {
             String message = objectMapper.writeValueAsString(notification);
-            kafkaTemplate.send(topic, message); // sends stringified JSON
+            kafkaTemplate.send(topic, message);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to serialize Notification to JSON", e);
         }
     }
 }
+
