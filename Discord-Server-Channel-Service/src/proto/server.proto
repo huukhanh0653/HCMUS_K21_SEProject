@@ -3,11 +3,11 @@ syntax = "proto3";
 package server;
 
 service ServerService {
-  rpc CreateServer (CreateServerRequest) returns (ServerResponse) {}
+  rpc CreateServer (CreateServerRequest) returns (GetServerResponse) {}
   rpc GetAllServers (GetServersRequest) returns (ServerListResponse) {}
   rpc GetServers (GetServersRequest) returns (ServerListResponse) {}
   rpc GetServerById (GetServerRequest) returns (GetServerResponse) {}
-  rpc UpdateServer (UpdateServerRequest) returns (ServerResponse) {}
+  rpc UpdateServer (UpdateServerRequest) returns (GetServerResponse) {}
   rpc DeleteServer (DeleteServerRequest) returns (ServerResponse) {}
 }
 
@@ -39,14 +39,20 @@ message DeleteServerRequest {
 }
 
 message GetServerResponse {
-  string name = 1;
-  string ownerUsername = 2;
-  string createdAt = 3;
+  string id = 1;
+  string name = 2;
+  string ownerUsername = 3;
   string serverPic = 4;
+  string createdAt = 5;
 }
 
 message ServerResponse {
   string message = 1;
+}
+
+message ChangeServerResponse {
+  string message = 1;
+  GetServerResponse server = 2;
 }
 
 message ServerListResponse {

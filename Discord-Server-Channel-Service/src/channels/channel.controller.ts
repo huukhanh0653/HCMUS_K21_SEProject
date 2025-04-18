@@ -29,12 +29,12 @@ export class ChannelController {
   // gRPC Methods
   @GrpcMethod('ChannelService', 'CreateChannel')
   async createChannel(data: { serverId: string; userId: string } & ChannelDto) {
-    const message = await this.channelService.createChannel(
+    const response = await this.channelService.createChannel(
       data.serverId,
       data.userId,
       data,
     );
-    return { message };
+    return { ...response };
   }
 
   @GrpcMethod('ChannelService', 'GetChannelsByServer')
@@ -55,12 +55,12 @@ export class ChannelController {
   async updateChannel(
     data: { channelId: string; userId: string } & ChannelDto,
   ) {
-    const message = await this.channelService.updateChannel(
+    const response = await this.channelService.updateChannel(
       data.channelId,
       data.userId,
       { name: data.name, type: data.type, isPrivate: data.isPrivate },
     );
-    return { message };
+    return { ...response };
   }
 
   @GrpcMethod('ChannelService', 'DeleteChannel')
