@@ -11,11 +11,16 @@ const connectMessageService = (
   channelId
 ) => {
   console.log("Opening Web Socket...");
-  const socket = new SockJS(`/ws`);
+  const socket = new SockJS(`http://localhost:8082/ws`);
   const stompClient = Stomp.over(socket);
   stompClientRef.current = stompClient;
 
   stompClient.connect({}, () => {
+    if (stompClientRef.current && stompClientRef.current.connected) {
+      stompClientRef.current.disconnect(() => {
+        console.log(">>> DISCONNECT");
+      });
+    }
     console.log("Connected to STOMP");
     // Subscribe vào topic để nhận các tin nhắn từ backend
     const subscription = stompClient.subscribe(
