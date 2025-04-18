@@ -396,6 +396,29 @@ const createChannel = async (serverId, userId, channelData) => {
 };
 
 /**
+ * Lấy danh sách channel trong server.
+ * @param {string} serverId - ID của server.
+ * @param {string} query - Từ khóa tìm kiếm.
+ * @returns {Promise<Object>}
+ */
+const getChannelsByServer = async (serverId, query = "") => {
+  try {
+    const response = await axios.get(
+      `${Server_API}/channels/${serverId}/all?query=${encodeURIComponent(
+        query
+      )}`,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error getting channels by server:", error);
+    throw error;
+  }
+};
+
+/**
  * Lấy danh sách channel của người dùng.
  * @param {string} userId - ID của người dùng.
  * @param {string} query - Từ khóa tìm kiếm.
@@ -560,6 +583,7 @@ const ServerChannelService = {
 
   // Channel
   createChannel,
+  getChannelsByServer,
   getChannels,
   updateChannel,
   deleteChannel,

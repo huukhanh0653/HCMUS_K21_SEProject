@@ -22,7 +22,7 @@ import {
 
 @ApiTags('channels')
 @ApiBearerAuth()
-@Controller('channels/:userId')
+@Controller('channels')
 export class ChannelController {
   constructor(private readonly channelService: ChannelService) {}
 
@@ -35,6 +35,20 @@ export class ChannelController {
       data,
     );
     return { ...response };
+  }
+
+  @GrpcMethod('ChannelService', 'GetChannelsByServer')
+  async getChannelsByServer(data: { userId: string; query: string }) {
+    const { message, channels } = await this.channelService.getChannelsByServer(
+      data.userId,
+      data.query,
+    );
+    return {
+      message,
+      channels: channels.map((channel: any) =>
+        this.mapChannelToResponse(channel),
+      ),
+    };
   }
 
   @GrpcMethod('ChannelService', 'GetChannels')
@@ -85,7 +99,7 @@ export class ChannelController {
   }
 
   // RESTful Methods
-  @Post(':serverId')
+  @Post(':userId/:serverId')
   @ApiOperation({ summary: 'Create a new channel' })
   @ApiResponse({ status: 201, description: 'Channel created successfully' })
   @ApiResponse({ status: 400, description: 'Validation failed' })
@@ -102,7 +116,26 @@ export class ChannelController {
     return this.channelService.createChannel(serverId, userId, data);
   }
 
-  @Get()
+  @Get(':serverId/all')
+  @ApiOperation({ summary: 'Get channels in a server' })
+  @ApiResponse({ status: 200, description: 'List of channels' })
+  @ApiParam({
+    name: 'serverId',
+    description: 'ID of the server',
+  })
+  @ApiQuery({
+    name: 'query',
+    description: 'Query string to filter channels by name',
+    required: false,
+  })
+  async getChannelsByServerRest(
+    @Param('serverId') serverId: string,
+    @Query('query') query: string = '',
+  ) {
+    return this.channelService.getChannelsByServer(serverId, query);
+  }
+
+  @Get(':userId')
   @ApiOperation({ summary: 'Get channels the user belongs to' })
   @ApiResponse({ status: 200, description: 'List of channels' })
   @ApiParam({
@@ -114,14 +147,14 @@ export class ChannelController {
     description: 'Query string to filter channels by name',
     required: false,
   })
-  async getChannelsByServerRest(
+  async getChannelsRest(
     @Param('userId') userId: string,
     @Query('query') query: string = '',
   ) {
     return this.channelService.getChannels(userId, query);
   }
 
-  @Put(':channelId')
+  @Put(':userId/:channelId')
   @ApiOperation({ summary: 'Update a channel' })
   @ApiResponse({ status: 200, description: 'Channel updated successfully' })
   @ApiResponse({ status: 404, description: 'Channel not found' })
@@ -138,7 +171,7 @@ export class ChannelController {
     return this.channelService.updateChannel(channelId, userId, data);
   }
 
-  @Delete(':channelId')
+  @Delete(':userId/:channelId')
   @ApiOperation({ summary: 'Delete a channel' })
   @ApiResponse({ status: 200, description: 'Channel deleted successfully' })
   @ApiResponse({ status: 404, description: 'Channel not found' })

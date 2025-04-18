@@ -57,14 +57,14 @@ export default function InviteServerModal({ server, isOpen, onClose }) {
   const handleInvite = async (friend) => {
     setInviteLoading(friend.id);
     setInviteError(null);
-    console.log("Friend invited:", friend);
     try {
+      // Gọi đúng theo định nghĩa trong ServerChannelService:
       await ServerChannelService.addServerMember(
         server.id,
         user.id,
         { memberId: friend.id, role: "Member" }
       );
-      // Remove friend from list after inviting
+      // Sau khi mời thành công, loại bỏ bạn khỏi list
       setFriends((prev) => prev.filter((f) => f.id !== friend.id));
     } catch (err) {
       console.error("Failed to invite:", err);
