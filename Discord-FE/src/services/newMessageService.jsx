@@ -1,6 +1,6 @@
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useQuery, useMutation } from "@apollo/client";
 // Không sử dụng dotenv vì require không được định nghĩa trong trình duyệt
 // require("dotenv").config();
 
@@ -11,7 +11,7 @@ const connectMessageService = (
   channelId
 ) => {
   console.log("Opening Web Socket...");
-  const socket = new SockJS(`http://localhost:8082/ws`);
+  const socket = new SockJS(`/ws`);
   const stompClient = Stomp.over(socket);
   stompClientRef.current = stompClient;
 

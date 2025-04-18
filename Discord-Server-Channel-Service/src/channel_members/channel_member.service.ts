@@ -83,7 +83,7 @@ export class ChannelMemberService {
       .map((member) => {
         const user = users.find((u: any) => u.id === member.user_id);
         return {
-          id: member.id,
+          id: user.id,
           username: user.username,
           avatar: user.avatar,
           createdAt: member.created_at,
