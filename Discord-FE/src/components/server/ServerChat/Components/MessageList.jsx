@@ -1,6 +1,7 @@
 import { Edit, Trash2 } from "lucide-react";
 import SampleAvt from "../../../../assets/sample_avatar.svg";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
 export default function MessageList({
     messages,
@@ -18,6 +19,9 @@ export default function MessageList({
   const user = JSON.parse(localStorage.getItem("user"));
   const { i18n } = useTranslation(); // ✅ Di chuyển vào trong đây
 
+  // lấy danh sách memeber server từ redux
+  const { serverMembers } = useSelector((state) => state.home);
+
   return (
     <div
       ref={messagesWrapperRef}
@@ -30,34 +34,47 @@ export default function MessageList({
       }}
     >
       {messages.map((message, index) => {
+        // normalize senderId from either field
+        const senderId = message.sender_id ?? message.senderId;
+
+        // date grouping logic
         const previous = messages[index - 1];
+        const prevSenderId = previous && (previous.sender_id ?? previous.senderId);
         const currentDate = new Date(message.timestamp);
         const currentDay = currentDate.toDateString();
         const previousDay = previous ? new Date(previous.timestamp).toDateString() : null;
         const showDateDivider = currentDay !== previousDay;
-        const currentTime = currentDate.getTime();
-        const previousTime = previous ? new Date(previous.timestamp).getTime() : null;
         const isGrouped =
           previous &&
-          previous.sender_id === message.sender_id &&
+          prevSenderId === senderId &&
           previousDay === currentDay &&
-          previousTime &&
-          currentTime - previousTime <= 60000;
+          new Date(message.timestamp) - new Date(previous.timestamp) <= 60000;
 
-        const formattedDate = currentDate.toLocaleDateString(i18n.language || "vi-VN", {
+        // formatted date/time
+        const formattedDate = currentDate.toLocaleDateString(i18n.language, {
           year: "numeric",
           month: "long",
           day: "numeric",
         });
-
-        const formattedTime = currentDate.toLocaleTimeString(i18n.language || "vi-VN", {
+        const formattedTime = currentDate.toLocaleTimeString(i18n.language, {
           hour: "2-digit",
           minute: "2-digit",
           hour12: true,
         });
 
+        // lookup member or fallback
+        console.log("Sender ID:", senderId);
+        console.log("Server Members:", serverMembers);
+        const member = serverMembers.find((m) => m.id === senderId);
+        const sender =
+          senderId === user.id
+            ? { username: user.username, avatar: user.avatar }
+            : member
+            ? { username: member.username, avatar: member.avatar }
+            : { username: "User", avatar: SampleAvt };
+
         return (
-          <div key={message.message_id} className={`${!isGrouped ? "pt-4" : ""}`}>
+          <div key={message.message_id} className={!isGrouped ? "pt-4" : ""}>
             {showDateDivider && (
               <div className="flex justify-center items-center my-6">
                 <div className="border-t border-gray-600 flex-1" />
@@ -71,32 +88,22 @@ export default function MessageList({
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden flex-shrink-0">
                     <img
-                      src={
-                        message.senderId === user.id
-                          ? user.avatar
-                          : SampleAvt
-                      }
-                      alt={message.id || "User"}
+                      src={sender.avatar || SampleAvt}
+                      alt={sender.username}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold">
-                        {message.senderId === user.id
-                          ? user.username
-                          : "User"}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {formattedTime}
-                      </span>
+                      <span className="font-semibold">{sender.username}</span>
+                      <span className="text-xs text-gray-400">{formattedTime}</span>
                     </div>
                   </div>
                 </div>
               )}
 
               <div className="pl-14 relative">
-                {editingMessageId === message.message_id ? (
+                {editingMessageId === message.messageId ? (
                   <textarea
                     value={editedContent}
                     onChange={(e) => setEditedContent(e.target.value)}
@@ -106,7 +113,7 @@ export default function MessageList({
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
-                        handleSaveEdit(message.message_id);
+                        handleSaveEdit(message.messageId);
                       }
                     }}
                   />
@@ -116,12 +123,12 @@ export default function MessageList({
                   </p>
                 )}
 
-                {message.sender_id === username && (
+                {message.senderId === user.id && (
                   <div className="absolute top-0 right-0 hidden group-hover:flex items-center gap-2">
                     <button
                       className="p-1 text-gray-400 hover:text-gray-200"
                       onClick={() => {
-                        setEditingMessageId(message.message_id);
+                        setEditingMessageId(message.messageId);
                         setEditedContent(message.content);
                       }}
                     >
@@ -129,7 +136,7 @@ export default function MessageList({
                     </button>
                     <button
                       className="p-1 text-gray-400 hover:text-red-500"
-                      onClick={() => handleDeleteMessage(message.message_id)}
+                      onClick={() => handleDeleteMessage(message.messageId)}
                     >
                       <Trash2 size={16} />
                     </button>
