@@ -104,6 +104,7 @@ export default function UserPanel({ user, onProfileClick }) {
       )}
       {/* Khối user info */}
       <div className="flex items-center">
+        {/* Avatar */}
         <div
           className={`w-8 h-8 ${isDarkMode ? "bg-[#36393f]" : "bg-gray-200"} rounded-full cursor-pointer`}
         >
@@ -113,17 +114,21 @@ export default function UserPanel({ user, onProfileClick }) {
             className="w-full h-full rounded-full object-cover"
           />
         </div>
-        <div className="flex-1 ml-2">
+
+        {/* Username + Status */}
+        <div className="flex-1 ml-2 flex flex-col items-start">
           <div
             className={`text-sm font-semibold ${isDarkMode ? "text-white" : "text-[#333333]"}`}
             title={username}
           >
             {truncateText(username, 15)}
           </div>
-          <div className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+          <div className={`text-xs ${isDarkMode ? "text-green-400" : "text-green-600"}`}>
             {t("Online")}
           </div>
         </div>
+
+        {/* Settings icon */}
         <div className="flex gap-1">
           <Settings
             size={20}
