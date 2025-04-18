@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.discord.backend.demomessageddd.infrastructure.message.")
+@EnableMongoRepositories(basePackages = "com.discord.backend.demomessageddd.infrastructure.message.mongo")
 @EnableRedisRepositories(basePackages = "com.discord.backend.demomessageddd.infrastructure.message.redis")
 public class RepositoryConfig {
 }
