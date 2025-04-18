@@ -77,14 +77,13 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
                   ? "bg-yellow-500"
                   : friend.status === "dnd"
                   ? "bg-red-500"
-                  : "bg-gray-500"
+                  : "bg-green-500"
               }`}
             >
-              
             </div>
           </div>
 
-          <div>
+          <div className="absolute left-36 bottom-0">
               {friend.username}
           </div>
           
