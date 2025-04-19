@@ -34,8 +34,8 @@ jobs:
       - name: Build and Push User Service
         uses: docker/build-push-action@v4
         with:
-          context: ./Discord-User-Service-Postgres
-          file: ./Discord-User-Service-Postgres/Dockerfile
+          context: ./Discord-User-Service
+          file: ./Discord-User-Service/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-user-service:latest
 
