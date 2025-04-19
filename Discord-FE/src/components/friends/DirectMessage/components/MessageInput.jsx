@@ -191,7 +191,11 @@ export default function MessageInput({
           {emojiSuggestions.length > 0 && (
             <div
               className="absolute bottom-full left-0 mb-1 bg-white dark:bg-[#2b2d31] border border-gray-300 dark:border-gray-600 rounded shadow-md z-50 max-h-40 overflow-y-auto"
-              style={{ width: "250px" }}
+              style={{ 
+                width: "180px" ,
+                scrollbarWidth: "thin",
+                scrollbarColor: "grey transparent",
+              }}
             >
               {emojiSuggestions.map((emoji, index) => (
                 <button

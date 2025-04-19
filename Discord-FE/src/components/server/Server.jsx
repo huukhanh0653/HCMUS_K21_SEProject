@@ -60,10 +60,10 @@ export default function Server({
     ServerChannelService.searchServerMember(selectedServer.id)
       .then((res) => {
         const members = res.members || [];
+        console.log("Server members:", members);
         dispatch(setServerMembers(members));
       })
       .catch((err) => console.error("Failed to load members", err));
-    console.log("Server members:", serverMembers);
   }, [selectedServer,  dispatch]);
 
   // Xác định kênh text hiện hành (nếu có)

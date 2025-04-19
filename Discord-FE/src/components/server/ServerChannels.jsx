@@ -11,6 +11,7 @@ import {
 import MemberManagementModal from "./MemberManagementModal";
 import ChannelManagementModal from "./ChannelManagementModal";
 import InviteServer from "./InviteServer";
+import { X } from "lucide-react";
 import AddMemberToChannel from "./AddMemberToChannel";
 import VoiceChat from "./VoiceChat/VoiceChat";
 import { useTranslation } from "react-i18next";
@@ -20,6 +21,7 @@ import { joinVoiceChannel } from "../../redux/homeSlice";
 import ServerChannelService from "../../services/ServerChannelService";
 import StorageService from "../../services/StorageService";
 import toast from "react-hot-toast";
+import StorageService from "../../services/StorageService";
 
 const UpdateServerModal = ({ isOpen, onClose, server, onUpdate }) => {
   const { t } = useTranslation();
@@ -29,7 +31,9 @@ const UpdateServerModal = ({ isOpen, onClose, server, onUpdate }) => {
   const [serverPicPreview, setServerPicPreview] = useState(server.server_pic);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({});
 
+  // Khi open modal, khởi tạo giá trị từ server hiện tại
   useEffect(() => {
     setName(server.name || "");
     setServerPicPreview(server.server_pic);
@@ -76,6 +80,7 @@ const UpdateServerModal = ({ isOpen, onClose, server, onUpdate }) => {
     }
 
     setIsSubmitting(true);
+
     try {
       let serverPicUrl = server.server_pic || "";
       if (serverPicFile) {
@@ -97,9 +102,11 @@ const UpdateServerModal = ({ isOpen, onClose, server, onUpdate }) => {
   };
 
   if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
       <div
         className={`p-6 rounded-lg w-96 ${
           isDarkMode ? "bg-[#2b2d31] text-gray-100" : "bg-white text-[#333333]"

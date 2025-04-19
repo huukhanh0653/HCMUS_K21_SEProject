@@ -45,17 +45,21 @@ export default function InviteServerModal({ server, isOpen, onClose }) {
     return new Hashids(key, 8);
   }, []);
 
+  // Bảo vệ server.id trước khi tính code
+  const serverId = server?.id || "";
   // Generate server code
   const serverCode = useMemo(() => {
+    if (!serverId) return "";
+    // loại bỏ dấu '-' để có chuỗi hex thuần
+    const hex = serverId.replace(/-/g, "").toLowerCase();
+    // Nếu encodeHex fail, fallback encode ký tự
     try {
-      const hex = server.id.replace(/-/g, "").toLowerCase();
       return hashids.encodeHex(hex);
     } catch {
-      return hashids.encode(
-        ...server.id.split("").map((ch) => ch.charCodeAt(0))
-      );
+      const codes = hex.split("").map((ch) => ch.charCodeAt(0));
+      return hashids.encode(...codes);
     }
-  }, [hashids, server.id]);
+  }, [hashids, serverId]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(serverCode);
