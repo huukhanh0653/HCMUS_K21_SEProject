@@ -91,7 +91,7 @@ export default function ServerChat(props) {
     setMessages([]);
     setHasMore(false);
     initialFetchedRef.current = false;
-    setLastTimestamp(new Date().toISOString());
+    setLastTimestamp(new Date(Date.now()).toISOString());
     isLoadingRef.current = false;
 
     
@@ -143,20 +143,21 @@ export default function ServerChat(props) {
     isLoadingRef.current = true;
 
     try {
+      if (!fetchMoreBefore || !channel?.id) {
+        console.error("fetchMoreBefore or channel.id is undefined");
+        return;
+      }
+
       const { data } = await fetchMoreBefore({
-        variables: { serverId, channelId, amount: 20, timestamp: lastTimestamp },
+        variables: { serverId, channelId, amount: 10, timestamp: new Date(Date.now()).toISOString() },
       });
 
       // Nếu giữa chừng user đã gọi loadMessages khác (bộ đếm đã thay đổi), bỏ qua kết quả
-      /*if (channel.id != main_channelId) {
-        console.log(main_channelId);
+      if (channel.id !== localStorage.getItem('channelId')) {
+        console.log(localStorage.getItem('channelId'));
         console.log(channel.id);
         return;
-      }*/
-
-      console.log(localStorage.getItem('channelId'));
-        
-      console.log(channel.id);
+      }
 
       const {
         messages: fetched,
@@ -164,7 +165,8 @@ export default function ServerChat(props) {
         lastMessageTimestamp,
       } = data.fetchMessagesBefore;
 
-      setMessages(fetched);
+
+      setMessages(fetched.slice().reverse());
       setHasMore(more);
       setLastTimestamp(lastMessageTimestamp);
       initialFetchedRef.current = true;
@@ -179,6 +181,7 @@ export default function ServerChat(props) {
 
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
+    console.log("Có tin mới")
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -188,7 +191,9 @@ export default function ServerChat(props) {
     const { data } = await fetchMoreBefore({ variables: { serverId, channelId, amount: 20, timestamp: lastTimestamp } });
     console.log("Data:",data);
     const { messages: older, hasMore: more, lastMessageTimestamp } = data.fetchMessagesBefore;
-    setMessages((prev) => [...older, ...prev]);
+    
+    const olderChrono = older.slice().reverse();
+    setMessages(prev => [...olderChrono, ...prev]);
     setHasMore(more);
     setLastTimestamp(lastMessageTimestamp);
   }, [hasMore, lastTimestamp, fetchMoreBefore, serverId, channelId]);
