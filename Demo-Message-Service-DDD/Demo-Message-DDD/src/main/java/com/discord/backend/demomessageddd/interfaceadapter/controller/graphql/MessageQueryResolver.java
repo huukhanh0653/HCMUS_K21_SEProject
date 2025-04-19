@@ -3,7 +3,6 @@ package com.discord.backend.demomessageddd.interfaceadapter.controller.graphql;
 import com.discord.backend.demomessageddd.domain.entity.Message;
 import com.discord.backend.demomessageddd.domain.valueobject.FetchMessage;
 import com.discord.backend.demomessageddd.interfaceadapter.DTO.MessageResponse;
-import com.discord.backend.demomessageddd.interfaceadapter.DTO.SendMessageRequest;
 import com.discord.backend.demomessageddd.application.service.EditMessageUseCase;
 import com.discord.backend.demomessageddd.application.service.FetchMessageUseCase;
 import com.discord.backend.demomessageddd.application.service.SearchMessageUseCase;
@@ -12,6 +11,7 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 
@@ -26,10 +26,11 @@ public class MessageQueryResolver {
     private final SimpMessagingTemplate messagingTemplate;
 
     public MessageQueryResolver(FetchMessageUseCase fetchMessageUseCase, SearchMessageUseCase searchMessageUseCase,
-            EditMessageUseCase editMessageUseCase) {
+            EditMessageUseCase editMessageUseCase, SimpMessagingTemplate messagingTemplate) {
         this.fetchMessageUseCase = fetchMessageUseCase;
         this.searchMessageUseCase = searchMessageUseCase;
         this.editMessageUseCase = editMessageUseCase;
+        this.messagingTemplate = messagingTemplate;
     }
 
     /**
@@ -104,8 +105,8 @@ public class MessageQueryResolver {
 
         Message message = editMessageUseCase.edit(messageId, serverId, channelId, content);
 
-        MessageResponse messageResponse = new SendMessageRequest(
-                message.getId(),
+        MessageResponse messageResponse = new MessageResponse(
+                message.getMessageId(),
                 message.getSenderId(),
                 message.getServerId(),
                 message.getChannelId(),
@@ -115,7 +116,8 @@ public class MessageQueryResolver {
                 "MESSAGE_UPDATED");
 
         messagingTemplate.convertAndSend(
-                "/topic/server/" + request.serverId() + "/channel/" + request.channelId(),
+                "/topic/server/" + message.getServerId() + "/channel/" + message
+                        .getChannelId(),
                 messageResponse);
 
         return message;
@@ -134,10 +136,10 @@ public class MessageQueryResolver {
             @Argument String messageId) {
         System.out.println("MessageQueryResolver deleteMessages called with messageId: " + messageId);
 
-        Message message = ditMessageUseCase.delete(serverId, channelId, messageId);
+        Message message = editMessageUseCase.delete(serverId, channelId, messageId);
 
-        MessageResponse messageResponse = new SendMessageRequest(
-                message.getId(),
+        MessageResponse messageResponse = new MessageResponse(
+                message.getMessageId(),
                 message.getSenderId(),
                 message.getServerId(),
                 message.getChannelId(),
@@ -147,7 +149,8 @@ public class MessageQueryResolver {
                 "MESSAGE_DELETED");
 
         messagingTemplate.convertAndSend(
-                "/topic/server/" + request.serverId() + "/channel/" + request.channelId(),
+                "/topic/server/" + message.getServerId() + "/channel/" + message
+                        .getChannelId(),
                 messageResponse);
     }
 }

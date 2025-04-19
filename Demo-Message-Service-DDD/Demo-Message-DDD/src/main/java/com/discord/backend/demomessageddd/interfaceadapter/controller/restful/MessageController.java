@@ -3,7 +3,8 @@ package com.discord.backend.demomessageddd.interfaceadapter.controller.restful;
 import com.discord.backend.demomessageddd.application.service.SendMessageUseCase;
 import com.discord.backend.demomessageddd.domain.entity.Message;
 import com.discord.backend.demomessageddd.interfaceadapter.DTO.MessageResponse;
-import com.discord.backend.demomessageddd.interfaceadapter.DTO.SendMessageRequest;
+import com.discord.backend.demomessageddd.interfaceadapter.DTO.MessageSendRequest;
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,13 +27,13 @@ public class MessageController {
     // -> /topic là destination prefix của SimpMessagingTemplate có nghĩa
     // là gửi broadcast đến tất cả các client đang subscribe đến topic này
     @PostMapping
-    public Message sendMessage(@RequestBody SendMessageRequest request) {
+    public Message sendMessage(@RequestBody MessageSendRequest request) {
 
         Message message = sendMessageUseCase.execute(request.messageId(), request.senderId(), request.serverId(),
                 request.channelId(), request.attachments(), request.mentions(), request.content());
 
-        MessageResponse messageRequest = new SendMessageRequest(
-                message.getId(),
+        MessageResponse messageResponse = new MessageResponse(
+                message.getMessageId(),
                 message.getSenderId(),
                 message.getServerId(),
                 message.getChannelId(),
@@ -43,7 +44,7 @@ public class MessageController {
 
         messagingTemplate.convertAndSend(
                 "/topic/server/" + request.serverId() + "/channel/" + request.channelId(),
-                message);
+                messageResponse);
 
         return message;
     }
