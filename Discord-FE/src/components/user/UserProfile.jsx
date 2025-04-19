@@ -6,12 +6,14 @@ import { useLanguage } from "../layout/LanguageProvider";
 import { useTheme } from "../layout/ThemeProvider";
 import SampleAvt from "../../assets/sample_avatar.svg";
 import { getAuth, signOut } from "firebase/auth";
-import { User_API } from "../../../apiConfig";
+//import { User_API } from "../../../apiConfig";
 import StorageService from "../../services/StorageService";
 import CryptoJS from "crypto-js";
 import { sendPasswordResetEmail } from "firebase/auth";
 // Khai báo SECRET_KEY (đảm bảo biến môi trường đã được cấu hình)
 const SECRET_KEY = import.meta.env.VITE_SECRET_KEY;
+// API base URL from Vite environment
+const USER_API = import.meta.env.VITE_USER_API;
 
 export default function UserProfile({ user, onClose }) {
   const { isDarkMode, toggleTheme } = useTheme();

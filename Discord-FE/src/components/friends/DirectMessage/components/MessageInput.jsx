@@ -5,6 +5,7 @@ import ShowFile from "./ShowFile";
 import { useTheme } from "../../../layout/ThemeProvider";
 import EmojiMenu from "../../../EmojiMenu";
 import { emojiGroups } from "../../../../emojiData";
+import StorageService from "../../../../services/StorageService"
 
 export default function MessageInput({
   messageInput,
@@ -26,37 +27,14 @@ export default function MessageInput({
   // Tạo mảng các emoji từ tất cả các nhóm để lọc cho gợi ý
   const allEmojis = Object.values(emojiGroups).flat();
 
-  // Hàm upload file
-  const uploadToGCS = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("http://localhost:8080/api/storage/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error("Upload failed: " + errorText);
-      }
-
-      const data = await response.text();
-      const fileUrl = data.split(": ")[1];
-      setUploadedUrls((prev) => [...prev, fileUrl]);
-      return fileUrl;
-    } catch (error) {
-      console.error("Upload error:", error);
-      return null;
-    }
-  };
-
+  // Xử lý file chọn và upload qua StorageService
   const handleFileSelect = async (file) => {
     setShowFile((prev) => [...prev, file]);
-    const fileUrl = await uploadToGCS(file);
-    if (!fileUrl) {
-      console.warn("File upload failed");
+    try {
+      const { url } = await StorageService.uploadFile(file);
+      setUploadedUrls((prev) => [...prev, url]);
+    } catch (error) {
+      console.warn("File upload failed:", error);
     }
     setShowUpload(false);
   };

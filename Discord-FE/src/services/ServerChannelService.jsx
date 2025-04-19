@@ -1,5 +1,8 @@
 import axios from "axios";
-import { Server_API } from "../../apiConfig";
+//import { Server_API } from "../../apiConfig";
+
+// API base URL from Vite environment
+const Server_API = import.meta.env.VITE_SERVER_API;
 
 // --------------------
 // Các hàm gọi API liên quan đến Server

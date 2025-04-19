@@ -3,10 +3,14 @@ import Stomp from "stompjs";
 import { gql, useQuery, useMutation } from "@apollo/client";
 // Không sử dụng dotenv vì require không được định nghĩa trong trình duyệt
 // require("dotenv").config();
+//import { Message_API } from "../../apiConfig";
+
+// API base URL from Vite environment
+const Message_API = import.meta.env.VITE_MESSAGE_API;
 
 const WS_URL =
   import.meta.env.DEV
-    ? "http://localhost:8082/ws"    // directly hit your backend in dev
+    ? `${Message_API}/ws`    // directly hit your backend in dev
     : "/ws";                        // when built, relative URL still works
 
 const connectMessageService = (
