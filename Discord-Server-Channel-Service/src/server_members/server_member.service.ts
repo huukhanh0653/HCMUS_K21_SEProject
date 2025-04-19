@@ -9,6 +9,7 @@ import { ServerMemberDto } from './server_member.dto';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { ChannelMember } from 'src/channel_members/channel_member.entity';
+import { Ban } from 'src/bans/ban.entity';
 
 @Injectable()
 export class ServerMemberService {
@@ -19,6 +20,8 @@ export class ServerMemberService {
     private serverRepository: Repository<Server>,
     @InjectRepository(ChannelMember)
     private channelMemberRepository: Repository<ChannelMember>,
+    @InjectRepository(Ban)
+    private banRepository: Repository<Ban>,
     private userService: UserService,
     private roleService: RoleService,
   ) {}
@@ -34,6 +37,11 @@ export class ServerMemberService {
     if (!server) return { message: 'Server not found' };
     if (server.owner_id !== userId)
       return { message: 'Only the owner can add members' };
+
+    const ban = await this.banRepository.findOne({
+      where: { server_id: serverId, user_id: data.memberId },
+    });
+    if (ban) return { message: 'This user has been banned in server' };
 
     const role = await this.roleService.getRoleByName(serverId, data.role!);
     if (!role) return { message: 'Role not found' };
@@ -70,10 +78,15 @@ export class ServerMemberService {
     });
     if (!server) return { message: 'Server not found' };
 
+    const ban = await this.banRepository.findOne({
+      where: { server_id: serverId, user_id: data.memberId },
+    });
+    if (ban) return { message: 'This member has been banned in server' };
+
     const role = await this.roleService.getRoleByName(serverId, data.role!);
     if (!role) return { message: 'Role not found' };
 
-    const memberToAdd = await this.userService.getUser(data.memberId!);
+    const memberToAdd = await this.userService.getUser(data.memberId);
     if (!memberToAdd) return { message: 'User to add not found' };
 
     const existingMember = await this.serverMemberRepository.findOne({
@@ -92,6 +105,26 @@ export class ServerMemberService {
     return {
       message: `Member added to server \"${server.name}\" with role \"${role.name}\"`,
       member: memberToAdd,
+    };
+  }
+
+  async outServer(serverId: string, memberId: string) {
+    const server = await this.serverRepository.findOne({
+      where: { id: serverId },
+    });
+    if (!server) return { message: 'Server not found' };
+
+    const member = await this.serverMemberRepository.findOne({
+      where: { server_id: serverId, user_id: memberId },
+    });
+    if (!member) return { message: 'User is not a member' };
+
+    await this.channelMemberRepository.delete({ user_id: memberId });
+    await this.serverMemberRepository.delete({ user_id: memberId });
+
+    const memberToRemove = await this.userService.getUser(memberId);
+    return {
+      message: `\"${memberToRemove.username}\" exited from server \"${server.name}\"`,
     };
   }
 

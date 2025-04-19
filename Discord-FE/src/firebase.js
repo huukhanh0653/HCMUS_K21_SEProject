@@ -1,15 +1,17 @@
 import { initializeApp } from "firebase/app";
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  GoogleAuthProvider, 
-  FacebookAuthProvider, 
-  signInWithPopup, 
-  EmailAuthProvider, 
-  linkWithCredential 
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  signInWithPopup,
+  EmailAuthProvider,
+  linkWithCredential,
 } from "firebase/auth";
 import { User_API } from "../apiConfig";
+import toast from "react-hot-toast";
+
 // Firebase configuration
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -37,7 +39,11 @@ const signUpWithEmail = async (email, password) => {
     console.log("Attempting to create user with email:", email);
 
     // Create new user
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
     console.log("User created successfully:", userCredential);
 
     if (!userCredential || !userCredential.user) {
@@ -49,13 +55,15 @@ const signUpWithEmail = async (email, password) => {
     console.error("Error in signUpWithEmail:", error);
 
     // Handle case where email is already in use
-    if (error.code === 'auth/email-already-in-use') {
+    if (error.code === "auth/email-already-in-use") {
       console.log("Email already in use, checking for linking possibility...");
 
       const user = auth.currentUser;
       if (user) {
         const providers = user.providerData;
-        const hasGoogleProvider = providers.some(p => p.providerId === 'google.com');
+        const hasGoogleProvider = providers.some(
+          (p) => p.providerId === "google.com"
+        );
 
         if (hasGoogleProvider) {
           console.log("Linking Google account with email/password...");
@@ -75,7 +83,11 @@ const signUpWithEmail = async (email, password) => {
  */
 const signInWithEmail = async (email, password) => {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
     const userResponse = await fetch(`${User_API}/api/users/email/${email}`, {
       method: "GET",
       headers: {
@@ -84,11 +96,10 @@ const signInWithEmail = async (email, password) => {
     });
 
     const user = await userResponse.json();
-    console.log("User signin with email:", user); 
+    console.log("User signin with email:", user);
 
-    if (user.isActivated === false) {
-      
-      console.log("User is not activated") ;
+    if (user.status === "banned") {
+      console.log("User is not activated");
       const auth = getAuth();
       auth.signOut(); // Sign out the user if the account is not activated
       onError("User is not activated");
@@ -111,17 +122,20 @@ const signInWithGoogle = async () => {
     console.log("Google sign-in successful:", result.user);
 
     // Assuming you just want to confirm the user exists on the backend
-    const userResponse = await fetch(`${User_API}/api/users/email/${result.user.email}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const userResponse = await fetch(
+      `${User_API}/api/users/email/${result.user.email}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     const user = await userResponse.json();
-    if (user.isActivated === false) {
-      
-      console.log("User is not activated") ;
+
+    if (user.status === "banned") {
+      console.log("User is not activated");
       const auth = getAuth();
       auth.signOut(); // Sign out the user if the account is not activated
       onError("User is not activated");
@@ -134,7 +148,6 @@ const signInWithGoogle = async () => {
     throw error;
   }
 };
-
 
 /**
  * Sign in with Facebook
@@ -151,4 +164,10 @@ const signInWithFacebook = async () => {
 };
 
 // Export authentication functions
-export { auth, signInWithGoogle, signInWithFacebook, signInWithEmail, signUpWithEmail };
+export {
+  auth,
+  signInWithGoogle,
+  signInWithFacebook,
+  signInWithEmail,
+  signUpWithEmail,
+};

@@ -16,8 +16,14 @@ const connectMessageService = (
   stompClientRef.current = stompClient;
 
   stompClient.connect({}, () => {
-    console.log("✅ STOMP connected");
-    stompClient.subscribe(
+    if (stompClientRef.current && stompClientRef.current.connected) {
+      stompClientRef.current.disconnect(() => {
+        console.log(">>> DISCONNECT");
+      });
+    }
+    console.log("Connected to STOMP");
+    // Subscribe vào topic để nhận các tin nhắn từ backend
+    const subscription = stompClient.subscribe(
       `/topic/server/${serverId}/channel/${channelId}`,
       (msg) => {
         const received = JSON.parse(msg.body);

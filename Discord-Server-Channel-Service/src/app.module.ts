@@ -10,6 +10,7 @@ import { ServerMemberModule } from './server_members/server_member.module';
 import { RoleModule } from './roles/role.module';
 import { ChannelModule } from './channels/channel.module';
 import { ChannelMemberModule } from './channel_members/channel_member.module';
+import { BansModule } from './bans/ban.module';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ dotenv.config();
     RoleModule,
     ChannelModule,
     ChannelMemberModule,
+    BansModule,
   ],
   providers: [
     {
