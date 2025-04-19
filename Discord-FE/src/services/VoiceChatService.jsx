@@ -1,15 +1,17 @@
 import io from "socket.io-client";
-//import { Voice_API } from "../../apiConfig";
 
-// API base URL from Vite environment
 const Voice_API = import.meta.env.VITE_VOICE_API;
+
 class VoiceChatService {
   constructor() {
     this.socket = null;
     this.peerConnections = {};
     this.localStream = null;
     this.audioElements = {};
+    this.peerStates = {}; // { socketId: { userId, isMuted } }
+
     this.onUsersChange = null;
+    this.onMicStatusChange = null;
   }
 
   async join(userId, channel) {
@@ -21,6 +23,8 @@ class VoiceChatService {
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.socket.emit("join", { userId, channel });
+      this.userId = userId;
+      this.channel = channel;
       return true;
     } catch (error) {
       console.error("Failed to join voice chat:", error);
@@ -30,13 +34,31 @@ class VoiceChatService {
 
   initializeSocketEvents() {
     this.socket.on("peers", (peers) => {
-      peers.forEach(({ socketId, userId }) => {
+      peers.forEach(({ socketId, userId, isMuted }) => {
+        this.peerStates[socketId] = { userId, isMuted };
         this.connectToPeer(socketId, userId, true);
       });
+      this.updateUsers();
     });
 
-    this.socket.on("user-joined", ({ socketId, userId }) => {
+    this.socket.on("user-joined", ({ socketId, userId, isMuted }) => {
+      this.peerStates[socketId] = { userId, isMuted };
       this.connectToPeer(socketId, userId, false);
+      this.updateUsers();
+    });
+
+    this.socket.on("mic-toggled", ({ socketId, userId, isMuted }) => {
+      if (this.peerStates[socketId]) {
+        this.peerStates[socketId].isMuted = isMuted;
+      } else {
+        this.peerStates[socketId] = { userId, isMuted };
+      }
+
+      if (this.onMicStatusChange) {
+        this.onMicStatusChange(socketId, isMuted);
+      }
+
+      this.updateUsers();
     });
 
     this.socket.on("signal", async ({ from, data }) => {
@@ -59,8 +81,9 @@ class VoiceChatService {
       if (this.peerConnections[socketId]) {
         this.peerConnections[socketId].close();
         delete this.peerConnections[socketId];
-        delete this.audioElements[socketId];
       }
+      delete this.audioElements[socketId];
+      delete this.peerStates[socketId];
       this.updateUsers();
     });
   }
@@ -91,18 +114,32 @@ class VoiceChatService {
       await pc.setLocalDescription(offer);
       this.socket.emit("signal", { to: socketId, data: offer });
     }
-
-    this.updateUsers();
   }
 
   updateUsers() {
     if (this.onUsersChange) {
-      const users = Object.entries(this.peerConnections).map(([socketId, _]) => ({
+      const users = Object.entries(this.peerStates).map(([socketId, { userId, isMuted }]) => ({
         socketId,
-        userId: socketId // You might want to maintain a mapping of socketId to userId
+        userId,
+        isMuted
       }));
       this.onUsersChange(users);
     }
+  }
+
+  /**
+   * Bật/tắt mic và gửi sự kiện toggle lên server
+   * @param {boolean} isMuted
+   */
+  toggleMic(isMuted) {
+    if (!this.localStream || !this.socket) return;
+    this.localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+
+    this.socket.emit("toggle-mic", {
+      userId: this.userId,
+      channel: this.channel,
+      isMuted
+    });
   }
 
   leave() {
@@ -112,6 +149,7 @@ class VoiceChatService {
     Object.values(this.peerConnections).forEach(pc => pc.close());
     this.peerConnections = {};
     this.audioElements = {};
+    this.peerStates = {};
     if (this.localStream) {
       this.localStream.getTracks().forEach(track => track.stop());
     }
