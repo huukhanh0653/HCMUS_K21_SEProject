@@ -21,11 +21,6 @@ const connectMessageService = (
   stompClientRef.current = stompClient;
 
   stompClient.connect({}, () => {
-    if (stompClientRef.current && stompClientRef.current.connected) {
-      stompClientRef.current.disconnect(() => {
-        console.log(">>> DISCONNECT");
-      });
-    }
     console.log("Connected to STOMP");
     // Subscribe vào topic để nhận các tin nhắn từ backend
     const subscription = stompClient.subscribe(
@@ -123,8 +118,14 @@ function useFetchMessagesBefore({ serverId, channelId, amount, timestamp }) {
       }
     }
   `;
+
+  // nếu timestamp được truyền vào là Date, convert về ISO string
+  const ts =
+    timestamp instanceof Date
+      ? timestamp.toISOString()
+      : String(timestamp);
   return useQuery(FETCH_MESSAGES_BEFORE, {
-    variables: { serverId, channelId, amount, timestamp },
+    variables: { serverId, channelId, amount, timestamp:ts },
   });
 }
 

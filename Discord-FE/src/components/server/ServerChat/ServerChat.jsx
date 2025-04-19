@@ -98,13 +98,15 @@ export default function ServerChat(props) {
 
   // Khởi tạo tin nhắn khi dữ liệu trước đó đến.
   useEffect(() => {
-    if (beforeData?.fetchMessagesBefore ) {
+    if (beforeData?.fetchMessagesBefore && !initialFetchedRef.current) {
       const { messages: fetched, hasMore: more, lastMessageTimestamp } =
         beforeData.fetchMessagesBefore;
 
       //console.log("beforeData:",beforeData.fetchMessagesBefore);
       setMessages(fetched);
       setHasMore(more);
+      console.log(fetched);
+      initialFetchedRef.current = true;
       setLastTimestamp(lastMessageTimestamp);
     }
   }, [beforeData, fetchMoreAfter]);

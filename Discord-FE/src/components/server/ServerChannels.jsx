@@ -3,6 +3,7 @@ import { ChevronDown, Hash, Volume2, Bell, Plus, Lock } from "lucide-react";
 import MemberManagementModal from "./MemberManagementModal";
 import ChannelManagementModal from "./ChannelManagementModal";
 import InviteServer from "./InviteServer";
+import { X } from "lucide-react";
 import AddMemberToChannel from "./AddMemberToChannel";
 import VoiceChat from "./VoiceChat/VoiceChat";
 import { useTranslation } from "react-i18next";
@@ -11,105 +12,152 @@ import { useDispatch, useSelector } from "react-redux";
 import { joinVoiceChannel } from "../../redux/homeSlice";
 import ServerChannelService from "../../services/ServerChannelService";
 import toast from "react-hot-toast";
+import StorageService from "../../services/StorageService";
 
 const UpdateServerModal = ({ isOpen, onClose, server, onUpdate }) => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
-  const [name, setName] = useState(server?.name || "");
-  const [serverPic, setServerPic] = useState(server?.serverPic || "");
+  const [name, setName] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [preview, setPreview] = useState(server.server_pic);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
 
+  // Khi open modal, khởi tạo giá trị từ server hiện tại
   useEffect(() => {
-    setName(server?.name || "");
-    setServerPic(server?.serverPic || "");
-  }, [server]);
+    if (server) {
+      setName(server.name || "");
+      setPreview(server.server_pic || "");
+      setImageFile(null);
+      setErrors({});
+    }
+  }, [server, isOpen]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+    setErrors((prev) => ({ ...prev, image: null }));
+  };
+
+  const validate = () => {
+    const errs = {};
+    if (!name.trim()) errs.name = t("Server name is required");
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validate()) return;
     setIsSubmitting(true);
+
     try {
-      await onUpdate({ name, serverPic });
+      let imageUrl = server.serverPic;
+      if (imageFile) {
+        const res = await StorageService.uploadFile(imageFile);
+        if (!res?.url) throw new Error(t("Failed to upload image"));
+        imageUrl = res.url;
+      }
+
+      await onUpdate({ name: name.trim(), serverPic: imageUrl });
       toast.success(t("Server updated successfully"));
       onClose();
     } catch (err) {
-      toast.error(t("Failed to update server"));
+      console.error(err);
+      toast.error(err.message || t("Failed to update server"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
       <div
-        className={`p-6 rounded-lg w-96 ${
-          isDarkMode ? "bg-[#2b2d31] text-gray-100" : "bg-white text-[#333333]"
-        }`}
+        className="bg-[#313338] rounded-md w-full max-w-sm p-6 relative"
+        onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-semibold mb-4">{t("Update Server")}</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              {t("Server Name")}
-            </label>
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-400 hover:text-white"
+        >
+          <X size={20} />
+        </button>
+
+        <h2 className="text-2xl font-bold text-white mb-4">
+          {t("Update Server")}
+        </h2>
+
+        <div className="flex justify-center mb-4">
+          <label className="relative w-24 h-24 rounded-full border-2 border-dashed border-gray-500 flex items-center justify-center cursor-pointer">
+            {preview ? (
+              <img
+                src={preview}
+                alt="Preview"
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-gray-400 text-sm">{t("UPLOAD")}</span>
+            )}
             <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={255}
-              required
-              className={`w-full p-2 rounded ${
-                isDarkMode
-                  ? "bg-[#1e1f22] text-gray-100 border-[#1e1f22]"
-                  : "bg-gray-100 text-[#333333] border-gray-300"
-              } border`}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
             />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              {t("Server Picture URL")}
-            </label>
-            <input
-              type="text"
-              value={serverPic}
-              onChange={(e) => setServerPic(e.target.value)}
-              className={`w-full p-2 rounded ${
-                isDarkMode
-                  ? "bg-[#1e1f22] text-gray-100 border-[#1e1f22]"
-                  : "bg-gray-100 text-[#333333] border-gray-300"
-              } border`}
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className={`px-4 py-2 rounded ${
-                isDarkMode
-                  ? "bg-[#1e1f22] text-gray-400 hover:bg-[#35373c]"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              }`}
-            >
-              {t("Cancel")}
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`px-4 py-2 rounded ${
-                isDarkMode
-                  ? "bg-[#1877F2] text-white hover:bg-[#166fe5]"
-                  : "bg-[#1877F2] text-white hover:bg-[#166fe5]"
-              } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {isSubmitting ? t("Saving...") : t("Save")}
-            </button>
-          </div>
-        </form>
+            <div className="absolute -bottom-1 right-0 bg-blue-500 w-6 h-6 rounded-full flex items-center justify-center text-white">
+              +
+            </div>
+          </label>
+        </div>
+        {errors.image && (
+          <div className="text-red-500 text-sm mb-2">{errors.image}</div>
+        )}
+
+        <div className="mb-4">
+          <label className="block text-gray-300 text-sm mb-1">
+            {t("Server Name")}
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setErrors((prev) => ({ ...prev, name: null }));
+            }}
+            className="w-full bg-[#1e1f22] text-white p-2 rounded-md outline-none"
+            placeholder={t("Enter server name")}
+          />
+          {errors.name && (
+            <div className="text-red-500 text-sm mt-1">{errors.name}</div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="px-4 py-2 text-gray-400 hover:text-white"
+          >
+            {t("Cancel")}
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSubmitting}
+            className={`px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md ${
+              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {isSubmitting ? t("Saving...") : t("Save")}
+          </button>
+        </div>
       </div>
     </div>
   );
-};
+}
 
 export default function ServerChannels({
   server,
@@ -136,6 +184,12 @@ export default function ServerChannels({
     useState(null);
   const [joinedVoiceChannelId, setJoinedVoiceChannelId] = useState(null);
   const [serverData, setServerData] = useState(server);
+  
+  useEffect(() => {
+    if (server !== serverData) {
+      setServerData(server);
+    }
+  }, [server, serverData]);
 
   // Lấy user info
   const user = JSON.parse(localStorage.getItem("user"));
