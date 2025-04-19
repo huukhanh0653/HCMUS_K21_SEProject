@@ -49,12 +49,11 @@ export default function ServerManagement() {
         userId,
         filterValue
       );
-
       setServers(servers);
       setTotalSize(servers.length);
     } catch (error) {
       console.error("Error fetching all servers:", error);
-      toast.error(`${t("Failed to fetch servers")}: ${error.message}`);
+      toast.error(`${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -92,7 +91,6 @@ export default function ServerManagement() {
         name: updatedServer.serverName.trim(),
         serverPic: updatedServer.serverPic,
       });
-
       toast.success(t("Server updated successfully"));
       setEditServerOpen(false);
       setCurrentServer(null);
@@ -110,8 +108,13 @@ export default function ServerManagement() {
   const handleConfirmDelete = async () => {
     if (serverToDelete) {
       try {
-        await ServerChannelService.deleteServer(serverToDelete.id, userId);
+        const response = await ServerChannelService.deleteServer(
+          serverToDelete.id,
+          userId
+        );
         toast.success(t("Server deleted successfully"));
+        setCurrentPage(1);
+        setFilterValue("");
         await fetchAllServers();
       } catch (error) {
         toast.error(`${error.message}`);
