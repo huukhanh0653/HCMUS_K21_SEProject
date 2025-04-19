@@ -10,7 +10,10 @@ import { Label } from "../../ui/label";
 import { cn } from "../../../lib/utils";
 import { useLanguage } from "../../layout/LanguageProvider";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "../../layout/ThemeProvider";
+import { Camera } from "lucide-react";
 import ServerChannelService from "../../../services/ServerChannelService";
+import StorageService from "../../../services/StorageService";
 import toast from "react-hot-toast";
 import {
   Dialog,
@@ -20,6 +23,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "../../ui/dialog";
+import defaultAvatar from "../../../assets/discord-logo.png";
 
 export default function ServerManagement() {
   const [addServerOpen, setAddServerOpen] = useState(false);
@@ -73,9 +77,17 @@ export default function ServerManagement() {
 
   const handleAddServer = async (newServer) => {
     try {
+      let serverPicUrl = newServer.serverPic;
+      if (newServer.serverPicFile) {
+        const uploadData = await StorageService.uploadFile(
+          newServer.serverPicFile
+        );
+        serverPicUrl = uploadData.url || "";
+      }
+
       await ServerChannelService.createServer(userId, {
         name: newServer.serverName.trim(),
-        serverPic: newServer.serverPic,
+        serverPic: serverPicUrl,
       });
       toast.success(t("Server created successfully"));
       setAddServerOpen(false);
@@ -87,9 +99,17 @@ export default function ServerManagement() {
 
   const handleEditServer = async (updatedServer) => {
     try {
+      let serverPicUrl = updatedServer.serverPic;
+      if (updatedServer.serverPicFile) {
+        const uploadData = await StorageService.uploadFile(
+          updatedServer.serverPicFile
+        );
+        serverPicUrl = uploadData.url || "";
+      }
+
       await ServerChannelService.updateServer(updatedServer.id, userId, {
         name: updatedServer.serverName.trim(),
-        serverPic: updatedServer.serverPic,
+        serverPic: serverPicUrl,
       });
       toast.success(t("Server updated successfully"));
       setEditServerOpen(false);
@@ -108,10 +128,7 @@ export default function ServerManagement() {
   const handleConfirmDelete = async () => {
     if (serverToDelete) {
       try {
-        const response = await ServerChannelService.deleteServer(
-          serverToDelete.id,
-          userId
-        );
+        await ServerChannelService.deleteServer(serverToDelete.id, userId);
         toast.success(t("Server deleted successfully"));
         setCurrentPage(1);
         setFilterValue("");
@@ -289,13 +306,29 @@ export default function ServerManagement() {
 
 function AddServerForm({ className, setOpen, onAddServer }) {
   const [serverName, setServerName] = useState("");
-  const [serverPic, setServerPic] = useState("");
+  const [serverPicFile, setServerPicFile] = useState(null);
+  const [serverPicPreview, setServerPicPreview] = useState(defaultAvatar);
   const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
 
   const handleClose = () => {
     setOpen(false);
     setServerName("");
-    setServerPic("");
+    setServerPicFile(null);
+    setServerPicPreview("");
+  };
+
+  const handleServerPicChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setServerPicFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setServerPicPreview(e.target.result);
+      reader.readAsDataURL(file);
+    } else {
+      setServerPicFile(null);
+      setServerPicPreview("");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -305,9 +338,14 @@ function AddServerForm({ className, setOpen, onAddServer }) {
       return;
     }
 
-    await onAddServer({ serverName, serverPic });
+    await onAddServer({
+      serverName,
+      serverPic: serverPicPreview,
+      serverPicFile,
+    });
     setServerName("");
-    setServerPic("");
+    setServerPicFile(null);
+    setServerPicPreview("");
   };
 
   return (
@@ -316,6 +354,40 @@ function AddServerForm({ className, setOpen, onAddServer }) {
       className={cn("grid items-start gap-4", className)}
     >
       <div className="grid gap-2">
+        <div className="flex justify-center">
+          <div className="relative">
+            <div
+              className={cn(
+                "w-20 h-20 rounded-full overflow-hidden",
+                isDarkMode
+                  ? "bg-[#36393f] border-4 border-[#232428]"
+                  : "bg-gray-200 border-4 border-gray-300"
+              )}
+            >
+              <img
+                src={serverPicPreview}
+                alt="Server picture"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <label
+              className={cn(
+                "absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer",
+                isDarkMode ? "bg-[#313338]" : "bg-gray-200"
+              )}
+            >
+              <Camera size={16} />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleServerPicChange}
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-2">
         <Label htmlFor="server_name">{t("Server Name")}</Label>
         <Input
           type="text"
@@ -323,15 +395,6 @@ function AddServerForm({ className, setOpen, onAddServer }) {
           value={serverName}
           onChange={(e) => setServerName(e.target.value)}
           required
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="server_pic">{t("Server picture")}</Label>
-        <Input
-          type="text"
-          id="server_pic"
-          value={serverPic}
-          onChange={(e) => setServerPic(e.target.value)}
         />
       </div>
       <div className="flex gap-2">
@@ -346,13 +409,31 @@ function AddServerForm({ className, setOpen, onAddServer }) {
 
 function EditServerForm({ className, setOpen, onEditServer, server }) {
   const [serverName, setServerName] = useState(server.name || "");
-  const [serverPic, setServerPic] = useState(server.server_pic || "");
+  const [serverPicFile, setServerPicFile] = useState(null);
+  const [serverPicPreview, setServerPicPreview] = useState(
+    server.server_pic || ""
+  );
   const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
 
   const handleClose = () => {
     setOpen(false);
     setServerName("");
-    setServerPic("");
+    setServerPicFile(null);
+    setServerPicPreview("");
+  };
+
+  const handleServerPicChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setServerPicFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setServerPicPreview(e.target.result);
+      reader.readAsDataURL(file);
+    } else {
+      setServerPicFile(null);
+      setServerPicPreview(server.server_pic || "");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -362,9 +443,15 @@ function EditServerForm({ className, setOpen, onEditServer, server }) {
       return;
     }
 
-    await onEditServer({ id: server.id, serverName, serverPic });
+    await onEditServer({
+      id: server.id,
+      serverName,
+      serverPic: serverPicPreview,
+      serverPicFile,
+    });
     setServerName("");
-    setServerPic("");
+    setServerPicFile(null);
+    setServerPicPreview("");
   };
 
   return (
@@ -373,6 +460,40 @@ function EditServerForm({ className, setOpen, onEditServer, server }) {
       className={cn("grid items-start gap-4", className)}
     >
       <div className="grid gap-2">
+        <div className="flex justify-center">
+          <div className="relative">
+            <div
+              className={cn(
+                "w-20 h-20 rounded-full overflow-hidden",
+                isDarkMode
+                  ? "bg-[#36393f] border-4 border-[#232428]"
+                  : "bg-gray-200 border-4 border-gray-300"
+              )}
+            >
+              <img
+                src={serverPicPreview || "/placeholder.svg"}
+                alt="Server picture"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <label
+              className={cn(
+                "absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer",
+                isDarkMode ? "bg-[#313338]" : "bg-gray-200"
+              )}
+            >
+              <Camera size={16} />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleServerPicChange}
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-2">
         <Label htmlFor="server_name">{t("Server Name")}</Label>
         <Input
           type="text"
@@ -380,15 +501,6 @@ function EditServerForm({ className, setOpen, onEditServer, server }) {
           value={serverName}
           onChange={(e) => setServerName(e.target.value)}
           required
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="server_pic">{t("Server picture")}</Label>
-        <Input
-          type="text"
-          id="server_pic"
-          value={serverPic}
-          onChange={(e) => setServerPic(e.target.value)}
         />
       </div>
       <div className="flex gap-2">
