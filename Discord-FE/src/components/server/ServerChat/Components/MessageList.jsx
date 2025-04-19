@@ -1,26 +1,36 @@
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { Edit, Trash2 } from "lucide-react";
 import SampleAvt from "../../../../assets/sample_avatar.svg";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 export default function MessageList({
-    messages,
-    username,
-    editingMessageId,
-    editedContent,
-    setEditedContent,
-    setEditingMessageId,
-    handleDeleteMessage,
-    handleSaveEdit,
-    messagesWrapperRef,
-    messagesEndRef,
+  messages,
+  username,
+  editingMessageId,
+  editedContent,
+  setEditedContent,
+  setEditingMessageId,
+  handleDeleteMessage,
+  handleSaveEdit,
+  messagesWrapperRef,
+  messagesEndRef,
 }) {
-
   const user = JSON.parse(localStorage.getItem("user"));
-  const { i18n } = useTranslation(); // ✅ Di chuyển vào trong đây
-
-  // lấy danh sách memeber server từ redux
+  const { i18n } = useTranslation();
   const { serverMembers } = useSelector((state) => state.home);
+
+  // Filter out duplicate messages by messageId
+  const uniqueMessages = useMemo(() => {
+    const seen = new Set();
+    return messages.filter((msg) => {
+      const id = msg.messageId || msg.message_id;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }, [messages]);
 
   return (
     <div
@@ -33,13 +43,14 @@ export default function MessageList({
         scrollbarColor: "grey transparent",
       }}
     >
-      {messages.map((message, index) => {
-        // normalize senderId from either field
-        const senderId = message.sender_id ?? message.senderId;
+      {uniqueMessages.map((message, index) => {
+        // normalize fields
+        const senderId = message.senderId || message.sender_id;
+        const id = message.messageId || message.message_id;
 
-        // date grouping logic
-        const previous = messages[index - 1];
-        const prevSenderId = previous && (previous.sender_id ?? previous.senderId);
+        // Date grouping logic
+        const previous = uniqueMessages[index - 1];
+        const prevSenderId = previous && (previous.senderId || previous.sender_id);
         const currentDate = new Date(message.timestamp);
         const currentDay = currentDate.toDateString();
         const previousDay = previous ? new Date(previous.timestamp).toDateString() : null;
@@ -48,7 +59,7 @@ export default function MessageList({
           previous &&
           prevSenderId === senderId &&
           previousDay === currentDay &&
-          new Date(message.timestamp) - new Date(previous.timestamp) <= 60000;
+          currentDate - new Date(previous.timestamp) <= 60000;
 
         // formatted date/time
         const formattedDate = currentDate.toLocaleDateString(i18n.language, {
@@ -63,8 +74,6 @@ export default function MessageList({
         });
 
         // lookup member or fallback
-        console.log("Sender ID:", senderId);
-        console.log("Server Members:", serverMembers);
         const member = serverMembers.find((m) => m.id === senderId);
         const sender =
           senderId === user.id
@@ -74,7 +83,7 @@ export default function MessageList({
             : { username: "User", avatar: SampleAvt };
 
         return (
-          <div key={message.message_id} className={!isGrouped ? "pt-4" : ""}>
+          <div key={id} className={!isGrouped ? "pt-4" : ""}>
             {showDateDivider && (
               <div className="flex justify-center items-center my-6">
                 <div className="border-t border-gray-600 flex-1" />
@@ -103,7 +112,7 @@ export default function MessageList({
               )}
 
               <div className="pl-14 relative">
-                {editingMessageId === message.messageId ? (
+                {editingMessageId === id ? (
                   <textarea
                     value={editedContent}
                     onChange={(e) => setEditedContent(e.target.value)}
@@ -113,7 +122,7 @@ export default function MessageList({
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
-                        handleSaveEdit(message.messageId);
+                        handleSaveEdit(id);
                       }
                     }}
                   />
@@ -123,12 +132,12 @@ export default function MessageList({
                   </p>
                 )}
 
-                {message.senderId === user.id && (
+                {senderId === user.id && (
                   <div className="absolute top-0 right-0 hidden group-hover:flex items-center gap-2">
                     <button
                       className="p-1 text-gray-400 hover:text-gray-200"
                       onClick={() => {
-                        setEditingMessageId(message.messageId);
+                        setEditingMessageId(id);
                         setEditedContent(message.content);
                       }}
                     >
@@ -136,7 +145,7 @@ export default function MessageList({
                     </button>
                     <button
                       className="p-1 text-gray-400 hover:text-red-500"
-                      onClick={() => handleDeleteMessage(message.messageId)}
+                      onClick={() => handleDeleteMessage(id)}
                     >
                       <Trash2 size={16} />
                     </button>

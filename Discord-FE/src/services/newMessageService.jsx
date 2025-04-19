@@ -11,7 +11,7 @@ const connectMessageService = (
   channelId
 ) => {
   console.log("Opening Web Socket...");
-  const socket = new SockJS(`http://localhost:8082/ws`);
+  const socket = new SockJS("/ws");
   const stompClient = Stomp.over(socket);
   stompClientRef.current = stompClient;
 
@@ -27,16 +27,14 @@ const connectMessageService = (
       `/topic/server/${serverId}/channel/${channelId}`,
       (msg) => {
         const received = JSON.parse(msg.body);
-        // Chuyển object content: { text: "kak" } -> "kak"
-        const updatedReceived = {
-          ...received,
-          content:
-            typeof received.content === "object" && received.content.text
-              ? received.content.text
-              : received.content,
-        };
-
-        setChatMessages((prev) => [...prev, updatedReceived]);
+        const content =
+          typeof received.content === "object" && received.content.text
+            ? received.content.text
+            : received.content;
+        setChatMessages((prev) => [
+          ...prev,
+          { ...received, content }
+        ]);
       }
     );
   });
@@ -56,11 +54,9 @@ const connectMessageService = (
 const disconnectMessageService = (stompClientRef) => {
   console.log("Disconnecting STOMP client...");
   if (stompClientRef.current && stompClientRef.current.connected) {
-    stompClientRef.current.disconnect(() => {
-      console.log(">>> DISCONNECT");
-    });
+    stompClientRef.current.disconnect(() => console.log(">>> STOMP disconnected"));
   }
-}
+};
 
 // GrapQL API URL
 
