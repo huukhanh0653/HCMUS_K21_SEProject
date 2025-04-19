@@ -43,6 +43,7 @@ public class EditMessageUseCase {
         try {
             MessageContent content = new MessageContent(contentText);
         } catch (Exception e) {
+            System.out.println("Invalid message content: " + e.getMessage());
             return null; // Handle invalid content
         }
         // Save the message to the database and cache
@@ -51,7 +52,15 @@ public class EditMessageUseCase {
 
         // Publish the message event
         messageEventPublisher.edit(messageId, serverId, channelId, contentText);
-        return messageRepository.findById(messageId, serverId, channelId);
+
+        Message message = messageRepository.findById(serverId, channelId, messageId);
+
+        if (message == null) {
+            System.out.println("Message not found after edit: " + messageId);
+            return null; // Handle message not found
+        }
+
+        return message;
     }
 
     /**
@@ -67,11 +76,11 @@ public class EditMessageUseCase {
         System.out.println("EditMessageUseCase execute called with senderId: ");
 
         // Save the message to the database and cache
-        messageRepository.deleteById(messageId, serverId, channelId);
+        messageRepository.deleteById(serverId, channelId, messageId);
         cacheMessageRepository.deleteById(messageId, serverId, channelId);
 
         // messageEventPublisher.delete(messageId, serverId, channelId);
-        return messageRepository.findById(messageId, serverId, channelId);
+        return messageRepository.findById(serverId, channelId, messageId);
     }
 
     public void deleteByChannel(String serverId, String channelId) {

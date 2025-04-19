@@ -106,7 +106,7 @@ public class MessageQueryResolver {
         Message message = editMessageUseCase.edit(messageId, serverId, channelId, content);
 
         MessageResponse messageResponse = new MessageResponse(
-                message.getMessageId(),
+                messageId,
                 message.getSenderId(),
                 message.getServerId(),
                 message.getChannelId(),
