@@ -36,7 +36,7 @@ export const columns = (
           className="flex items-center justify-start px-1 text-xs sm:text-sm"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          <span className="pr-0 text-foreground">{t("Server name")}</span>
+          <span className="pr-0 text-foreground">{t("Server Name")}</span>
           <ArrowUpDown className="ml-2 h-4 w-4 text-foreground" />
         </Button>
       ),
@@ -118,7 +118,6 @@ export const columns = (
               setCurrentServer(row.original);
               setEditServerOpen(true);
             }}
-            title={t("Edit")}
           >
             <Pencil className="h-4 w-4" />
           </Button>
@@ -126,7 +125,6 @@ export const columns = (
             variant="ghost"
             size="icon"
             onClick={() => handleOpenDeleteModal(row.original)}
-            title={t("Delete")}
           >
             <Trash2 className="h-4 w-4 text-red-500" />
           </Button>

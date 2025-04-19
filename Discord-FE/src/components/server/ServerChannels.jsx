@@ -12,6 +12,105 @@ import { joinVoiceChannel } from "../../redux/homeSlice";
 import ServerChannelService from "../../services/ServerChannelService";
 import toast from "react-hot-toast";
 
+const UpdateServerModal = ({ isOpen, onClose, server, onUpdate }) => {
+  const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
+  const [name, setName] = useState(server?.name || "");
+  const [serverPic, setServerPic] = useState(server?.serverPic || "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setName(server?.name || "");
+    setServerPic(server?.serverPic || "");
+  }, [server]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await onUpdate({ name, serverPic });
+      toast.success(t("Server updated successfully"));
+      onClose();
+    } catch (err) {
+      toast.error(t("Failed to update server"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        className={`p-6 rounded-lg w-96 ${
+          isDarkMode ? "bg-[#2b2d31] text-gray-100" : "bg-white text-[#333333]"
+        }`}
+      >
+        <h2 className="text-xl font-semibold mb-4">{t("Update Server")}</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">
+              {t("Server Name")}
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={255}
+              required
+              className={`w-full p-2 rounded ${
+                isDarkMode
+                  ? "bg-[#1e1f22] text-gray-100 border-[#1e1f22]"
+                  : "bg-gray-100 text-[#333333] border-gray-300"
+              } border`}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">
+              {t("Server Picture URL")}
+            </label>
+            <input
+              type="text"
+              value={serverPic}
+              onChange={(e) => setServerPic(e.target.value)}
+              className={`w-full p-2 rounded ${
+                isDarkMode
+                  ? "bg-[#1e1f22] text-gray-100 border-[#1e1f22]"
+                  : "bg-gray-100 text-[#333333] border-gray-300"
+              } border`}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className={`px-4 py-2 rounded ${
+                isDarkMode
+                  ? "bg-[#1e1f22] text-gray-400 hover:bg-[#35373c]"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              }`}
+            >
+              {t("Cancel")}
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`px-4 py-2 rounded ${
+                isDarkMode
+                  ? "bg-[#1877F2] text-white hover:bg-[#166fe5]"
+                  : "bg-[#1877F2] text-white hover:bg-[#166fe5]"
+              } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              {isSubmitting ? t("Saving...") : t("Save")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 export default function ServerChannels({
   server,
   channels,
@@ -31,10 +130,12 @@ export default function ServerChannels({
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isUpdateServerModalOpen, setIsUpdateServerModalOpen] = useState(false);
   const [selectedPrivateChannel, setSelectedPrivateChannel] = useState(null);
   const [openNotificationDropdown, setOpenNotificationDropdown] =
     useState(null);
   const [joinedVoiceChannelId, setJoinedVoiceChannelId] = useState(null);
+  const [serverData, setServerData] = useState(server);
 
   // Lấy user info
   const user = JSON.parse(localStorage.getItem("user"));
@@ -99,29 +200,48 @@ export default function ServerChannels({
 
   // Confirmation & action for leaving server
   const handleLeaveServer = async () => {
-    const confirmed = window.confirm("Bạn có chắc muốn rời server này không?");
+    const confirmed = window.confirm(
+      t("Are you sure you want to leave this server?")
+    );
     if (!confirmed) return;
     try {
-      await ServerChannelService.leaveServer(server.id, user.id);
-      toast.success("Bạn đã rời server");
+      await ServerChannelService.outServer(server.id, user.id);
+      toast.success(t("You have left the server"));
       // TODO: redirect or update UI
     } catch (err) {
-      toast.error("Không thể rời server");
+      toast.error(t("Failed to leave server"));
     }
   };
 
   // Confirmation & action for deleting server
   const handleDeleteServer = async () => {
     const confirmed = window.confirm(
-      "Bạn có chắc muốn xóa server này không? Hành động này không thể hoàn tác."
+      t(
+        "Are you sure you want to delete this server? This action cannot be undone."
+      )
     );
     if (!confirmed) return;
     try {
       await ServerChannelService.deleteServer(server.id, user.id);
-      toast.success("Server đã được xóa");
+      toast.success(t("Server deleted successfully"));
       // TODO: redirect or update UI
     } catch (err) {
-      toast.error("Không thể xóa server");
+      toast.error(t("Failed to delete server"));
+    }
+  };
+
+  // Action for updating server
+  const handleUpdateServer = async (serverData) => {
+    try {
+      const updated = await ServerChannelService.updateServer(
+        server.id,
+        user.id,
+        serverData
+      );
+      setServerData({ ...serverData, ...updated });
+    } catch (err) {
+      console.error("Failed to update server", err);
+      throw err;
     }
   };
 
@@ -199,18 +319,19 @@ export default function ServerChannels({
           isDarkMode ? "bg-[#2b2d31]" : "bg-white"
         }`}
       >
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500">{t("Loading...")}</div>
       </div>
     );
   }
 
   // Determine dropdown options based on role
   const menuOptions = isMember
-    ? ["Invite to server", "Leave server"]
+    ? ["Invite to Server", "Leave server"]
     : [
         "Manage Members",
         "Manage Channels",
-        "Invite to server",
+        "Invite to Server",
+        "Update Server",
         "Delete server",
       ];
 
@@ -232,7 +353,7 @@ export default function ServerChannels({
         }`}
         onClick={() => setIsMenuOpen((o) => !o)}
       >
-        <h2 className="font-semibold truncate">{server.name}</h2>
+        <h2 className="font-semibold truncate">{serverData.name}</h2>
         <ChevronDown
           size={20}
           className={isDarkMode ? "text-gray-400" : "text-gray-500"}
@@ -258,7 +379,9 @@ export default function ServerChannels({
               onClick={() => {
                 if (option === "Manage Members") setIsMemberModalOpen(true);
                 if (option === "Manage Channels") setIsChannelModalOpen(true);
-                if (option === "Invite to server") setIsInviteModalOpen(true);
+                if (option === "Invite to Server") setIsInviteModalOpen(true);
+                if (option === "Update Server")
+                  setIsUpdateServerModalOpen(true);
                 if (option === "Leave server") handleLeaveServer();
                 if (option === "Delete server") handleDeleteServer();
               }}
@@ -271,7 +394,7 @@ export default function ServerChannels({
 
       {/* Modals */}
       <MemberManagementModal
-        server={server}
+        server={serverData}
         members={serverMembers}
         isOpen={isMemberModalOpen}
         onClose={() => setIsMemberModalOpen(false)}
@@ -285,7 +408,7 @@ export default function ServerChannels({
         onCreateChannel={handleCreateChannel}
       />
       <InviteServer
-        server={server}
+        server={serverData}
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
       />
@@ -294,6 +417,12 @@ export default function ServerChannels({
         onClose={() => setIsAddMemberModalOpen(false)}
         channel={selectedPrivateChannel}
         members={serverMembers}
+      />
+      <UpdateServerModal
+        isOpen={isUpdateServerModalOpen}
+        onClose={() => setIsUpdateServerModalOpen(false)}
+        server={serverData}
+        onUpdate={handleUpdateServer}
       />
 
       <div className="flex-1 overflow-y-auto pt-2">
@@ -327,8 +456,8 @@ export default function ServerChannels({
                     if (channel.type === "voice") {
                       dispatch(
                         joinVoiceChannel({
-                          serverId: server.id,
-                          serverName: server.name,
+                          serverId: serverData.id,
+                          serverName: serverData.name,
                           channelId: channel.id,
                           channelName: channel.name,
                         })
@@ -371,9 +500,9 @@ export default function ServerChannels({
                       {openNotificationDropdown === channel.id && (
                         <div className="absolute right-0 mt-1 w-32 rounded-md shadow-lg z-20 bg-white border border-gray-200">
                           {[
-                            { key: "open", label: t("Mở") },
-                            { key: "mention", label: t("Chỉ khi nhắc") },
-                            { key: "off", label: t("Tắt") },
+                            { key: "open", label: t("Open") },
+                            { key: "mention", label: t("Only when mentioned") },
+                            { key: "off", label: t("Off") },
                           ].map((opt) => (
                             <button
                               key={opt.key}
