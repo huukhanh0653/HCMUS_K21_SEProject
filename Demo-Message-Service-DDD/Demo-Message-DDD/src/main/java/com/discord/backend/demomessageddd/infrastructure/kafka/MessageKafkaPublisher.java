@@ -39,15 +39,15 @@ public class MessageKafkaPublisher implements MessageEventPublisher {
     }
 
     @Override
-    public void mention(String messageId, String senderId, String serverId, String channelId, List<String> mentions, String timestamp) {
+    public void mention(Message message) {
         // Implement the mention logic here if needed
         MessageMentionEvent event = new MessageMentionEvent(
-                messageId,
-                senderId,
-                serverId,
-                channelId,
-                mentions,
-                timestamp);
+                message.getMessageId(),
+                message.getSenderId(),
+                message.getServerId(),
+                message.getChannelId(),
+                message.getMentions(),
+                message.getTimestamp());
 
         kafkaTemplate.send("mention-topic", event);
     }

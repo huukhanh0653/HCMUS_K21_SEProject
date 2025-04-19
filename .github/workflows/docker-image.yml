@@ -1,80 +1,80 @@
-name: Build Docker Images
+# name: Build Docker Images
+
+# # on:
+# #   workflow_run:
+# #     workflows: ["Run Unit Tests"]  # 🔥 Chỉ chạy khi CI build thành công
+# #     types:
+# #       - completed
+# #     status: 
+# #       - success  # Chỉ chạy khi các bài test đã passed
 
 # on:
-#   workflow_run:
-#     workflows: ["Run Unit Tests"]  # 🔥 Chỉ chạy khi CI build thành công
-#     types:
-#       - completed
-#     status: 
-#       - success  # Chỉ chạy khi các bài test đã passed
+#   push:
+#     branches: [ "master" ]
+#   pull_request:
+#     branches: [ "master" ]
 
-on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Build and Push User Service
+#         uses: docker/build-push-action@v4
+#         with:
+#           context: ./Discord-User-Service-Postgres
+#           file: ./Discord-User-Service-Postgres/Dockerfile
+#           push: true
+#           tags: huukhanh0653/echo-chat-user-service:latest
 
-      - name: Build and Push User Service
-        uses: docker/build-push-action@v4
-        with:
-          context: ./Discord-User-Service-Postgres
-          file: ./Discord-User-Service-Postgres/Dockerfile
-          push: true
-          tags: huukhanh0653/echo-chat-user-service:latest
+#       - name: Build and Push Message Service
+#         uses: docker/build-push-action@v4
+#         with:
+#           context: ./Demo-Message-Service-DDD/Demo-Message-DDD
+#           file: ./Demo-Message-Service-DDD/Demo-Message-DDD/Dockerfile
+#           push: true
+#           tags: huukhanh0653/echo-chat-message-service:latest
 
-      - name: Build and Push Message Service
-        uses: docker/build-push-action@v4
-        with:
-          context: ./Demo-Message-Service-DDD/Demo-Message-DDD
-          file: ./Demo-Message-Service-DDD/Demo-Message-DDD/Dockerfile
-          push: true
-          tags: huukhanh0653/echo-chat-message-service:latest
+#       - name: Build and Push Server - Channel Service
+#         uses: docker/build-push-action@v4
+#         with:
+#           context: ./Discord-Server-Channel-Service 
+#           file: ./Discord-Server-Channel-Service /Dockerfile
+#           push: true
+#           tags: huukhanh0653/echo-chat-manage-server:latest
 
-      - name: Build and Push Server - Channel Service
-        uses: docker/build-push-action@v4
-        with:
-          context: ./Discord-Server-Channel-Service 
-          file: ./Discord-Server-Channel-Service /Dockerfile
-          push: true
-          tags: huukhanh0653/echo-chat-manage-server:latest
-
-      - name: Build and Push GCS Service
-        uses: docker/build-push-action@v4
-        with:
-          context: ./Discord-GCS-Service
-          file: ./Discord-GCS-Service/Dockerfile
-          push: true
-          tags: huukhanh0653/echo-chat-gcs-service:latest
+#       - name: Build and Push GCS Service
+#         uses: docker/build-push-action@v4
+#         with:
+#           context: ./Discord-GCS-Service
+#           file: ./Discord-GCS-Service/Dockerfile
+#           push: true
+#           tags: huukhanh0653/echo-chat-gcs-service:latest
       
-      - name: Build and Push Front-end Service
-        uses: docker/build-push-action@v4
-        with:
-          context: ./Discord-FE
-          file: ./Discord-FE/Dockerfile
-          push: true
-          tags: huukhanh0653/echo-chat-front-end-service:latest
+#       - name: Build and Push Front-end Service
+#         uses: docker/build-push-action@v4
+#         with:
+#           context: ./Discord-FE
+#           file: ./Discord-FE/Dockerfile
+#           push: true
+#           tags: huukhanh0653/echo-chat-front-end-service:latest
 
-      - name: Build and Push Notification Service
-        uses: docker/build-push-action@v4
-        with:
-          context: ./Discord-Notification-Service
-          file: ./Discord-Notification-Service/Dockerfile
-          push: true
-          tags: huukhanh0653/echo-chat-notification-service:latest
+#       - name: Build and Push Notification Service
+#         uses: docker/build-push-action@v4
+#         with:
+#           context: ./Discord-Notification-Service
+#           file: ./Discord-Notification-Service/Dockerfile
+#           push: true
+#           tags: huukhanh0653/echo-chat-notification-service:latest

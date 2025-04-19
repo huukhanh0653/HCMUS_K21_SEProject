@@ -1,4 +1,4 @@
-package com.discord.backend.demomessageddd.infrastructure.message.repository;
+package com.discord.backend.demomessageddd.infrastructure.message.repository.mongo;
 
 import com.discord.backend.demomessageddd.domain.entity.Message;
 import com.discord.backend.demomessageddd.domain.repository.MessageRepository;

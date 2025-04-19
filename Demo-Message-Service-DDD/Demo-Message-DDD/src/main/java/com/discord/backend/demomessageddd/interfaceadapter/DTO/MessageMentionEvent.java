@@ -17,7 +17,8 @@ public class MessageMentionEvent extends Event implements Serializable {
     private List<String> mentions;
     private String timestamp;
 
-    public MessageMentionEvent(String messageId, String senderId, String serverId, String channelId, List<String> mentions, String timestamp) {
+    public MessageMentionEvent(String messageId, String senderId, String serverId, String channelId,
+            List<String> mentions, String timestamp) {
         this.messageId = messageId;
         this.senderId = senderId;
         this.serverId = serverId;

@@ -2,7 +2,7 @@ apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
   name: echo-chat-kafka-cluster
-  namespace: default
+  namespace: default  # Đảm bảo là `default` namespace
 spec:
   kafka:
     version: 3.9.0
@@ -44,19 +44,5 @@ spec:
         memory: "512Mi"
         cpu: "400m"
   entityOperator:
-    topicOperator:
-      resources:
-        requests:
-          memory: "128Mi"
-          cpu: "100m"
-        limits:
-          memory: "256Mi"
-          cpu: "200m"
-    userOperator:
-      resources:
-        requests:
-          memory: "128Mi"
-          cpu: "100m"
-        limits:
-          memory: "256Mi"
-          cpu: "200m"
+    topicOperator: {}
+    userOperator: {}

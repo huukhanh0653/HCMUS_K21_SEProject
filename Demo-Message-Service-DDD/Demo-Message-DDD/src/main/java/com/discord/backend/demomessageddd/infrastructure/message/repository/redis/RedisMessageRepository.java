@@ -1,39 +1,19 @@
-package com.discord.backend.demomessageddd.infrastructure.message.repository;
+package com.discord.backend.demomessageddd.infrastructure.message.repository.redis;
 
 import com.discord.backend.demomessageddd.domain.entity.Message;
 import com.discord.backend.demomessageddd.domain.repository.CacheMessageRepository;
-import com.discord.backend.demomessageddd.domain.valueobject.FetchMessage;
 
 import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
-import com.discord.backend.demomessageddd.infrastructure.config.RedisKeyUtil;
-import org.springframework.data.redis.connection.RedisStringCommands;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.types.Expiration;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-@Repository // 15 days in seconds
+@Component
 public class RedisMessageRepository implements CacheMessageRepository {
     private final RedisTemplate<String, Object> redisTemplate;
-
-    private static Message mapToMessage(LinkedHashMap<String, Object> map) {
-        String messageId = (String) map.get("messageId");
-        String senderId = (String) map.get("senderId");
-        String serverId = (String) map.get("serverId");
-        String channelId = (String) map.get("channelId");
-        List<String> attachments = (List<String>) map.get("attachments");
-        List<String> mentions = (List<String>) map.get("mentions");
-        LinkedHashMap<String, Object> contentMap = (LinkedHashMap<String, Object>) map.get("content");
-        MessageContent content = new MessageContent((String) contentMap.get("text"));
-        String timestamp = (String) map.get("timestamp");
-
-        return new Message(messageId, senderId, serverId, channelId, content, attachments, mentions, timestamp);
-    }
 
     public RedisMessageRepository(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
@@ -218,17 +198,14 @@ public class RedisMessageRepository implements CacheMessageRepository {
             return;
         }
 
-        Message message = mapToMessage((LinkedHashMap<String, Object>) value);
-        if (message == null) {
-            return;
+        if (value != null && value instanceof Message message) {
+            // 2. Cập nhật content và lastEdited (timestamp giữ nguyên)
+            message.setContent(new MessageContent(newContent));
+            message.setLastEdited(Instant.now().toString());
+
+            // 3. Lưu lại message đã chỉnh sửa vào Redis
+            redisTemplate.opsForValue().set(messageKey, message);
         }
-
-        // 2. Cập nhật content và lastEdited (timestamp giữ nguyên)
-        message.setContent(new MessageContent(newContent));
-        message.setLastEdited(Instant.now().toString());
-
-        // 3. Lưu lại message đã chỉnh sửa vào Redis
-        redisTemplate.opsForValue().set(messageKey, message);
     }
 
     @Override

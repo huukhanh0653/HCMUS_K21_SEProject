@@ -10,5 +10,5 @@ public interface MessageEventPublisher {
     void edit(String messageId, String serverId, String channelId, String content);
     // Add other methods as needed for your event publishing logic
 
-    void mention(String messageId, String senderId, String serverId, String channelId, List<String> mentions, String timestamp);
+    void mention(Message message);
 }
