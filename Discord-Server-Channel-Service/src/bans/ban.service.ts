@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ban } from './ban.entity';
-import { CreateBanDto } from './ban.dto';
+import { BanDto } from './ban.dto';
 import { ServerMemberService } from 'src/server_members/server_member.service';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class BansService {
     private serverMemberService: ServerMemberService,
   ) {}
 
-  async addBan(createBanDto: CreateBanDto) {
+  async addBan(createBanDto: BanDto) {
     const { serverId, userId, reason } = createBanDto;
 
     const existingBan = await this.banRepository.findOne({
