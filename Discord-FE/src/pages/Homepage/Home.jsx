@@ -19,6 +19,7 @@ import {
   setPrevRequests,
   setPendingRequests,
   setNewRequests,
+  setServers,
 } from "../../redux/homeSlice";
 
 // Services
@@ -41,7 +42,9 @@ const DirectMessage = lazy(() =>
   import("../../components/friends/DirectMessage/DirectMessage")
 );
 const FriendsView = lazy(() => import("../../components/friends/FriendsView"));
-const FriendProfile = lazy(() => import("../../components/friends/FriendProfile"));
+const FriendProfile = lazy(() =>
+  import("../../components/friends/FriendProfile")
+);
 const FriendRequestModal = lazy(() =>
   import("../../components/friends/FriendRequestModal")
 );
@@ -76,12 +79,23 @@ export default function Home({ user }) {
     showAddFriend,
     pendingRequests,
     newRequests,
+    servers,
   } = useSelector((state) => state.home);
 
-  // Local state for servers
-  const [servers, setServers] = useState([]);
-  const [loadingServers, setLoadingServers] = useState(true);
-  const [serversError, setServersError] = useState(null);
+  const loadServers = async () => {
+    try {
+      const currentUser = JSON.parse(localStorage.getItem("user"));
+      const resp = await ServerChannelService.getServers(currentUser.id);
+      dispatch(setServers(resp.servers || []));
+    } catch (err) {
+      console.error("Error loading servers", err);
+    }
+  };
+
+  // Fetch servers
+  useEffect(() => {
+    loadServers();
+  }, [dispatch]);
 
   // Lưu thông tin user vào localStorage
   useEffect(() => {
@@ -160,24 +174,6 @@ export default function Home({ user }) {
     }
   };
 
-  const load = async () => {
-    setLoadingServers(true);
-    try {
-      const currentUser = JSON.parse(localStorage.getItem("user"));
-      const resp = await ServerChannelService.getServers(currentUser.id);
-      setServers(resp.servers || []);
-    } catch (err) {
-      console.error("Error loading servers", err);
-      setServersError(err.message);
-    } finally {
-      setLoadingServers(false);
-    }
-  };
-  // Fetch servers
-  useEffect(() => {
-    load();
-  }, []);
-
   const handleServerClick = (srv) => {
     if (!srv) {
       dispatch(setSelectedServer(null));
@@ -186,7 +182,6 @@ export default function Home({ user }) {
       return;
     }
     dispatch(setSelectedServer(srv));
-    console.log("Selected server:", selectedServer);
     dispatch(setActiveTab("server"));
     dispatch(setSelectedFriend(null));
   };
@@ -256,8 +251,8 @@ export default function Home({ user }) {
       <Suspense fallback={<div>Loading servers...</div>}>
         <ServerList
           servers={servers}
-          loading={loadingServers}
-          error={serversError}
+          loading={false}
+          error={null}
           selectedServer={selectedServer}
           onServerClick={handleServerClick}
           onShowCreateServer={() => dispatch(setShowCreateServer(true))}
@@ -404,7 +399,7 @@ export default function Home({ user }) {
         {showCreateServer && (
           <CreateServerModal
             onClose={() => dispatch(setShowCreateServer(false))}
-            onLoad={() =>load()}
+            onLoad={loadServers}
           />
         )}
       </Suspense>

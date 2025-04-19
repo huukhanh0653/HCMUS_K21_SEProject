@@ -20,6 +20,7 @@ import { joinVoiceChannel } from "../../redux/homeSlice";
 import ServerChannelService from "../../services/ServerChannelService";
 import StorageService from "../../services/StorageService";
 import toast from "react-hot-toast";
+import { setServers, setSelectedServer } from "../../redux/homeSlice";
 
 const UpdateServerModal = ({ isOpen, onClose, server, onUpdate }) => {
   const { t } = useTranslation();
@@ -255,23 +256,24 @@ export default function ServerChannels({
   }, [server]);
 
   // Fetch server members (exclude owners)
+  const fetchServerMembers = async () => {
+    try {
+      setIsLoading(true);
+      const { members } = await ServerChannelService.searchServerMember(
+        server.id
+      );
+      const filteredMembers = members.filter(
+        (member) => member.role !== "Owner"
+      );
+      setServerMembers(filteredMembers);
+    } catch (error) {
+      toast.error("Failed to fetch server members");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchServerMembers = async () => {
-      try {
-        setIsLoading(true);
-        const { members } = await ServerChannelService.searchServerMember(
-          server.id
-        );
-        const filteredMembers = members.filter(
-          (member) => member.role !== "Owner"
-        );
-        setServerMembers(filteredMembers);
-      } catch (error) {
-        toast.error("Failed to fetch server members");
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchServerMembers();
   }, [server]);
 
@@ -301,7 +303,9 @@ export default function ServerChannels({
     try {
       await ServerChannelService.outServer(server.id, user.id);
       toast.success(t("You have left the server"));
-      // TODO: redirect or update UI
+      const { servers } = await ServerChannelService.getServers(user.id);
+      dispatch(setServers(servers));
+      dispatch(setSelectedServer(null));
     } catch (err) {
       toast.error(t("Failed to leave server"));
     }
@@ -318,7 +322,9 @@ export default function ServerChannels({
     try {
       await ServerChannelService.deleteServer(server.id, user.id);
       toast.success(t("Server deleted successfully"));
-      // TODO: redirect or update UI
+      const { servers } = await ServerChannelService.getServers(user.id);
+      dispatch(setServers(servers));
+      dispatch(setSelectedServer(null));
     } catch (err) {
       toast.error(t("Failed to delete server"));
     }
@@ -337,6 +343,10 @@ export default function ServerChannels({
         name: serverData.name,
         server_pic: serverData.serverPic,
       }));
+      const { servers } = await ServerChannelService.getServers(user.id);
+      dispatch(setServers(servers));
+      const updatedServer = servers.find((s) => s.id === server.id);
+      dispatch(setSelectedServer(updatedServer));
       return updated;
     } catch (err) {
       console.error("Failed to update server", err);
@@ -393,6 +403,11 @@ export default function ServerChannels({
     } catch (err) {
       console.error("Failed to create channel", err);
     }
+  };
+
+  // Handle invitation success
+  const handleInviteSuccess = async () => {
+    await fetchServerMembers();
   };
 
   // Notification settings
@@ -510,6 +525,7 @@ export default function ServerChannels({
         server={serverData}
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
+        onInviteSuccess={handleInviteSuccess}
       />
       <AddMemberToChannel
         isOpen={isAddMemberModalOpen}

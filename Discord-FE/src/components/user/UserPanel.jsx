@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Settings, Wifi, Mic, MicOff, PhoneCall } from "lucide-react"; 
+import { Settings, Wifi, Mic, MicOff, PhoneCall } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleMute, leaveVoiceChannel } from "../../redux/homeSlice";
+import SampleAvt from "../../assets/sample_avatar.svg";
 
 export default function UserPanel({ user, onProfileClick }) {
   const { t } = useTranslation();
@@ -11,7 +12,7 @@ export default function UserPanel({ user, onProfileClick }) {
   const dispatch = useDispatch();
 
   const [username, setUsername] = useState("Unknown");
-  const [avatarSrc, setAvatarSrc] = useState("https://via.placeholder.com/40");
+  const [avatarSrc, setAvatarSrc] = useState(SampleAvt);
 
   // Lấy state voiceChannel & isMuted từ Redux
   const { voiceChannel, isMuted } = useSelector((state) => state.home);
@@ -24,7 +25,7 @@ export default function UserPanel({ user, onProfileClick }) {
       try {
         const storedUser = JSON.parse(storedUserString);
         setUsername(storedUser.username || "Unknown");
-        setAvatarSrc(storedUser.avatar || "https://via.placeholder.com/40");
+        setAvatarSrc(storedUser.avatar || SampleAvt);
       } catch (error) {
         console.error("Error parsing stored user:", error);
       }
@@ -32,13 +33,13 @@ export default function UserPanel({ user, onProfileClick }) {
       try {
         const storedUser = JSON.parse(storedUser_InfoString);
         setUsername(storedUser.name || "Unknown");
-        setAvatarSrc(storedUser.avatar || "https://via.placeholder.com/40");
+        setAvatarSrc(storedUser.avatar || SampleAvt);
       } catch (error) {
         console.error("Error parsing stored user_info:", error);
       }
     } else if (user) {
       setUsername(user.name || "Unknown");
-      setAvatarSrc(user.avatar || "https://via.placeholder.com/40");
+      setAvatarSrc(user.avatar || SampleAvt);
     }
   };
 
@@ -72,7 +73,9 @@ export default function UserPanel({ user, onProfileClick }) {
   return (
     <div
       className={`p-2 flex flex-col w-60 ${
-        isDarkMode ? "bg-[#232428]" : "bg-[#F8F9FA] shadow-sm border border-gray-300"
+        isDarkMode
+          ? "bg-[#232428]"
+          : "bg-[#F8F9FA] shadow-sm border border-gray-300"
       }`}
       style={{ minHeight: "50px" }}
     >
@@ -97,7 +100,10 @@ export default function UserPanel({ user, onProfileClick }) {
               )}
             </button>
             <button onClick={handleLeaveVoice}>
-              <PhoneCall className="text-red-500 hover:text-red-400" size={16} />
+              <PhoneCall
+                className="text-red-500 hover:text-red-400"
+                size={16}
+              />
             </button>
           </div>
         </div>
@@ -106,7 +112,9 @@ export default function UserPanel({ user, onProfileClick }) {
       <div className="flex items-center">
         {/* Avatar */}
         <div
-          className={`w-8 h-8 ${isDarkMode ? "bg-[#36393f]" : "bg-gray-200"} rounded-full cursor-pointer`}
+          className={`w-8 h-8 ${
+            isDarkMode ? "bg-[#36393f]" : "bg-gray-200"
+          } rounded-full cursor-pointer`}
         >
           <img
             src={avatarSrc}
@@ -118,12 +126,18 @@ export default function UserPanel({ user, onProfileClick }) {
         {/* Username + Status */}
         <div className="flex-1 ml-2 flex flex-col items-start">
           <div
-            className={`text-sm font-semibold ${isDarkMode ? "text-white" : "text-[#333333]"}`}
+            className={`text-sm font-semibold ${
+              isDarkMode ? "text-white" : "text-[#333333]"
+            }`}
             title={username}
           >
             {truncateText(username, 15)}
           </div>
-          <div className={`text-xs ${isDarkMode ? "text-green-400" : "text-green-600"}`}>
+          <div
+            className={`text-xs ${
+              isDarkMode ? "text-green-400" : "text-green-600"
+            }`}
+          >
             {t("Online")}
           </div>
         </div>
@@ -133,7 +147,11 @@ export default function UserPanel({ user, onProfileClick }) {
           <Settings
             size={20}
             onClick={onProfileClick}
-            className={`cursor-pointer ${isDarkMode ? "text-gray-400 hover:text-gray-200" : "text-gray-600 hover:text-gray-800"}`}
+            className={`cursor-pointer ${
+              isDarkMode
+                ? "text-gray-400 hover:text-gray-200"
+                : "text-gray-600 hover:text-gray-800"
+            }`}
           />
         </div>
       </div>

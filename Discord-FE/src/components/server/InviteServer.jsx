@@ -6,7 +6,12 @@ import UserService from "../../services/UserService";
 import ServerChannelService from "../../services/ServerChannelService";
 import toast from "react-hot-toast";
 
-export default function InviteServerModal({ server, isOpen, onClose }) {
+export default function InviteServerModal({
+  server,
+  isOpen,
+  onClose,
+  onInviteSuccess,
+}) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [friends, setFriends] = useState([]);
@@ -85,6 +90,7 @@ export default function InviteServerModal({ server, isOpen, onClose }) {
       if (message !== "This user has been banned in this server") {
         setFriends((prev) => prev.filter((f) => f.id !== friend.id));
         toast.success(t("Invited member successfully"));
+        onInviteSuccess();
         return;
       }
 
