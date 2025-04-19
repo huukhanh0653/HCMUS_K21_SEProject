@@ -113,6 +113,7 @@ public class MessageQueryResolver {
                 message.getContent().getText(),
                 message.getAttachments(),
                 message.getMentions(),
+                message.getTimestamp().toString(),
                 "MESSAGE_UPDATED");
 
         messagingTemplate.convertAndSend(
@@ -143,6 +144,7 @@ public class MessageQueryResolver {
                 null,
                 serverId,
                 channelId,
+                null,
                 null,
                 null,
                 null,

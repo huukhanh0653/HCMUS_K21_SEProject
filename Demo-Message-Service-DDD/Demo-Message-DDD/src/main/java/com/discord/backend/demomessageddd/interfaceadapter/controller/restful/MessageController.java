@@ -40,6 +40,7 @@ public class MessageController {
                 message.getContent().getText(),
                 message.getAttachments(),
                 message.getMentions(),
+                message.getTimestamp().toString(),
                 "MESSAGE");
 
         messagingTemplate.convertAndSend(
