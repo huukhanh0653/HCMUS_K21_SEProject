@@ -114,6 +114,7 @@ const homeSlice = createSlice({
       state.isMuted = !state.isMuted;
     },
 
+    // Lưu danh sách thành viên server
     setServerMembers(state, action) {
       state.serverMembers = action.payload;
     },

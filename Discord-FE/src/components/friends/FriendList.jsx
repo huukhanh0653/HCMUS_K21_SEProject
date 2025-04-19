@@ -21,7 +21,7 @@ export default function FriendList() {
   const currentUser = JSON.parse(localStorage.getItem("user")) || {};
 
   // API base URL from Vite environment
-  const User_API = import.meta.env.VITE_USER_API;
+  const User_API = import.meta.env.VITE_USER_API; 
 
   // Fetch danh sách bạn bè từ API
   useEffect(() => {
