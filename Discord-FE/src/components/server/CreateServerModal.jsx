@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { X, Camera } from "lucide-react";
+import { X, Camera, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider"; // Import useTheme
 import ServerChannelService from "../../services/ServerChannelService";
