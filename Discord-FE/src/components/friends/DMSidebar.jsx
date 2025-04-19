@@ -2,7 +2,7 @@ import React from "react";
 import { Plus, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import FriendContextMenu from "./FriendContextMenu";
-import UserPanel from "../../components/user/UserPanel";
+import { useDispatch, useSelector } from "react-redux";
 
 const DMSidebar = ({
   isDarkMode,
@@ -17,6 +17,8 @@ const DMSidebar = ({
   user
 }) => {
   const { t } = useTranslation();
+  const { pendingRequests } = useSelector((state) => state.home);
+  const requestCount = pendingRequests.length;
 
   return (
     <div
@@ -24,28 +26,11 @@ const DMSidebar = ({
         isDarkMode ? "bg-[#2b2d31]" : "bg-white border-r border-gray-200"
       }`}
     >
-      {/* Search Bar */}
-      <div className="p-3">
-        <div
-          className={`rounded-md flex items-center px-2 ${
-            isDarkMode
-              ? "bg-[#1e1f22]"
-              : "bg-white border border-gray-300 shadow-sm"
-          }`}
-        >
-          <input
-            type="text"
-            placeholder={t("Find or start a conversation")}
-            className={`w-full text-sm py-1 focus:outline-none bg-transparent border-none ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          />
-        </div>
-      </div>
+      {/* ... Search & other tabs ... */}
 
-      {/* Tab Buttons */}
       <div className="px-2 mb-2">
         <div className="flex flex-col items-start gap-2 mb-2">
+          {/* Friends Tab */}
           <button
             className={`w-full px-2 py-1 rounded text-left ${
               activeTab === "friends"
@@ -65,6 +50,7 @@ const DMSidebar = ({
             {t("Friends")}
           </button>
 
+          {/* Online Tab */}
           <button
             className={`w-full px-2 py-1 rounded text-left ${
               activeTab === "online"
@@ -83,8 +69,9 @@ const DMSidebar = ({
             {t("Online")}
           </button>
 
+          {/* Friend Requests Tab with badge */}
           <button
-            className={`w-full px-2 py-1 rounded text-left ${
+            className={`w-full px-2 py-1 rounded flex justify-between items-center ${
               activeTab === "friend_requests"
                 ? isDarkMode
                   ? "bg-[#5865f2] text-white"
@@ -98,9 +85,19 @@ const DMSidebar = ({
               setShowAddFriend(false);
             }}
           >
-            {t("Friend requests")}
+            <span>{t("Friend requests")}</span>
+            {requestCount > 0 && (
+              <span
+                className={`ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full ${
+                  isDarkMode ? "bg-red-600 text-white" : "bg-red-100 text-red-800"
+                }`}
+              >
+                {requestCount}
+              </span>
+            )}
           </button>
 
+          {/* Add Friend Tab */}
           <button
             className={`w-full px-2 py-1 rounded text-left flex items-center gap-2 ${
               activeTab === "addfriend"
@@ -166,7 +163,7 @@ const DMSidebar = ({
                     className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 ${
                       isDarkMode ? "border-[#2b2d31]" : "border-white"
                     } ${getStatusColor(friend.status)}`}
-                  ></div>
+                  />
                 </div>
                 <span>{friend.username}</span>
               </div>

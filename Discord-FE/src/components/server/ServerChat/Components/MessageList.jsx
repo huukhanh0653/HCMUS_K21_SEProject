@@ -52,7 +52,6 @@ export default function MessageList({
         const previous = uniqueMessages[index - 1];
         const prevSenderId =
           previous && (previous.senderId || previous.sender_id);
-        console.log(message.timestamp);
         const currentDate = new Date(message.timestamp);
 
         // ** Định dạng ngày & giờ **

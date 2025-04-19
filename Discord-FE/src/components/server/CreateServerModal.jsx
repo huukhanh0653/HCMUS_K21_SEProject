@@ -58,12 +58,13 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
 
       let imageUrl =
         "https://lh3.googleusercontent.com/a/ACg8ocKmMo19Vt1WHo_oM9THY1GmiP2JzCHh2LAbFy_6ErY0Q8OpAQ=s96-c";
-      /*if (serverImageFile) {
-        imageUrl = await StorageService.uploadFile(serverImageFile);
+      if (serverImageFile) {
+        const image = await StorageService.uploadFile(serverImageFile);
+        imageUrl = image.url;
         if (!imageUrl) {
           throw new Error(t("Failed to upload server icon"));
         }
-      }*/
+      }
 
       const payload = {
         name: serverName.trim(),

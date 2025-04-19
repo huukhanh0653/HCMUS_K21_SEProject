@@ -81,7 +81,7 @@ export class RoleService {
 
   async deleteRole(roleId: string) {
     const role = await this.getRoleById(roleId);
-    if (!role) return { message: 'Role not found' };
+    if (!role) throw new Error('Role not found');
 
     await this.roleRepository.delete({ id: roleId });
 

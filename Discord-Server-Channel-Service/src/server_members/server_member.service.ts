@@ -29,30 +29,30 @@ export class ServerMemberService {
   async addMember(serverId: string, userId: string, data: ServerMemberDto) {
     const serverMemberDto = plainToClass(ServerMemberDto, data);
     const errors = await validate(serverMemberDto);
-    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+    if (errors.length > 0) throw new Error(`Validation failed: ${errors}`);
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found' };
+    if (!server) throw new Error('Server not found');
     if (server.owner_id !== userId)
-      return { message: 'Only the owner can add members' };
+      throw new Error('Only the owner can add members');
 
     const ban = await this.banRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
     });
-    if (ban) return { message: 'This user has been banned in this server' };
+    if (ban) throw new Error('This user has been banned in this server');
 
     const role = await this.roleService.getRoleByName(serverId, data.role!);
-    if (!role) return { message: 'Role not found' };
+    if (!role) throw new Error('Role not found');
 
     const memberToAdd = await this.userService.getUser(data.memberId!);
-    if (!memberToAdd) return { message: 'User to add not found' };
+    if (!memberToAdd) throw new Error('User to add not found');
 
     const existingMember = await this.serverMemberRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
     });
-    if (existingMember) return { message: 'User is already a member' };
+    if (existingMember) throw new Error('User is already a member');
 
     const member = this.serverMemberRepository.create({
       server_id: serverId,
@@ -71,28 +71,28 @@ export class ServerMemberService {
   async joinServer(serverId: string, data: ServerMemberDto) {
     const serverMemberDto = plainToClass(ServerMemberDto, data);
     const errors = await validate(serverMemberDto);
-    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+    if (errors.length > 0) throw new Error(`Validation failed: ${errors}`);
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found' };
+    if (!server) throw new Error('Server not found');
 
     const ban = await this.banRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
     });
-    if (ban) return { message: 'This member has been banned in this server' };
+    if (ban) throw new Error('This member has been banned in this server');
 
     const role = await this.roleService.getRoleByName(serverId, data.role!);
-    if (!role) return { message: 'Role not found' };
+    if (!role) throw new Error('Role not found');
 
     const memberToAdd = await this.userService.getUser(data.memberId);
-    if (!memberToAdd) return { message: 'User to add not found' };
+    if (!memberToAdd) throw new Error('User to add not found');
 
     const existingMember = await this.serverMemberRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
     });
-    if (existingMember) return { message: 'User is already a member' };
+    if (existingMember) throw new Error('User is already a member');
 
     const member = this.serverMemberRepository.create({
       server_id: serverId,
@@ -112,15 +112,15 @@ export class ServerMemberService {
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found' };
+    if (!server) throw new Error('Server not found');
 
     const member = await this.serverMemberRepository.findOne({
       where: { server_id: serverId, user_id: memberId },
     });
-    if (!member) return { message: 'User is not a member' };
+    if (!member) throw new Error('User is not a member');
 
-    this.channelMemberRepository.delete({ user_id: memberId });
-    this.serverMemberRepository.delete({ user_id: memberId });
+    await this.channelMemberRepository.delete({ user_id: memberId });
+    await this.serverMemberRepository.delete({ user_id: memberId });
 
     const memberToRemove = await this.userService.getUser(memberId);
     return {
@@ -132,18 +132,18 @@ export class ServerMemberService {
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found' };
+    if (!server) throw new Error('Server not found');
 
     if (server.owner_id !== userId)
-      return { message: 'Only the owner can remove members' };
+      throw new Error('Only the owner can remove members');
 
     const member = await this.serverMemberRepository.findOne({
       where: { server_id: serverId, user_id: memberId },
     });
-    if (!member) return { message: 'User is not a member' };
+    if (!member) throw new Error('User is not a member');
 
-    this.channelMemberRepository.delete({ user_id: memberId });
-    this.serverMemberRepository.delete({ user_id: memberId });
+    await this.channelMemberRepository.delete({ user_id: memberId });
+    await this.serverMemberRepository.delete({ user_id: memberId });
 
     const memberToRemove = await this.userService.getUser(memberId);
     return {
@@ -160,25 +160,25 @@ export class ServerMemberService {
     const errors = await validate(serverMemberDto, {
       skipMissingProperties: true,
     });
-    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+    if (errors.length > 0) throw new Error(`Validation failed: ${errors}`);
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found' };
+    if (!server) throw new Error('Server not found');
     if (server.owner_id !== userId)
-      return { message: 'Only the owner can update member roles' };
+      throw new Error('Only the owner can update member roles');
     if (server.owner_id === data.memberId) {
-      return { message: "Can't change role Owner" };
+      throw new Error("Can't change role Owner");
     }
 
     const role = await this.roleService.getRoleByName(serverId, data.role!);
-    if (!role) return { message: 'Role not found' };
+    if (!role) throw new Error('Role not found');
 
     const member = await this.serverMemberRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
     });
-    if (!member) return { message: 'User is not a member' };
+    if (!member) throw new Error('User is not a member');
 
     await this.serverMemberRepository.update(member.id, {
       role_id: role.id,
@@ -202,7 +202,7 @@ export class ServerMemberService {
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found', members: [] };
+    if (!server) throw new Error('Server not found');
 
     const members = await this.serverMemberRepository.find({
       where: { server_id: serverId },
