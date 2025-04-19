@@ -313,7 +313,7 @@ function AddServerForm({ className, setOpen, onAddServer }) {
       className={cn("grid items-start gap-4", className)}
     >
       <div className="grid gap-2">
-        <Label htmlFor="server_name">{t("Server name")}</Label>
+        <Label htmlFor="server_name">{t("Server Name")}</Label>
         <Input
           type="text"
           id="server_name"
@@ -370,7 +370,7 @@ function EditServerForm({ className, setOpen, onEditServer, server }) {
       className={cn("grid items-start gap-4", className)}
     >
       <div className="grid gap-2">
-        <Label htmlFor="server_name">{t("Server name")}</Label>
+        <Label htmlFor="server_name">{t("Server Name")}</Label>
         <Input
           type="text"
           id="server_name"

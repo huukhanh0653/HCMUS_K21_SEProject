@@ -26,32 +26,25 @@ export class ChannelService {
   async createChannel(serverId: string, userId: string, data: ChannelDto) {
     const channelDto = plainToClass(ChannelDto, data);
     const errors = await validate(channelDto);
-    if (errors.length > 0)
-      return { message: `Validation failed: ${errors}`, channel: {} };
+    if (errors.length > 0) throw new Error(`Validation failed: ${errors}`);
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found' };
+    if (!server) throw new Error('Server not found');
 
     const server_member = await this.serverMemberService.getMemberById(
       serverId,
       userId,
     );
     if (!server_member)
-      return {
-        message: 'Only the members of the server can create channel',
-        channel: {},
-      };
+      throw new Error('Only the members of the server can create channel');
 
     const existingChannel = await this.channelRepository.findOne({
       where: { server_id: serverId, name: data.name },
     });
     if (existingChannel)
-      return {
-        message: 'Channel with this name already exists in the server',
-        channel: {},
-      };
+      throw new Error('Channel with this name already exists in the server');
 
     const channel = this.channelRepository.create({
       server_id: serverId,
@@ -69,14 +62,13 @@ export class ChannelService {
   async updateChannel(channelId: string, userId: string, data: ChannelDto) {
     const channelDto = plainToClass(ChannelDto, data);
     const errors = await validate(channelDto, { skipMissingProperties: true });
-    if (errors.length > 0)
-      return { message: `Validation failed: ${errors}`, channel: {} };
+    if (errors.length > 0) throw new Error(`Validation failed: ${errors}`);
 
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['server'],
     });
-    if (!channel) return { message: 'Channel not found' };
+    if (!channel) throw new Error('Channel not found');
 
     const server_member = await this.serverMemberService.getMemberById(
       channel.server_id,
@@ -104,7 +96,7 @@ export class ChannelService {
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found', channels: [] };
+    if (!server) throw new Error('Server not found');
 
     const channels = await this.channelRepository.find({
       where: { server_id: serverId, name: Like(`%${query}%`) },
@@ -138,14 +130,14 @@ export class ChannelService {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
     });
-    if (!channel) return { message: 'Channel not found' };
+    if (!channel) throw new Error('Channel not found');
 
     const server_member = await this.serverMemberService.getMemberById(
       channel.server_id,
       userId,
     );
     if (!server_member)
-      return { message: 'Only the members of the server can create channel' };
+      throw new Error('Only the members of the server can create channel');
 
     this.channelMemberRepository.delete({ channel_id: channelId });
     this.channelRepository.delete({ id: channelId });

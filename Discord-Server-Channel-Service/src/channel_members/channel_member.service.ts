@@ -19,16 +19,16 @@ export class ChannelMemberService {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
     });
-    if (!channel) return { message: 'Channel not found' };
+    if (!channel) throw new Error('Channel not found');
 
     const memberToAdd = await this.userService.getUser(memberId);
-    if (!memberToAdd) return { message: 'User to add not found' };
+    if (!memberToAdd) throw new Error('User to add not found');
 
     const existingMember = await this.channelMemberRepository.findOne({
       where: { channel_id: channelId, user_id: memberId },
     });
     if (existingMember)
-      return { message: 'User is already a member of this channel' };
+      throw new Error('User is already a member of this channel');
 
     const member = this.channelMemberRepository.create({
       channel_id: channelId,
@@ -47,12 +47,12 @@ export class ChannelMemberService {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
     });
-    if (!channel) return { message: 'Channel not found' };
+    if (!channel) throw new Error('Channel not found');
 
     const member = await this.channelMemberRepository.findOne({
       where: { channel_id: channelId, user_id: memberId },
     });
-    if (!member) return { message: 'User is not a member of this channel' };
+    if (!member) throw new Error('User is not a member of this channel');
 
     await this.channelMemberRepository.delete({ user_id: memberId });
 
@@ -66,7 +66,7 @@ export class ChannelMemberService {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
     });
-    if (!channel) return { message: 'Channel not found', members: [] };
+    if (!channel) throw new Error('Channel not found');
 
     const members = await this.channelMemberRepository.find({
       where: { channel_id: channelId },
