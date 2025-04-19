@@ -6,7 +6,6 @@ import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
 import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageDocument;
 import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageMongoRepository;
 
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
-@EnableMongoRepositories(basePackages = "com.discord.backend.demomessageddd.infrastructure.message.schema")
 public class MongoMessageRepository implements MessageRepository {
 
         private final MessageMongoRepository mongoRepository;
