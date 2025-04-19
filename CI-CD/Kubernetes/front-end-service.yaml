@@ -1,41 +1,70 @@
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: echo-chat-front-end-service
-#   labels:
-#     app: echo-chat-front-end-service
-# spec:
-#   replicas: 3
-#   selector:
-#     matchLabels:
-#       app: echo-chat-front-end-service
-#   template:
-#     metadata:
-#       labels:
-#         app: echo-chat-front-end-service
-#     spec:
-#       containers:
-#       - name: echo-chat-front-end-service
-#         image: huukhanh0653/echo-chat-front-end-service:latest
-#         ports:
-#         - containerPort: 5173
-#         resources:
-#           requests:
-#             memory: "64Mi"
-#             cpu: "100m"
-#           limits:
-#             memory: "128Mi"
-#             cpu: "200m"
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: echo-chat-front-end-service
-# spec:
-#   selector:
-#     app: echo-chat-front-end-service
-#   ports:
-#     - protocol: TCP
-#       port: 5173
-#       targetPort: 5173
-#   type: LoadBalancer
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-chat-front-end-service
+  labels:
+    app: echo-chat-front-end-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: echo-chat-front-end-service
+  template:
+    metadata:
+      labels:
+        app: echo-chat-front-end-service
+    spec:
+      containers:
+      - name: echo-chat-front-end-service
+        image: huukhanh0653/echo-chat-front-end-service:latest
+        ports:
+        - containerPort: 5173
+        env:
+        - name: VITE_FIREBASE_API_KEY
+          value: "AIzaSyBKlHIrMJDTZbNPK3xl8x1MoSNZTFYSAFQ"
+        - name: VITE_FIREBASE_AUTH_DOMAIN
+          value: "discord-4ed5d.firebaseapp.com"
+        - name: VITE_FIREBASE_PROJECT_ID
+          value: "discord-4ed5d"
+        - name: VITE_FIREBASE_STORAGE_BUCKET
+          value: "discord-4ed5d.firebasestorage.app"
+        - name: VITE_FIREBASE_MESSAGING_SENDER_ID
+          value: "865225418567"
+        - name: VITE_FIREBASE_APP_ID
+          value: "1:865225418567:web:3e3a2831a0fc01d106ce62"
+        - name: VITE_FIREBASE_MEASUREMENT_ID
+          value: "G-0MZ8JV6C14"
+        - name: VITE_SECRET_KEY
+          value: "9f8e7a3e2b5c6d1e34fa102b3d65ad21d9f8e7a3e2b5c6d1e34fa102b3d65ad2"
+        - name: VITE_SERVER_HASH_KEY
+          value: "e7d8c9b3a1f2e4d6b5c3f0a7e9d2b4c1"
+        - name: VITE_USER_API
+          value: "http://localhost:8087"
+        - name: VITE_MESSAGE_API
+          value: "http://localhost:8082"
+        - name: VITE_STORAGE_API
+          value: "http://localhost:8083"
+        - name: VITE_SERVER_API
+          value: "http://localhost:8084"
+        - name: VITE_VOICE_API
+          value: "http://localhost:8086"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-chat-front-end-service
+spec:
+  selector:
+    app: echo-chat-front-end-service
+  ports:
+    - protocol: TCP
+      port: 5173
+      targetPort: 5173
+  type: NodePort # Exposes the service internally within the cluster

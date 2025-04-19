@@ -21,31 +21,13 @@ spec:
             - containerPort: 8081
           env:
             - name: FIREBASE_SERVICE_ACCOUNT_KEY
-              valueFrom:
-                configMapKeyRef:
-                  name: firebase-config
-                  key: firebase-service-account-key.json
-            - name: MONGO_STRING_CONNECTION
-              value: mongodb+srv://ltgiang21:hySGOZ65nKuLhboI@cluster0.xe3sy.mongodb.net/?retryWrites=true&w=majority&appName=cluster0
           resources:
             requests:
-              cpu: "500m"        # Yêu cầu tài nguyên CPU tối thiểu
-              memory: "512Mi"    # Yêu cầu bộ nhớ tối thiểu
+              cpu: "500m"
+              memory: "512Mi"
             limits:
-              cpu: "1000m"       # Giới hạn tài nguyên CPU tối đa
-              memory: "1Gi"      # Giới hạn bộ nhớ tối đa
-          readinessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8081
-            initialDelaySeconds: 15
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8081
-            initialDelaySeconds: 30
-            periodSeconds: 10
+              cpu: "1000m"
+              memory: "1Gi"
 
 ---
 apiVersion: v1

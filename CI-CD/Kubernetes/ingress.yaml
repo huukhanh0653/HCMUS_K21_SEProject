@@ -16,35 +16,35 @@ spec:
     - host: 34.126.79.147.nip.io
       http:
         paths:
-          - path: /user-service
+          - path: /api/user
             pathType: Prefix
             backend:
               service:
                 name: echo-chat-user-service
                 port:
                   number: 8081
-          - path: /message-service
+          - path: /api/message
             pathType: Prefix
             backend:
               service:
                 name: echo-chat-message-service
                 port:
                   number: 8082
-          - path: /storage-service
+          - path: /api/storage
             pathType: Prefix
             backend:
               service:
                 name: storage-service
                 port:
                   number: 8083
-          - path: /notification-service
+          - path: /api/notification
             pathType: Prefix
             backend:
               service:
                 name: notification-service
                 port:
                   number: 8085
-          - path: /manager-service
+          - path: /api/server-channel
             pathType: Prefix
             backend:
               service:
