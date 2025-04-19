@@ -281,10 +281,10 @@ export default function ServerChat(props) {
       });
       const updated = data.editMessage;
       setMessages(prev =>
-        prev.filter(
-          (msg) =>
-            (msg.messageId || msg.message_id) !== id
-        )
+        prev.map(msg => {
+          const msgId = msg.messageId || msg.message_id;
+          return msgId === id ? { ...msg, content: editedContent } : msg;
+        })
       );
       setEditingMessageId(null);
       setEditedContent("");
