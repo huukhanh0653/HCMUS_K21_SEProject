@@ -4,7 +4,6 @@ import com.DiscordClone.NotificationService.model.Notification;
 import com.DiscordClone.NotificationService.model.MuteSettings;
 import com.DiscordClone.NotificationService.repository.NotificationRepository;
 import com.DiscordClone.NotificationService.repository.MuteSettingsRepository;
-import com.DiscordClone.NotificationService.service.WebSocketNotificationHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,21 +19,25 @@ public class NotificationService {
     private final WebSocketNotificationHandler notificationHandler;
 
     public Notification sendNotification(Notification notification) {
-        MuteSettings settings = muteSettingsRepo.findById(notification.getReceiverId()).orElse(null);
+        MuteSettings settings = muteSettingsRepo.findById(notification.getChannelId()).orElse(null);
         if (settings != null) {
-            if ((notification.getType().equals("DIRECT_MESSAGE") && settings.getMutedUsers().contains(notification.getSourceId())) ||
-                    (notification.getType().equals("SERVER_ALERT") && settings.getMutedServers().contains(notification.getSourceId())) ||
-                    (notification.getType().equals("CHANNEL_ALERT") && settings.getMutedChannels().contains(notification.getSourceId()))) {
-                return null; // muted, skip sending
+            // 🔁 Adjusted muting logic based on new Notification structure
+            if ((notification.getSourceId() != null && settings.getMutedUsers().contains(notification.getSourceId())) ||
+                    (notification.getServerId() != null && settings.getMutedServers().contains(notification.getServerId())) ||
+                    (notification.getChannelId() != null && settings.getMutedChannels().contains(notification.getChannelId()))) {
+                return null; // ⛔ Muted — skip sending
             }
         }
 
+        // 🆕 Ensure ID and timestamp are set
         notification.setId(UUID.randomUUID().toString());
         notification.setTimestamp(LocalDateTime.now().toString());
+
+        // 💾 Save to Redis
         notificationRepo.save(notification);
 
-        // Use custom WebSocket handler
-        notificationHandler.sendToUser(notification.getReceiverId(), notification);
+        // 🌐 Send via WebSocket
+        notificationHandler.sendToUser(notification.getChannelId(), notification);
 
         return notification;
     }
@@ -46,7 +49,7 @@ public class NotificationService {
     public List<Notification> getAllNotificationsForUser(String userId) {
         List<Notification> results = new ArrayList<>();
         for (Notification n : notificationRepo.findAll()) {
-            if (n.getReceiverId().equals(userId)) {
+            if (n.getChannelId().equals(userId)) {
                 results.add(n);
             }
         }

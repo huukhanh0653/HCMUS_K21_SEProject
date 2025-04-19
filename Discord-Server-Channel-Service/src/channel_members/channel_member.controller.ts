@@ -74,7 +74,7 @@ export class ChannelMemberController {
   @Delete(':memberId')
   @ApiOperation({ summary: 'Remove a member from a channel' })
   @ApiResponse({ status: 200, description: 'Member removed successfully' })
-  @ApiResponse({ status: 404, description: 'Member or channel not found' })
+  @ApiResponse({ status: 500, description: 'Member or channel not found' })
   @ApiParam({
     name: 'channelId',
     description: 'ID of the channel',

@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { BansService } from './ban.service';
-import { CreateBanDto } from './ban.dto';
+import { BanDto } from './ban.dto';
 import { Ban } from './ban.entity';
 
 @ApiTags('Bans')
@@ -12,11 +12,9 @@ export class BansController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Add a new ban in a server' })
-  @ApiBody({ type: CreateBanDto })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'The ban has been successfully created.',
-    type: Ban,
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
@@ -26,7 +24,7 @@ export class BansController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input data.',
   })
-  async create(@Body() createBanDto: CreateBanDto) {
+  async create(@Body() createBanDto: BanDto) {
     return await this.bansService.addBan(createBanDto);
   }
 }

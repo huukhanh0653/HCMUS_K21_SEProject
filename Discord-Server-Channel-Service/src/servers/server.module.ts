@@ -11,6 +11,7 @@ import { RoleModule } from 'src/roles/role.module';
 import { Channel } from 'src/channels/channel.entity';
 import { ChannelMember } from 'src/channel_members/channel_member.entity';
 import { ChannelModule } from 'src/channels/channel.module';
+import { Ban } from 'src/bans/ban.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ChannelModule } from 'src/channels/channel.module';
       Role,
       Channel,
       ChannelMember,
+      Ban,
     ]),
     UserModule,
     ServerMemberModule,

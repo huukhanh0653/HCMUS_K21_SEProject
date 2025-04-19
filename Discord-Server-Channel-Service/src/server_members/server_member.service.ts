@@ -41,7 +41,7 @@ export class ServerMemberService {
     const ban = await this.banRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
     });
-    if (ban) return { message: 'This user has been banned in server' };
+    if (ban) return { message: 'This user has been banned in this server' };
 
     const role = await this.roleService.getRoleByName(serverId, data.role!);
     if (!role) return { message: 'Role not found' };
@@ -63,7 +63,7 @@ export class ServerMemberService {
     await this.serverMemberRepository.save(member);
 
     return {
-      message: `Member added to server \"${server.name}\" with role \"${role.name}\"`,
+      message: `Member added to server "${server.name}" with role "${role.name}"`,
       member: memberToAdd,
     };
   }
@@ -81,7 +81,7 @@ export class ServerMemberService {
     const ban = await this.banRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
     });
-    if (ban) return { message: 'This member has been banned in server' };
+    if (ban) return { message: 'This member has been banned in this server' };
 
     const role = await this.roleService.getRoleByName(serverId, data.role!);
     if (!role) return { message: 'Role not found' };
@@ -103,7 +103,7 @@ export class ServerMemberService {
     await this.serverMemberRepository.save(member);
 
     return {
-      message: `Member added to server \"${server.name}\" with role \"${role.name}\"`,
+      message: `Member added to server "${server.name}" with role "${role.name}"`,
       member: memberToAdd,
     };
   }
@@ -119,12 +119,12 @@ export class ServerMemberService {
     });
     if (!member) return { message: 'User is not a member' };
 
-    await this.channelMemberRepository.delete({ user_id: memberId });
-    await this.serverMemberRepository.delete({ user_id: memberId });
+    this.channelMemberRepository.delete({ user_id: memberId });
+    this.serverMemberRepository.delete({ user_id: memberId });
 
     const memberToRemove = await this.userService.getUser(memberId);
     return {
-      message: `\"${memberToRemove.username}\" exited from server \"${server.name}\"`,
+      message: `"${memberToRemove.username}" exited from server "${server.name}"`,
     };
   }
 
@@ -142,12 +142,12 @@ export class ServerMemberService {
     });
     if (!member) return { message: 'User is not a member' };
 
-    await this.channelMemberRepository.delete({ user_id: memberId });
-    await this.serverMemberRepository.delete({ user_id: memberId });
+    this.channelMemberRepository.delete({ user_id: memberId });
+    this.serverMemberRepository.delete({ user_id: memberId });
 
     const memberToRemove = await this.userService.getUser(memberId);
     return {
-      message: `\"${memberToRemove.username}\" removed from server \"${server.name}\"`,
+      message: `"${memberToRemove.username}" removed from server "${server.name}"`,
     };
   }
 
@@ -168,6 +168,9 @@ export class ServerMemberService {
     if (!server) return { message: 'Server not found' };
     if (server.owner_id !== userId)
       return { message: 'Only the owner can update member roles' };
+    if (server.owner_id === data.memberId) {
+      return { message: "Can't change role Owner" };
+    }
 
     const role = await this.roleService.getRoleByName(serverId, data.role!);
     if (!role) return { message: 'Role not found' };
@@ -183,7 +186,7 @@ export class ServerMemberService {
 
     const memberToUpdate = await this.userService.getUser(data.memberId);
     return {
-      message: `Updated role of ${memberToUpdate.username} to ${role.name}`,
+      message: `Updated role of "${memberToUpdate.username}" to ${role.name}`,
       member: memberToUpdate,
     };
   }

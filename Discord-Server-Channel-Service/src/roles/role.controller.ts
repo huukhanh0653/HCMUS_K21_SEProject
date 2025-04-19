@@ -96,7 +96,7 @@ export class RoleController {
   @Get(':serverId/:name')
   @ApiOperation({ summary: 'Get a role in a server by name' })
   @ApiResponse({ status: 200, description: 'Role details' })
-  @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiResponse({ status: 500, description: 'Role not found' })
   @ApiParam({
     name: 'serverId',
     description: 'ID of the server',
@@ -115,7 +115,7 @@ export class RoleController {
   @Get(':roleId')
   @ApiOperation({ summary: 'Get a role by ID' })
   @ApiResponse({ status: 200, description: 'Role details' })
-  @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiResponse({ status: 500, description: 'Role not found' })
   @ApiParam({
     name: 'roleId',
     description: 'The ID of the role',
@@ -138,7 +138,7 @@ export class RoleController {
   @Put(':roleId')
   @ApiOperation({ summary: 'Update a role' })
   @ApiResponse({ status: 200, description: 'Role updated successfully' })
-  @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiResponse({ status: 500, description: 'Role not found' })
   @ApiParam({
     name: 'roleId',
     description: 'ID of the role',
@@ -150,7 +150,7 @@ export class RoleController {
   @Delete(':roleId')
   @ApiOperation({ summary: 'Delete a role' })
   @ApiResponse({ status: 200, description: 'Role deleted successfully' })
-  @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiResponse({ status: 500, description: 'Role not found' })
   @ApiParam({
     name: 'roleId',
     description: 'ID of the role',

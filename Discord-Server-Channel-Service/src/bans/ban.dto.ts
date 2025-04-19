@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsUUID, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateBanDto {
+export class BanDto {
   @ApiProperty({
     description: 'The ID of the server where the ban is applied',
   })

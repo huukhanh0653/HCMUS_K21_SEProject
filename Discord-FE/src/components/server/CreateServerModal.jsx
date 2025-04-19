@@ -3,6 +3,7 @@ import { X, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import ServerChannelService from "../../services/ServerChannelService";
 import StorageService from "../../services/StorageService";
+import toast from "react-hot-toast";
 
 import Hashids from "hashids";
 
@@ -40,8 +41,8 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
   // Kiểm tra tính hợp lệ của tên server và ảnh
   const validate = () => {
     const newErrors = {};
-    if (!serverName.trim()) newErrors.name = t('Server name is required');
-    if (!serverImageFile) newErrors.image = t('Server icon is required');
+    if (!serverName.trim()) newErrors.name = t("Server name is required");
+    if (!serverImageFile) newErrors.image = t("Server icon is required");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -55,7 +56,8 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
       const userId = user?.id;
       if (!userId) throw new Error(t("User not logged in"));
 
-      let imageUrl = "https://lh3.googleusercontent.com/a/ACg8ocKmMo19Vt1WHo_oM9THY1GmiP2JzCHh2LAbFy_6ErY0Q8OpAQ=s96-c";
+      let imageUrl =
+        "https://lh3.googleusercontent.com/a/ACg8ocKmMo19Vt1WHo_oM9THY1GmiP2JzCHh2LAbFy_6ErY0Q8OpAQ=s96-c";
       /*if (serverImageFile) {
         imageUrl = await StorageService.uploadFile(serverImageFile);
         if (!imageUrl) {
@@ -99,23 +101,26 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
       const hex = hashids.decodeHex(joinCode);
       if (hex) {
         // reconstruct UUID v4 pattern
-        serverId = `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+        serverId = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(
+          12,
+          16
+        )}-${hex.slice(16, 20)}-${hex.slice(20)}`;
       } else {
         // fallback decode to charcodes
         const arr = hashids.decode(joinCode);
         serverId = arr.length ? String.fromCharCode(...arr) : "";
       }
-      if (!serverId) throw new Error(t('Invalid server code'));
+      if (!serverId) throw new Error(t("Invalid server code"));
 
       const res = await ServerChannelService.getServerById(serverId);
       if (res?.server) {
         setFoundServer(res.server);
       } else {
-        setJoinError(t('Server not found'));
+        setJoinError(t("Server not found"));
       }
     } catch (err) {
       console.error(err);
-      setJoinError(err.message || t('Error searching server'));
+      setJoinError(err.message || t("Error searching server"));
     } finally {
       setIsSearching(false);
     }
@@ -131,10 +136,16 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
       if (!userId) throw new Error(t("User not logged in"));
 
       // Thêm thành viên vào server với role Member
-      await ServerChannelService.joinServer(
+      const { message } = await ServerChannelService.joinServer(
         foundServer.id,
         { memberId: userId, role: "Member" }
       );
+
+      // Nếu đã bị ban thì không tham gia được
+      if (message === "This user has been banned in this server") {
+        toast.error(t(`${message}`));
+        return;
+      }
 
       // Sau khi join thành công, gọi callback và đóng modal
       onCreated?.(foundServer);
@@ -292,46 +303,66 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
         {modalType === "join" && (
           <>
             <div className="text-center mb-4">
-              <h2 className="text-2xl font-bold text-white mb-2">{t('Join a server')}</h2>
-              <p className="text-gray-400">{t('Enter the server code')}:</p>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {t("Join a server")}
+              </h2>
+              <p className="text-gray-400">{t("Enter the server code")}:</p>
             </div>
             <div className="mb-2">
               <input
                 type="text"
                 className="w-full bg-[#1e1f22] text-white p-2 rounded-md outline-none"
-                placeholder={t('Paste server code')}
+                placeholder={t("Paste server code")}
                 value={joinCode}
-                onChange={e => setJoinCode(e.target.value)}
+                onChange={(e) => setJoinCode(e.target.value)}
               />
             </div>
             <button
               onClick={handleSearch}
               disabled={isSearching || !joinCode}
-              className={`w-full mb-4 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-md transition-colors ${(!joinCode || isSearching) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full mb-4 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-md transition-colors ${
+                !joinCode || isSearching ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              {isSearching ? t('Searching...') : t('Search')}
+              {isSearching ? t("Searching...") : t("Search")}
             </button>
-            {joinError && <div className="text-red-500 text-sm mb-2">{joinError}</div>}
+            {joinError && (
+              <div className="text-red-500 text-sm mb-2">{joinError}</div>
+            )}
 
             {/* Server found display */}
             {foundServer && (
               <div className="flex items-center justify-between bg-[#3b3e45] p-2 rounded-lg mb-4">
                 <div className="flex items-center gap-2">
-                  <img src={foundServer.server_pic} alt={foundServer.name} className="w-10 h-10 rounded-full" />
+                  <img
+                    src={foundServer.server_pic}
+                    alt={foundServer.name}
+                    className="w-10 h-10 rounded-full"
+                  />
                   <span className="text-white">{foundServer.name}</span>
                 </div>
-                <button onClick={handleJoin} className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full">
+                <button
+                  onClick={handleJoin}
+                  className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full"
+                >
                   <Plus size={16} />
                 </button>
               </div>
             )}
 
             <div className="flex justify-between mt-2">
-              <button onClick={() => setModalType('main')} className="text-gray-400 hover:text-white">
-                {t('Back')}
+              <button
+                onClick={() => setModalType("main")}
+                className="text-gray-400 hover:text-white"
+              >
+                {t("Back")}
               </button>
-              <button disabled={!foundServer} onClick={handleJoin} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md disabled:opacity-50">
-                {t('Join Server')}
+              <button
+                disabled={!foundServer}
+                onClick={handleJoin}
+                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md disabled:opacity-50"
+              >
+                {t("Join Server")}
               </button>
             </div>
           </>
