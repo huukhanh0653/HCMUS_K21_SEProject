@@ -12,6 +12,7 @@ import SampleAvt from "../../../assets/sample_avatar.svg";
 import { useTranslation } from "react-i18next";
 import MessageList from "./Components/MessageList";
 import MessageInput from "./Components/MessageInput";
+import toast from "react-hot-toast";
 
 // newMessageService exports
 import {
@@ -180,9 +181,27 @@ export default function ServerChat(props) {
   };
 
   // Các hàm xử lý xoá & chỉnh sửa tin nhắn (nếu cần)
-  const handleDeleteMessage = (id) => {
-    // Ví dụ: xoá tin nhắn khỏi state (và có thể gọi API xoá tin nhắn nếu cần)
-    setMessages((prev) => prev.filter((msg) => msg.message_id !== id));
+  const handleDeleteMessage = async (id) => {
+    try {
+      await deleteMessageMutation({
+        variables: { 
+          serverId, 
+          channelId, 
+          messageId: id
+        },
+      });
+      // filter state
+      setMessages(prev =>
+        prev.filter(
+          (msg) =>
+            (msg.messageId || msg.message_id) !== id
+        )
+      );
+      toast.success("Đã xóa tin nhắn");
+    } catch (err) {
+      console.error(err);
+      toast.error("Xóa tin nhắn thất bại");
+    }
   };
 
   const handleEditMessage = (id, content) => {
@@ -190,16 +209,31 @@ export default function ServerChat(props) {
     setEditedContent(content);
   };
 
-  const handleSaveEdit = (id) => {
+  const handleSaveEdit = async (id) => {
     if (!editedContent.trim()) return;
-    // Ví dụ: cập nhật tin nhắn trong state (và có thể gọi API chỉnh sửa tin nhắn)
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.message_id === id ? { ...msg, content: editedContent } : msg
-      )
-    );
-    setEditingMessageId(null);
-    setEditedContent("");
+    try {
+      const { data } = await editMessageMutation({
+        variables: {
+          serverId,
+          channelId,
+          messageId: id,
+          content: editedContent,
+        },
+      });
+      const updated = data.editMessage;
+      setMessages(prev =>
+        prev.filter(
+          (msg) =>
+            (msg.messageId || msg.message_id) !== id
+        )
+      );
+      setEditingMessageId(null);
+      setEditedContent("");
+      toast.success("Chỉnh sửa tin nhắn thành công");
+    } catch (err) {
+      console.error(err);
+      toast.error("Chỉnh sửa tin nhắn thất bại");
+    }
   };
 
   return (

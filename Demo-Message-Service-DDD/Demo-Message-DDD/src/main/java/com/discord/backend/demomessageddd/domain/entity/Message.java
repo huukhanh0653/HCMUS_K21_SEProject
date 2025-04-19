@@ -8,8 +8,6 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,6 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @ToString
 @Document(collection = "messages")
+// @JsonTypeName("message")
 // @JsonSerialize(using = ToStringSerializer.class)
 public class Message {
 
