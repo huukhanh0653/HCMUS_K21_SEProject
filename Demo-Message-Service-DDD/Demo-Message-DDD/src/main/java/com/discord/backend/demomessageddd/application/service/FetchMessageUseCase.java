@@ -17,7 +17,7 @@ public class FetchMessageUseCase {
     private final CacheMessageRepository cacheMessageRepository;
 
     public FetchMessageUseCase(MessageRepository messageRepository,
-                               CacheMessageRepository cacheMessageRepository) {
+            CacheMessageRepository cacheMessageRepository) {
         System.out.println("FetchMessageUseCase constructor called with messageRepository: " + messageRepository);
         this.messageRepository = messageRepository;
         this.cacheMessageRepository = cacheMessageRepository;
@@ -25,47 +25,50 @@ public class FetchMessageUseCase {
 
     public FetchMessage fetchBefore(String serverId, String channelId, int amount, String timestamp) {
         System.out.println("FetchBefore execute called with senderId: " + serverId);
-
-        long count = cacheMessageRepository.countByChannelBefore(serverId, channelId, timestamp);
+        System.out.println(timestamp);
+        long count = cacheMessageRepository.countByChannelBefore(serverId, channelId, Instant.parse(timestamp));
         System.out.println("FetchBefore execute called with count: " + count);
 
         if (count == 0) {
             return new FetchMessage(List.of(), 0, timestamp, false);
         }
-        List<Message> messages = cacheMessageRepository.findByChannel(serverId, channelId,
+        List<Message> messages = cacheMessageRepository.findByChannelBefore(serverId, channelId,
                 (int) Math.min(amount, count),
-                timestamp);
+                Instant.parse(timestamp));
 
         System.out.println("Messages size: " + messages.size());
-        String lastMessageTimestamp = messages.isEmpty() ? timestamp : messages.get(messages.size() - 1).getTimestamp();
+        Instant lastMessageTimestamp = messages.isEmpty() ? Instant.parse(timestamp)
+                : messages.get(messages.size() - 1).getTimestamp();
         boolean isExistingMessage = true;
         long fetchRemaining;
 
         if (messages.isEmpty()) {
+            System.out.println("Messages is empty, fetch remaining: " + amount);
             fetchRemaining = amount;
         } else {
+            System.out.println("Messages is not empty, fetch remaining: " + (amount - messages.size()));
             fetchRemaining = amount - messages.size();
         }
 
         // If the cache does not have enough messages, fetch from DB
         if (fetchRemaining > 0) {
+
             messages.addAll(messageRepository.findByChannelBeforeTimeStamp(serverId, channelId,
                     (int) Math.min(fetchRemaining, count), lastMessageTimestamp));
-            System.out.println("Messages size: " + messages.size());
+
             lastMessageTimestamp = messages.get(messages.size() - 1).getTimestamp();
-            System.out.println("Messages size: " + messages.size());
             // Check if there are more messages in the DB than in the cache
             isExistingMessage = messageRepository.countByChannelBeforeTimeStamp(serverId, channelId,
                     lastMessageTimestamp) > amount;
         }
 
-        return new FetchMessage(messages, amount, lastMessageTimestamp, isExistingMessage);
+        return new FetchMessage(messages, amount, lastMessageTimestamp.toString(), isExistingMessage);
     }
 
     public FetchMessage fetchAfter(String serverId, String channelId, int amount, String timestamp) {
         System.out.println("SendMessageUseCase execute called with senderId: " + serverId);
 
-        long count = messageRepository.countByChannelAfterTimeStamp(serverId, channelId, timestamp);
+        long count = messageRepository.countByChannelAfterTimeStamp(serverId, channelId, Instant.parse(timestamp));
 
         if (count == 0) {
             return new FetchMessage(List.of(), 0, timestamp, false);
@@ -74,16 +77,16 @@ public class FetchMessageUseCase {
         // Fetch from cache first
         List<Message> messages = messageRepository.findByChannelAfterTimeStamp(serverId, channelId,
                 (int) Math.min(amount, count),
-                timestamp);
+                Instant.parse(timestamp));
         System.out.println("Messages size: " + messages.size());
-        String lastMessageTimestamp = messages.isEmpty() ? timestamp : messages.get(messages.size() - 1).getTimestamp();
+        String lastMessageTimestamp = messages.isEmpty() ? timestamp
+                : messages.get(messages.size() - 1).getTimestamp().toString();
         boolean isExistingMessage = true;
         if (count > amount) {
-        }
-        else isExistingMessage = false;
+        } else
+            isExistingMessage = false;
 
         return new FetchMessage(messages, messages.size(), lastMessageTimestamp, isExistingMessage);
     }
-
 
 }

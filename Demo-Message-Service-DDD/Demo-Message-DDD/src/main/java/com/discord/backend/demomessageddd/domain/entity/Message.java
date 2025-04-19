@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -29,12 +31,12 @@ public class Message {
     private List<String> attachments;
     private List<String> mentions;
     private MessageContent content;
-    private String timestamp;
-    private String lastEdited;
+    private Instant timestamp;
+    private Instant lastEdited;
 
     public Message(String messageId, String senderId, String serverId,
             String channelId, List<String> attachments,
-            List<String> mentions, MessageContent content) {
+            List<String> mentions, MessageContent content, Instant timestamp) {
         if (messageId == null) {
             this.messageId = UUID.randomUUID().toString();
         } else {
@@ -54,22 +56,12 @@ public class Message {
             this.mentions = mentions;
         }
         this.content = content;
-        this.timestamp = Instant.now().toString();
+        if (timestamp == null) {
+            this.timestamp = Instant.now();
+        } else {
+            this.timestamp = timestamp;
+        }
         this.lastEdited = timestamp;
-        System.out.println("1 Message constructor called with id:");
-    }
-
-    public Message(String senderId, String serverId,
-            String channelId, MessageContent content) {
-
-        this.messageId = serverId + Instant.now().toString();
-        this.senderId = senderId;
-        this.channelId = channelId;
-        this.serverId = serverId;
-        this.content = content;
-        this.timestamp = Instant.now().toString();
-        this.lastEdited = timestamp;
-        System.out.println("2 Message constructor called with id:");
     }
 
     @JsonCreator
@@ -93,8 +85,8 @@ public class Message {
         this.senderId = senderId;
         this.content = content;
         this.attachments = attachments;
-        this.timestamp = timestamp;
-        this.lastEdited = timestamp;
+        this.timestamp = Instant.parse(timestamp);
+        this.lastEdited = Instant.parse(timestamp);
         this.mentions = mentions;
 
     }
@@ -123,7 +115,7 @@ public class Message {
         return content;
     }
 
-    public String getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 
@@ -131,7 +123,7 @@ public class Message {
         return mentions;
     }
 
-    public String getLastEdited() {
+    public Instant getLastEdited() {
         return lastEdited;
     }
 
@@ -148,7 +140,7 @@ public class Message {
     }
 
     public void setLastEdited(String lastEdited) {
-        this.lastEdited = lastEdited;
+        this.lastEdited = Instant.parse(lastEdited);
     }
 
 }

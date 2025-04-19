@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
 import com.discord.backend.demomessageddd.domain.entity.Message;
+import java.time.Instant;
 
 @Data
 @Document("messages")
@@ -19,7 +20,7 @@ public class MessageDocument {
     private String content;
     private List<String> attachments;
     private List<String> mentions;
-    private String timestamp;
+    private Instant timestamp;
 
     public MessageDocument() {
     }
@@ -63,7 +64,7 @@ public class MessageDocument {
         return mentions;
     }
 
-    public String getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 
@@ -91,7 +92,7 @@ public class MessageDocument {
         this.attachments = attachments;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
 

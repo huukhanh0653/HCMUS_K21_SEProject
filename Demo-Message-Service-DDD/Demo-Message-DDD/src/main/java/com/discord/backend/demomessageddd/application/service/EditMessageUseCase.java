@@ -79,7 +79,7 @@ public class EditMessageUseCase {
 
         // Save the message to the database and cache
         messageRepository.deleteByChannel(serverId, channelId);
-        cacheMessageRepository.deleteByChannel(serverId, channelId, Instant.now().toString());
+        cacheMessageRepository.deleteByChannel(serverId, channelId, Instant.now());
     }
 
     public void deleteByServer(String serverId) {
@@ -87,7 +87,7 @@ public class EditMessageUseCase {
 
         // Save the message to the database and cache
         messageRepository.deleteByServer(serverId);
-        cacheMessageRepository.deleteByServer(serverId, Instant.now().toString());
+        cacheMessageRepository.deleteByServer(serverId, Instant.now());
 
     }
 
