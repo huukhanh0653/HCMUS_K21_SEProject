@@ -71,7 +71,10 @@ export default function ServerChat(props) {
   });
 
   // Fetch new messages after last known timestamp
-  const { fetchMore: fetchMoreAfter } = useFetchMessagesAfter({
+  const { 
+    fetchMore: fetchMoreAfter,
+    data: afterData,
+  } = useFetchMessagesAfter({
     serverId,
     channelId,
     amount: 20,
@@ -83,7 +86,7 @@ export default function ServerChat(props) {
     if (!channel?.id || !server?.id) return;
 
     // Gọi hàm kết nối và truyền vào stompClientRef, setMessages, serverId và channel.id
-    const disconnect = connectMessageService(
+    const connect = connectMessageService(
       stompClientRef,
       setMessages,
       server?.id,
@@ -92,24 +95,32 @@ export default function ServerChat(props) {
     refetchBefore;
 
     return () => {
-      disconnect();
+      connect();
     };
   }, [serverId, channelId, refetchBefore]);
 
   // Khởi tạo tin nhắn khi dữ liệu trước đó đến.
   useEffect(() => {
+    // 1) Khi load lần đầu từ trước (beforeData)
     if (beforeData?.fetchMessagesBefore && !initialFetchedRef.current) {
       const { messages: fetched, hasMore: more, lastMessageTimestamp } =
         beforeData.fetchMessagesBefore;
 
-      //console.log("beforeData:",beforeData.fetchMessagesBefore);
       setMessages(fetched);
       setHasMore(more);
-      console.log(fetched);
+      console.log("Fetched before:", fetched);
       initialFetchedRef.current = true;
       setLastTimestamp(lastMessageTimestamp);
     }
-  }, [beforeData, fetchMoreAfter]);
+
+    // 2) Khi có kết quả fetchMessagesAfter
+    if (afterData?.fetchMessagesAfter) {
+      const { messages: newer } = afterData.fetchMessagesAfter;
+      console.log("Fetched after:", newer);
+      // nếu muốn, có thể merge mới vào state:
+      // setMessages(prev => [...prev, ...newer]);
+    }
+  }, [beforeData, afterData]);
 
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
