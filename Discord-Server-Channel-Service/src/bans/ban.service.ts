@@ -7,12 +7,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ban } from './ban.entity';
 import { CreateBanDto } from './ban.dto';
+import { ServerMemberService } from 'src/server_members/server_member.service';
 
 @Injectable()
 export class BansService {
   constructor(
     @InjectRepository(Ban)
     private readonly banRepository: Repository<Ban>,
+    private serverMemberService: ServerMemberService,
   ) {}
 
   async addBan(createBanDto: CreateBanDto) {
@@ -32,6 +34,7 @@ export class BansService {
     });
 
     this.banRepository.save(ban);
+    await this.serverMemberService.outServer(serverId, userId);
 
     return { message: 'Ban created successfully', ban };
   }
