@@ -39,11 +39,10 @@ export class ServerService {
   async createServer(userId: string, data: ServerDto) {
     const serverDto = plainToClass(ServerDto, data);
     const errors = await validate(serverDto);
-    if (errors.length > 0)
-      return { message: `Validation failed: ${errors}`, server: {} };
+    if (errors.length > 0) throw new Error(`Validation failed: ${errors}`);
 
     const user = await this.userService.getUser(userId);
-    if (!user) return { message: 'User not found', server: {} };
+    if (!user) throw new Error('User not found');
 
     const server = this.serverRepository.create({
       name: data.name,
@@ -65,15 +64,16 @@ export class ServerService {
   async updateServer(serverId: string, userId: string, data: ServerDto) {
     const serverDto = plainToClass(ServerDto, data);
     const errors = await validate(serverDto, { skipMissingProperties: true });
-    if (errors.length > 0)
-      return { message: `Validation failed: ${errors}`, server: {} };
+    if (errors.length > 0) throw new Error(`Validation failed: ${errors}`);
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found' };
-    if (server.owner_id !== userId)
-      return { message: 'Only the owner can update the server', server: {} };
+    if (!server) throw new Error('Server not found');
+
+    const user = await this.userService.getUser(userId);
+    if (server.owner_id !== userId && !user.is_admin)
+      throw new Error('Only the owner or admin can update the server');
 
     const updatedData = {
       name: data.name || server.name,
@@ -88,12 +88,9 @@ export class ServerService {
 
   async getAllServers(userId: string, query: string) {
     const user = await this.userService.getUser(userId);
-    if (!user) return { message: 'User not found', servers: [] };
+    if (!user) throw new Error('User not found');
     if (!user.is_admin)
-      return {
-        message: 'User does not have sufficient access rights',
-        servers: [],
-      };
+      throw new Error('User does not have sufficient access rights');
 
     const servers = await this.serverRepository.find({
       where: { name: Like(`%${query}%`) },
@@ -113,7 +110,7 @@ export class ServerService {
 
   async getServers(userId: string, query: string) {
     const user = await this.userService.getUser(userId);
-    if (!user) return { message: 'User not found', servers: [] };
+    if (!user) throw new Error('User not found');
 
     const serverMembers = await this.serverMemberRepository.find({
       where: { user_id: userId },
@@ -143,7 +140,7 @@ export class ServerService {
       where: { id: serverId },
     });
 
-    if (!server) return { message: 'Server not found', server: null };
+    if (!server) throw new Error('Server not found');
 
     const owner = await this.userService.getUser(server.owner_id);
     const serverWithOwner = {
@@ -159,22 +156,27 @@ export class ServerService {
       where: { id: serverId },
     });
     if (!server) throw new Error('Server not found');
-    if (server.owner_id !== userId)
-      throw new Error('Only the owner can delete the server');
+
+    const user = await this.userService.getUser(userId);
+    if (server.owner_id !== userId && !user.is_admin)
+      throw new Error('Only the owner or admin can delete the server');
 
     const { channels } = await this.channelService.getChannelsByServer(
       serverId,
       '',
     );
 
-    this.banRepository.delete({ server_id: serverId });
-    this.channelMemberRepository.delete({
-      channel_id: In(channels.map((c) => c.id)),
-    }),
+    await Promise.all([
+      this.banRepository.delete({ server_id: serverId }),
+      this.roleRepository.delete({ server_id: serverId }), // Xóa roles trước
+      this.channelMemberRepository.delete({
+        channel_id: In(channels.map((c) => c.id)),
+      }),
       this.channelRepository.delete({ server_id: serverId }),
-      this.serverMemberRepository.delete({ server_id: serverId });
-    this.roleRepository.delete({ server_id: serverId });
-    this.serverRepository.delete({ id: serverId });
+      this.serverMemberRepository.delete({ server_id: serverId }),
+    ]);
+
+    await this.serverRepository.delete({ id: serverId });
 
     return { message: 'Server deleted successfully' };
   }
