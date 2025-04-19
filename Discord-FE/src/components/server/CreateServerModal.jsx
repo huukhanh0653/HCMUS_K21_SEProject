@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
-import { X, Plus } from "lucide-react";
+import { X, Camera } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "../../components/layout/ThemeProvider"; // Import useTheme
 import ServerChannelService from "../../services/ServerChannelService";
 import StorageService from "../../services/StorageService";
 import toast from "react-hot-toast";
-
 import Hashids from "hashids";
 
 export default function CreateServerModal({ onClose, onCreated, onLoad }) {
@@ -15,6 +15,7 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const { t } = useTranslation();
+  const { isDarkMode } = useTheme(); // Add isDarkMode
 
   // Join flow states
   const [joinCode, setJoinCode] = useState("");
@@ -29,12 +30,18 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
     return new Hashids(key, 8);
   }, []);
 
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
     if (file) {
       setServerImageFile(file);
-      setServerImagePreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onload = (e) => setServerImagePreview(e.target.result);
+      reader.readAsDataURL(file);
       setErrors((prev) => ({ ...prev, image: null }));
+    } else {
+      setServerImageFile(null);
+      setServerImagePreview(null);
+      setErrors((prev) => ({ ...prev, image: t("Server icon is required") }));
     }
   };
 
@@ -56,11 +63,10 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
       const userId = user?.id;
       if (!userId) throw new Error(t("User not logged in"));
 
-      let imageUrl =
-        "https://lh3.googleusercontent.com/a/ACg8ocKmMo19Vt1WHo_oM9THY1GmiP2JzCHh2LAbFy_6ErY0Q8OpAQ=s96-c";
+      let imageUrl = "";
       if (serverImageFile) {
-        const image = await StorageService.uploadFile(serverImageFile);
-        imageUrl = image.url;
+        const uploadData = await StorageService.uploadFile(serverImageFile);
+        imageUrl = uploadData.url;
         if (!imageUrl) {
           throw new Error(t("Failed to upload server icon"));
         }

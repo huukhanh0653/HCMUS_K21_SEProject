@@ -1,9 +1,16 @@
 import React, { useEffect, useState, useRef } from "react";
-import { ChevronDown, Hash, Volume2, Bell, Plus, Lock } from "lucide-react";
+import {
+  ChevronDown,
+  Hash,
+  Volume2,
+  Bell,
+  Plus,
+  Lock,
+  Camera,
+} from "lucide-react";
 import MemberManagementModal from "./MemberManagementModal";
 import ChannelManagementModal from "./ChannelManagementModal";
 import InviteServer from "./InviteServer";
-import { X } from "lucide-react";
 import AddMemberToChannel from "./AddMemberToChannel";
 import VoiceChat from "./VoiceChat/VoiceChat";
 import { useTranslation } from "react-i18next";
@@ -11,153 +18,187 @@ import { useTheme } from "../../components/layout/ThemeProvider";
 import { useDispatch, useSelector } from "react-redux";
 import { joinVoiceChannel } from "../../redux/homeSlice";
 import ServerChannelService from "../../services/ServerChannelService";
-import toast from "react-hot-toast";
 import StorageService from "../../services/StorageService";
+import toast from "react-hot-toast";
 
 const UpdateServerModal = ({ isOpen, onClose, server, onUpdate }) => {
   const { t } = useTranslation();
-  const [name, setName] = useState("");
-  const [imageFile, setImageFile] = useState(null);
-  const [preview, setPreview] = useState(server.server_pic);
+  const { isDarkMode } = useTheme();
+  const [name, setName] = useState(server?.name || "");
+  const [serverPicFile, setServerPicFile] = useState(null);
+  const [serverPicPreview, setServerPicPreview] = useState(
+    server?.server_pic || "/placeholder.svg"
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Khi open modal, khởi tạo giá trị từ server hiện tại
   useEffect(() => {
-    if (server) {
-      setName(server.name || "");
-      setPreview(server.server_pic || "");
-      setImageFile(null);
-      setErrors({});
-    }
-  }, [server, isOpen]);
+    setName(server?.name || "");
+    setServerPicPreview(server?.server_pic || "/placeholder.svg");
+    setServerPicFile(null);
+    setErrors({});
+  }, [server]);
 
-  const handleImageChange = (e) => {
+  const handleServerPicChange = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-    setImageFile(file);
-    setPreview(URL.createObjectURL(file));
-    setErrors((prev) => ({ ...prev, image: null }));
-  };
-
-  const validate = () => {
-    const errs = {};
-    if (!name.trim()) errs.name = t("Server name is required");
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleSave = async () => {
-    if (!validate()) return;
-    setIsSubmitting(true);
-
-    try {
-      let imageUrl = server.serverPic;
-      if (imageFile) {
-        const res = await StorageService.uploadFile(imageFile);
-        if (!res?.url) throw new Error(t("Failed to upload image"));
-        imageUrl = res.url;
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          image: t("Image size must be less than 5MB"),
+        }));
+        return;
       }
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({
+          ...prev,
+          image: t("Please select an image file"),
+        }));
+        return;
+      }
+      setServerPicFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setServerPicPreview(e.target.result);
+      reader.readAsDataURL(file);
+      setErrors((prev) => ({ ...prev, image: null }));
+    } else {
+      setServerPicFile(null);
+      setServerPicPreview(server?.server_pic || "/placeholder.svg");
+      setErrors((prev) => ({ ...prev, image: null }));
+    }
+  };
 
-      await onUpdate({ name: name.trim(), serverPic: imageUrl });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newErrors = {};
+    if (!name.trim()) {
+      newErrors.name = t("Server name is required");
+      setErrors(newErrors);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      let serverPicUrl = server?.server_pic || "";
+      if (serverPicFile) {
+        const uploadData = await StorageService.uploadFile(serverPicFile);
+        if (!uploadData.url)
+          throw new Error(t("Failed to upload server picture"));
+        serverPicUrl = uploadData.url;
+      }
+      await onUpdate({ name: name.trim(), serverPic: serverPicUrl });
       toast.success(t("Server updated successfully"));
       onClose();
     } catch (err) {
-      console.error(err);
-      toast.error(err.message || t("Failed to update server"));
+      toast.error(t("Failed to update server: ") + err.message);
     } finally {
       setIsSubmitting(false);
+      setServerPicFile(null);
+      setServerPicPreview(server?.server_pic || "/placeholder.svg");
     }
   };
 
   if (!isOpen) return null;
+
   return (
-    <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div
-        className="bg-[#313338] rounded-md w-full max-w-sm p-6 relative"
-        onClick={(e) => e.stopPropagation()}
+        className={`p-6 rounded-lg w-96 ${
+          isDarkMode ? "bg-[#2b2d31] text-gray-100" : "bg-white text-[#333333]"
+        }`}
       >
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-white"
-        >
-          <X size={20} />
-        </button>
-
-        <h2 className="text-2xl font-bold text-white mb-4">
-          {t("Update Server")}
-        </h2>
-
-        <div className="flex justify-center mb-4">
-          <label className="relative w-24 h-24 rounded-full border-2 border-dashed border-gray-500 flex items-center justify-center cursor-pointer">
-            {preview ? (
-              <img
-                src={preview}
-                alt="Preview"
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-gray-400 text-sm">{t("UPLOAD")}</span>
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageChange}
-            />
-            <div className="absolute -bottom-1 right-0 bg-blue-500 w-6 h-6 rounded-full flex items-center justify-center text-white">
-              +
+        <h2 className="text-xl font-semibold mb-4">{t("Update Server")}</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <div className="flex justify-center">
+              <div className="relative">
+                <div
+                  className={`w-20 h-20 rounded-full overflow-hidden ${
+                    isDarkMode
+                      ? "bg-[#36393f] border-4 border-[#232428]"
+                      : "bg-gray-200 border-4 border-gray-300"
+                  }`}
+                >
+                  <img
+                    src={serverPicPreview}
+                    alt="Server picture"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <label
+                  className={`absolute bottom-0 right-0 w-8 h-8 ${
+                    isDarkMode ? "bg-[#313338]" : "bg-gray-200"
+                  } rounded-full flex items-center justify-center cursor-pointer`}
+                >
+                  <Camera size={16} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleServerPicChange}
+                    aria-label={t("Select server picture")}
+                  />
+                </label>
+              </div>
             </div>
-          </label>
-        </div>
-        {errors.image && (
-          <div className="text-red-500 text-sm mb-2">{errors.image}</div>
-        )}
-
-        <div className="mb-4">
-          <label className="block text-gray-300 text-sm mb-1">
-            {t("Server Name")}
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setErrors((prev) => ({ ...prev, name: null }));
-            }}
-            className="w-full bg-[#1e1f22] text-white p-2 rounded-md outline-none"
-            placeholder={t("Enter server name")}
-          />
-          {errors.name && (
-            <div className="text-red-500 text-sm mt-1">{errors.name}</div>
-          )}
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-4 py-2 text-gray-400 hover:text-white"
-          >
-            {t("Cancel")}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSubmitting}
-            className={`px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md ${
-              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {isSubmitting ? t("Saving...") : t("Save")}
-          </button>
-        </div>
+            {errors.image && (
+              <div className="text-red-500 text-sm mt-2 text-center">
+                {errors.image}
+              </div>
+            )}
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">
+              {t("Server Name")}
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setErrors((prev) => ({ ...prev, name: null }));
+              }}
+              maxLength={255}
+              required
+              className={`w-full p-2 rounded ${
+                isDarkMode
+                  ? "bg-[#1e1f22] text-gray-100 border-[#1e1f22]"
+                  : "bg-gray-100 text-[#333333] border-gray-300"
+              } border`}
+            />
+            {errors.name && (
+              <div className="text-red-500 text-sm mt-1">{errors.name}</div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className={`px-4 py-2 rounded ${
+                isDarkMode
+                  ? "bg-[#1e1f22] text-gray-400 hover:bg-[#35373c]"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              }`}
+            >
+              {t("Cancel")}
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`px-4 py-2 rounded ${
+                isDarkMode
+                  ? "bg-[#1877F2] text-white hover:bg-[#166fe5]"
+                  : "bg-[#1877F2] text-white hover:bg-[#166fe5]"
+              } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              {isSubmitting ? t("Saving...") : t("Save")}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
-}
+};
 
 export default function ServerChannels({
   server,
@@ -184,14 +225,8 @@ export default function ServerChannels({
     useState(null);
   const [joinedVoiceChannelId, setJoinedVoiceChannelId] = useState(null);
   const [serverData, setServerData] = useState(server);
-  
-  useEffect(() => {
-    if (server !== serverData) {
-      setServerData(server);
-    }
-  }, [server, serverData]);
 
-  // Lấy user info
+  // Get user info
   const user = JSON.parse(localStorage.getItem("user"));
 
   // Check if current user is a non-owner member
@@ -213,6 +248,11 @@ export default function ServerChannels({
       })
       .catch((err) => console.error("Failed to load channels", err));
   }, [server, setChannels]);
+
+  // Update serverData when server prop changes
+  useEffect(() => {
+    setServerData(server);
+  }, [server]);
 
   // Fetch server members (exclude owners)
   useEffect(() => {
@@ -292,7 +332,12 @@ export default function ServerChannels({
         user.id,
         serverData
       );
-      setServerData({ ...serverData, ...updated });
+      setServerData((prev) => ({
+        ...prev,
+        name: serverData.name,
+        server_pic: serverData.serverPic,
+      }));
+      return updated;
     } catch (err) {
       console.error("Failed to update server", err);
       throw err;

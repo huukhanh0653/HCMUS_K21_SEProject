@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Plus, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import FriendContextMenu from "./FriendContextMenu";
@@ -14,11 +14,20 @@ const DMSidebar = ({
   friends,
   handleFriendAction,
   getStatusColor,
-  user
+  user,
 }) => {
   const { t } = useTranslation();
   const { pendingRequests } = useSelector((state) => state.home);
   const requestCount = pendingRequests.length;
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const filteredFriends = friends.filter((friend) =>
+    friend.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div
@@ -26,8 +35,28 @@ const DMSidebar = ({
         isDarkMode ? "bg-[#2b2d31]" : "bg-white border-r border-gray-200"
       }`}
     >
-      {/* ... Search & other tabs ... */}
+      {/* Search Bar */}
+      <div className="p-3">
+        <div
+          className={`rounded-md flex items-center px-2 ${
+            isDarkMode
+              ? "bg-[#1e1f22]"
+              : "bg-white border border-gray-300 shadow-sm"
+          }`}
+        >
+          <input
+            type="text"
+            placeholder={t("Find or start a conversation")}
+            className={`w-full text-sm py-1 focus:outline-none bg-transparent border-none ${
+              isDarkMode ? "text-gray-300" : "text-gray-700"
+            }`}
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+        </div>
+      </div>
 
+      {/* Tab Buttons */}
       <div className="px-2 mb-2">
         <div className="flex flex-col items-start gap-2 mb-2">
           {/* Friends Tab */}
@@ -89,7 +118,9 @@ const DMSidebar = ({
             {requestCount > 0 && (
               <span
                 className={`ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full ${
-                  isDarkMode ? "bg-red-600 text-white" : "bg-red-100 text-red-800"
+                  isDarkMode
+                    ? "bg-red-600 text-white"
+                    : "bg-red-100 text-red-800"
                 }`}
               >
                 {requestCount}
@@ -122,53 +153,66 @@ const DMSidebar = ({
 
       {/* Direct Messages Header */}
       <div
-        className={`px-2 text-xs font-semibold flex items-center justify-between ${
+        className={`px-2 text-xs font-semibold text-start ${
           isDarkMode ? "text-gray-400" : "text-gray-700"
         }`}
       >
-        <span>{t("Direct Messages")}</span>
-        <Plus size={16} className="cursor-pointer" />
+        {t("Direct Messages")}
       </div>
 
       {/* Friends List */}
       <div className="flex-1 overflow-y-auto pb-16">
         <div className="px-2 py-1">
-          {friends.map((friend, index) => (
-            <FriendContextMenu key={index} friend={friend} onAction={handleFriendAction}>
-              <div
-                className={`flex items-center gap-2 p-1 rounded cursor-pointer ${
-                  selectedFriend === friend.username
-                    ? isDarkMode
-                      ? "bg-[#35373c]"
-                      : "bg-gray-200"
-                    : isDarkMode
-                    ? "hover:bg-[#35373c]"
-                    : "hover:bg-gray-100"
-                }`}
-                onClick={() => {
-                  setSelectedFriend(friend.username);
-                  setShowAddFriend(false);
-                  setActiveTab("friend");
-                }}
+          {filteredFriends.length > 0 ? (
+            filteredFriends.map((friend, index) => (
+              <FriendContextMenu
+                key={index}
+                friend={friend}
+                onAction={handleFriendAction}
               >
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden bg-[#36393f]">
-                    <img
-                      src={friend.avatar || "/placeholder.svg"}
-                      alt={friend.username}
-                      className="w-full h-full object-cover"
-                    />
+                <div
+                  className={`flex items-center gap-2 p-1 rounded cursor-pointer ${
+                    selectedFriend === friend.username
+                      ? isDarkMode
+                        ? "bg-[#35373c]"
+                        : "bg-gray-200"
+                      : isDarkMode
+                      ? "hover:bg-[#35373c]"
+                      : "hover:bg-gray-100"
+                  }`}
+                  onClick={() => {
+                    setSelectedFriend(friend.username);
+                    setShowAddFriend(false);
+                    setActiveTab("friend");
+                  }}
+                >
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden bg-[#36393f]">
+                      <img
+                        src={friend.avatar || "/placeholder.svg"}
+                        alt={friend.username}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div
+                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 ${
+                        isDarkMode ? "border-[#2b2d31]" : "border-white"
+                      } ${getStatusColor(friend.status)}`}
+                    ></div>
                   </div>
-                  <div
-                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 ${
-                      isDarkMode ? "border-[#2b2d31]" : "border-white"
-                    } ${getStatusColor(friend.status)}`}
-                  />
+                  <span>{friend.username}</span>
                 </div>
-                <span>{friend.username}</span>
-              </div>
-            </FriendContextMenu>
-          ))}
+              </FriendContextMenu>
+            ))
+          ) : (
+            <div
+              className={`px-2 py-1 text-sm ${
+                isDarkMode ? "text-gray-400" : "text-gray-700"
+              }`}
+            >
+              {t("No conversations found")}
+            </div>
+          )}
         </div>
       </div>
     </div>
