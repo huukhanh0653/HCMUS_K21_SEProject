@@ -72,15 +72,15 @@ public class EditMessageUseCase {
      * @return The edited message.
      */
 
-    public Message delete(String messageId, String serverId, String channelId) {
+    public void delete(String serverId, String channelId, String messageId) {
         System.out.println("EditMessageUseCase execute called with senderId: ");
 
         // Save the message to the database and cache
         messageRepository.deleteById(serverId, channelId, messageId);
-        cacheMessageRepository.deleteById(messageId, serverId, channelId);
+        cacheMessageRepository.deleteById(serverId, channelId, messageId);
 
-        // messageEventPublisher.delete(messageId, serverId, channelId);
-        return messageRepository.findById(serverId, channelId, messageId);
+        // // messageEventPublisher.delete(messageId, serverId, channelId);
+        // return messageRepository.findById(serverId, channelId, messageId);
     }
 
     public void deleteByChannel(String serverId, String channelId) {
