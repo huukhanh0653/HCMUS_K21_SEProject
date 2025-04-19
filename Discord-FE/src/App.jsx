@@ -14,7 +14,7 @@ import UserService from "./services/UserService";
 
 // Authentication
 import Login from "./pages/Authentication/Login";
-import Signup from "./pages/Authentication/SignUp";
+import Signup from "./pages/Authentication/Signup";
 import ForgotPassword from "./pages/Authentication/ForgotPassword";
 import AdminLogin from "./pages/Authentication/AdminLogin";
 import UsedAccounts from "./pages/Authentication/UsedAccounts";
