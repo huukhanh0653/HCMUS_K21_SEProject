@@ -8,10 +8,9 @@ import { gql, useQuery, useMutation } from "@apollo/client";
 // API base URL from Vite environment
 const Message_API = import.meta.env.VITE_MESSAGE_API;
 
-const WS_URL =
-  import.meta.env.DEV
-    ? `${Message_API}/ws`    // directly hit your backend in dev
-    : "/ws";                        // when built, relative URL still works
+const WS_URL = import.meta.env.DEV
+  ? `${Message_API}/ws` // directly hit your backend in dev
+  : "/ws"; // when built, relative URL still works
 
 const connectMessageService = (
   stompClientRef,
@@ -31,14 +30,32 @@ const connectMessageService = (
       `/topic/server/${serverId}/channel/${channelId}`,
       (msg) => {
         const received = JSON.parse(msg.body);
-        const content =
-          typeof received.content === "object" && received.content.text
-            ? received.content.text
-            : received.content;
-        setChatMessages((prev) => [
-          ...prev,
-          { ...received, content }
-        ]);
+        
+        if (received.type === "MESSAGE_DELETED") {
+          setChatMessages((prev) =>
+            prev.filter((message) => message.messageId !== received.messageId)
+          );
+          return;
+        }
+
+        if (received.type === "MESSAGE_UPDATED") {
+          setChatMessages((prev) =>
+            prev.map((message) =>
+              message.messageId === received.messageId
+                ? { ...message, content: received.content }
+                : message
+            )
+          );
+          return;
+        }
+
+        if (received.type === "MESSAGE") {
+          const content =
+            typeof received.content === "object" && received.content.text
+              ? received.content.text
+              : received.content;
+          setChatMessages((prev) => [...prev, { ...received, content }]);
+        }
       }
     );
   });
@@ -58,7 +75,9 @@ const connectMessageService = (
 const disconnectMessageService = (stompClientRef) => {
   console.log("Disconnecting STOMP client...");
   if (stompClientRef.current && stompClientRef.current.connected) {
-    stompClientRef.current.disconnect(() => console.log(">>> STOMP disconnected"));
+    stompClientRef.current.disconnect(() =>
+      console.log(">>> STOMP disconnected")
+    );
   }
 };
 
@@ -90,7 +109,6 @@ function useSearchMessages({ serverId, channelId, keyword }) {
     variables: { content, serverId, channelId },
   });
 }
-
 
 function useFetchMessagesBefore({ serverId, channelId, amount, timestamp }) {
   const FETCH_MESSAGES_BEFORE = gql`
@@ -125,11 +143,9 @@ function useFetchMessagesBefore({ serverId, channelId, amount, timestamp }) {
 
   // nếu timestamp được truyền vào là Date, convert về ISO string
   const ts =
-    timestamp instanceof Date
-      ? timestamp.toISOString()
-      : String(timestamp);
+    timestamp instanceof Date ? timestamp.toISOString() : String(timestamp);
   return useQuery(FETCH_MESSAGES_BEFORE, {
-    variables: { serverId, channelId, amount, timestamp:ts },
+    variables: { serverId, channelId, amount, timestamp: ts },
   });
 }
 
@@ -215,8 +231,15 @@ function useDeleteMessage() {
   return useMutation(DELETE_MESSAGE);
 }
 
-export { connectMessageService, disconnectMessageService, useSearchMessages, 
-useFetchMessagesBefore, useFetchMessagesAfter, useEditMessage, useDeleteMessage };
+export {
+  connectMessageService,
+  disconnectMessageService,
+  useSearchMessages,
+  useFetchMessagesBefore,
+  useFetchMessagesAfter,
+  useEditMessage,
+  useDeleteMessage,
+};
 
 //-- Example usage of useSearchMessages in a component
 //--------------------------------------------------------------

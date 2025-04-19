@@ -2,6 +2,7 @@ package com.discord.backend.demomessageddd.interfaceadapter.controller.restful;
 
 import com.discord.backend.demomessageddd.application.service.SendMessageUseCase;
 import com.discord.backend.demomessageddd.domain.entity.Message;
+import com.discord.backend.demomessageddd.interfaceadapter.DTO.MessageResponse;
 import com.discord.backend.demomessageddd.interfaceadapter.DTO.SendMessageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -29,10 +30,21 @@ public class MessageController {
 
         Message message = sendMessageUseCase.execute(request.messageId(), request.senderId(), request.serverId(),
                 request.channelId(), request.attachments(), request.mentions(), request.content());
+
+        MessageResponse messageRequest = new SendMessageRequest(
+                message.getId(),
+                message.getSenderId(),
+                message.getServerId(),
+                message.getChannelId(),
+                message.getContent().getText(),
+                message.getAttachments(),
+                message.getMentions(),
+                "MESSAGE");
+
         messagingTemplate.convertAndSend(
                 "/topic/server/" + request.serverId() + "/channel/" + request.channelId(),
                 message);
-        System.out.println("Message sent: " + message.toString());
+
         return message;
     }
 
