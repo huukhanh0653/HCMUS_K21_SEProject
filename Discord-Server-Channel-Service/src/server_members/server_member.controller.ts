@@ -145,7 +145,7 @@ export class ServerMemberController {
   @Delete(':userId/:memberId')
   @ApiOperation({ summary: 'Remove a member from a server' })
   @ApiResponse({ status: 200, description: 'Member removed successfully' })
-  @ApiResponse({ status: 404, description: 'Member or server not found' })
+  @ApiResponse({ status: 500, description: 'Member or server not found' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiParam({
     name: 'serverId',
@@ -163,7 +163,7 @@ export class ServerMemberController {
   @Put(':userId')
   @ApiOperation({ summary: "Update a member's role in a server" })
   @ApiResponse({ status: 200, description: 'Member role updated successfully' })
-  @ApiResponse({ status: 404, description: 'Member or role not found' })
+  @ApiResponse({ status: 500, description: 'Member or role not found' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiParam({
     name: 'serverId',

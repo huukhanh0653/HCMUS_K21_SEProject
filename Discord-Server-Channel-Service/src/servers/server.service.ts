@@ -167,16 +167,14 @@ export class ServerService {
       '',
     );
 
-    await Promise.all([
-      this.banRepository.delete({ server_id: serverId }),
-      this.channelMemberRepository.delete({
-        channel_id: In(channels.map((c) => c.id)),
-      }),
+    this.banRepository.delete({ server_id: serverId });
+    this.channelMemberRepository.delete({
+      channel_id: In(channels.map((c) => c.id)),
+    }),
       this.channelRepository.delete({ server_id: serverId }),
-      this.serverMemberRepository.delete({ server_id: serverId }),
-      this.roleRepository.delete({ server_id: serverId }),
-      this.serverRepository.delete({ id: serverId }),
-    ]);
+      this.serverMemberRepository.delete({ server_id: serverId });
+    this.roleRepository.delete({ server_id: serverId });
+    this.serverRepository.delete({ id: serverId });
 
     return { message: 'Server deleted successfully' };
   }

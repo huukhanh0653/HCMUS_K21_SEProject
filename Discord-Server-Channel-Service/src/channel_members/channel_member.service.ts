@@ -38,7 +38,7 @@ export class ChannelMemberService {
     await this.channelMemberRepository.save(member);
 
     return {
-      message: `Member added to channel \"${channel.name}\"`,
+      message: `Member added to channel "${channel.name}"`,
       member: memberToAdd,
     };
   }
@@ -58,7 +58,7 @@ export class ChannelMemberService {
 
     const memberToRemove = await this.userService.getUser(memberId);
     return {
-      message: `\"${memberToRemove.username}\" removed from channel \"${channel.name}\"`,
+      message: `"${memberToRemove.username}" removed from channel "${channel.name}"`,
     };
   }
 
