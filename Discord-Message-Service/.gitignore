@@ -1,35 +1,33 @@
-# Node.js dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# Environment variables
-.env
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
 
-# Logs
-logs/
-*.log
-debug.log
-error.log
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
 
-# Database
-*.sqlite
-*.sqlite-journal
-/data/
-dump.rdb
-*.pid
-
-# Cache & Temp files
-*.cache
-*.tmp
-.DS_Store
-Thumbs.db
-
-# Compiled files
-dist/
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-# VS Code settings
+### VS Code ###
 .vscode/
-.env

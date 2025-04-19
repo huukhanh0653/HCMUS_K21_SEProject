@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.discord.backend</groupId>
-    <artifactId>Demo-Message-DDD</artifactId>
+    <artifactId>Message-Service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Demo-Message-DDD</name>
     <description>Demo-Message-DDD</description>
@@ -28,6 +28,8 @@
     </scm>
     <properties>
         <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
     <dependencies>
     <dependency>
