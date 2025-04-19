@@ -31,7 +31,6 @@ const UpdateServerModal = ({ isOpen, onClose, server, onUpdate }) => {
   const [serverPicPreview, setServerPicPreview] = useState(server.server_pic);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
-  const [errors, setErrors] = useState({});
 
   // Khi open modal, khởi tạo giá trị từ server hiện tại
   useEffect(() => {

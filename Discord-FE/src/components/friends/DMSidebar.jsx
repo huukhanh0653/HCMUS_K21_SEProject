@@ -163,46 +163,56 @@ const DMSidebar = ({
       {/* Friends List */}
       <div className="flex-1 overflow-y-auto pb-16">
         <div className="px-2 py-1">
-          {friends.map((friend, index) => (
-            <FriendContextMenu
-              key={index}
-              friend={friend}
-              onAction={handleFriendAction}
-            >
-              <div
-                className={`flex items-center gap-2 p-1 rounded cursor-pointer ${
-                  selectedFriend === friend.username
-                    ? isDarkMode
-                      ? "bg-[#35373c]"
-                      : "bg-gray-200"
-                    : isDarkMode
-                    ? "hover:bg-[#35373c]"
-                    : "hover:bg-gray-100"
-                }`}
-                onClick={() => {
-                  setSelectedFriend(friend.username);
-                  setShowAddFriend(false);
-                  setActiveTab("friend");
-                }}
+          {filteredFriends.length > 0 ? (
+            filteredFriends.map((friend, index) => (
+              <FriendContextMenu
+                key={index}
+                friend={friend}
+                onAction={handleFriendAction}
               >
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden bg-[#36393f]">
-                    <img
-                      src={friend.avatar || "/placeholder.svg"}
-                      alt={friend.username}
-                      className="w-full h-full object-cover"
-                    />
+                <div
+                  className={`flex items-center gap-2 p-1 rounded cursor-pointer ${
+                    selectedFriend === friend.username
+                      ? isDarkMode
+                        ? "bg-[#35373c]"
+                        : "bg-gray-200"
+                      : isDarkMode
+                      ? "hover:bg-[#35373c]"
+                      : "hover:bg-gray-100"
+                  }`}
+                  onClick={() => {
+                    setSelectedFriend(friend.username);
+                    setShowAddFriend(false);
+                    setActiveTab("friend");
+                  }}
+                >
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden bg-[#36393f]">
+                      <img
+                        src={friend.avatar || "/placeholder.svg"}
+                        alt={friend.username}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div
+                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 ${
+                        isDarkMode ? "border-[#2b2d31]" : "border-white"
+                      } ${getStatusColor(friend.status)}`}
+                    ></div>
                   </div>
-                  <div
-                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 ${
-                      isDarkMode ? "border-[#2b2d31]" : "border-white"
-                    } ${getStatusColor(friend.status)}`}
-                  />
+                  <span>{friend.username}</span>
                 </div>
-                <span>{friend.username}</span>
-              </div>
-            </FriendContextMenu>
-          ))}
+              </FriendContextMenu>
+            ))
+          ) : (
+            <div
+              className={`px-2 py-1 text-sm ${
+                isDarkMode ? "text-gray-400" : "text-gray-700"
+              }`}
+            >
+              {t("No conversations found")}
+            </div>
+          )}
         </div>
       </div>
     </div>
