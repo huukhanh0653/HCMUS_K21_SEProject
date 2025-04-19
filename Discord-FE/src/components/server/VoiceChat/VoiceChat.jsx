@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import VoiceObserverService from "../../../services/VoiceObserverService"; // ✅ Import đúng service observer
 import { useSelector } from "react-redux";
 import UserService from "../../../services/UserService"
+import { Mic, MicOff } from "lucide-react"; // ✅ Import đúng icon mic
 
 const VoiceChat = ({ user: currentUser, channel }) => {
   console.log(channel.id);
@@ -17,6 +18,7 @@ const VoiceChat = ({ user: currentUser, channel }) => {
         id: u.userId,
         avatar: user.avatar || "/placeholder.svg",
         username: user.username || "Unknown",
+        isMuted: u.isMuted,
       };
     } catch (err) {
       console.error("Failed to get user:", err);
@@ -24,6 +26,7 @@ const VoiceChat = ({ user: currentUser, channel }) => {
         id: u.userId,
         avatar: "/placeholder.svg",
         username: "Unknown",
+        isMuted: u.isMuted,
       };
     }
   };
@@ -62,6 +65,9 @@ const VoiceChat = ({ user: currentUser, channel }) => {
               className="w-8 h-8 rounded-full object-cover"
             />
             <span className="font-medium">{u.username}</span>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+              {u.isMuted ? <MicOff size={16} className="text-gray-300 hover:text-white" /> : <Mic size={16} className="text-gray-300 hover:text-white" />}
           </div>
         </div>
       ))}

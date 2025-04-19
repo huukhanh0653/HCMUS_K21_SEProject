@@ -86,7 +86,7 @@ export default function UserPanel({ user, onProfileClick }) {
   const handleToggleMic = () => {
     dispatch(toggleMute());
     if (voiceServiceRef.current) {
-      isMuted ? voiceServiceRef.current.unmute() : voiceServiceRef.current.mute();
+      voiceServiceRef.current.toggleMic(!isMuted);
     }
   };
 
@@ -113,26 +113,28 @@ export default function UserPanel({ user, onProfileClick }) {
           }`}
         >
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-green-500">
+            <span className="font-semibold text-green-300">
               {voiceChannel.channelName} / {voiceChannel.serverName}
             </span>
+            
+            <div className="flex items-right gap-2 mt-1">
+              <button onClick={handleToggleMic}>
+                {isMuted ? (
+                  <MicOff className="text-gray-400 hover:text-white" size={16} />
+                ) : (
+                  <Mic className="text-gray-400 hover:text-white" size={16} />
+                )}
+              </button>
+              <button onClick={handleLeaveVoice}>
+                <PhoneCall className="text-red-500 hover:text-red-400" size={16} />
+              </button> 
+            </div>
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <button onClick={handleToggleMic}>
-              {isMuted ? (
-                <MicOff className="text-gray-400 hover:text-white" size={16} />
-              ) : (
-                <Mic className="text-gray-400 hover:text-white" size={16} />
-              )}
-            </button>
-            <button onClick={handleLeaveVoice}>
-              <PhoneCall className="text-red-500 hover:text-red-400" size={16} />
-            </button>
-          </div>
+          
         </div>
       )}
 
-      <div className="flex items-center">
+      <div className="flex items-center gap-2 mt-1">
         <div
           className={`w-8 h-8 ${
             isDarkMode ? "bg-[#36393f]" : "bg-gray-200"

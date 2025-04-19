@@ -5,7 +5,7 @@ const Voice_API = import.meta.env.VITE_VOICE_API;
 class VoiceObserverService {
   constructor() {
     this.socket = null;
-    this.observedUsers = {}; // { socketId: userId }
+    this.observedUsers = {}; // { socketId: { userId, isMuted } }
     this.onUsersChange = null;
   }
 
@@ -21,15 +21,25 @@ class VoiceObserverService {
   initializeSocketEvents() {
     // Nhận danh sách ban đầu
     this.socket.on("channel-members", (members) => {
-      members.forEach(({ socketId, userId }) => {
-        this.observedUsers[socketId] = userId;
+      members.forEach(({ socketId, userId, isMuted }) => {
+        this.observedUsers[socketId] = { userId, isMuted };
       });
       this.updateUsers();
     });
 
     // Khi có người vào
-    this.socket.on("user-joined", ({ socketId, userId }) => {
-      this.observedUsers[socketId] = userId;
+    this.socket.on("user-joined", ({ socketId, userId, isMuted }) => {
+      this.observedUsers[socketId] = { userId, isMuted };
+      this.updateUsers();
+    });
+
+    // Khi có người tắt/bật mic
+    this.socket.on("mic-toggled", ({ socketId, userId, isMuted }) => {
+      if (this.observedUsers[socketId]) {
+        this.observedUsers[socketId].isMuted = isMuted;
+      } else {
+        this.observedUsers[socketId] = { userId, isMuted };
+      }
       this.updateUsers();
     });
 
@@ -42,9 +52,10 @@ class VoiceObserverService {
 
   updateUsers() {
     if (this.onUsersChange) {
-      const users = Object.entries(this.observedUsers).map(([socketId, userId]) => ({
+      const users = Object.entries(this.observedUsers).map(([socketId, { userId, isMuted }]) => ({
         socketId,
-        userId
+        userId,
+        isMuted
       }));
       this.onUsersChange(users);
     }
