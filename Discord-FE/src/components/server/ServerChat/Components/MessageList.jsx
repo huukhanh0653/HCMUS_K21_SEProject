@@ -50,28 +50,33 @@ export default function MessageList({
 
         // Date grouping logic
         const previous = uniqueMessages[index - 1];
-        const prevSenderId = previous && (previous.senderId || previous.sender_id);
+        const prevSenderId =
+          previous && (previous.senderId || previous.sender_id);
+        console.log(message.timestamp);
         const currentDate = new Date(message.timestamp);
+
+        // ** Định dạng ngày & giờ **
+        const formattedDate = currentDate.toLocaleDateString(i18n.language, {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+        const formattedTime = currentDate.toLocaleTimeString(i18n.language, {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false, // sử dụng 24h
+        });
+
         const currentDay = currentDate.toDateString();
-        const previousDay = previous ? new Date(previous.timestamp).toDateString() : null;
+        const previousDay = previous
+          ? new Date(previous.timestamp).toDateString()
+          : null;
         const showDateDivider = currentDay !== previousDay;
         const isGrouped =
           previous &&
           prevSenderId === senderId &&
           previousDay === currentDay &&
           currentDate - new Date(previous.timestamp) <= 60000;
-
-        // formatted date/time
-        const formattedDate = currentDate.toLocaleDateString(i18n.language, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-        const formattedTime = currentDate.toLocaleTimeString(i18n.language, {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        });
 
         // lookup member or fallback
         const member = serverMembers.find((m) => m.id === senderId);
