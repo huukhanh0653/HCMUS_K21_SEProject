@@ -17,3 +17,9 @@ export const Storage_API = "http://localhost:8083";
   /*--Base URL của SERVER-CHANNEL SERVICE API--*/
 }
 export const Server_API = "http://localhost:8084";
+
+
+{
+  /*--Base URL của VOICE SERVICE API--*/
+}
+export const Voice_API = "http://localhost:8086";

@@ -1,5 +1,8 @@
 import io from "socket.io-client";
+//import { Voice_API } from "../../apiConfig";
 
+// API base URL from Vite environment
+const Voice_API = import.meta.env.VITE_VOICE_API;
 class VoiceChatService {
   constructor() {
     this.socket = null;
@@ -11,7 +14,7 @@ class VoiceChatService {
 
   async join(userId, channel) {
     if (!this.socket || this.socket.disconnected) {
-      this.socket = io("http://localhost:8086");
+      this.socket = io(`${Voice_API}`);
       this.initializeSocketEvents();
     }
 

@@ -9,7 +9,7 @@ import {
   EmailAuthProvider,
   linkWithCredential,
 } from "firebase/auth";
-import { User_API } from "../apiConfig";
+//import { User_API } from "../apiConfig";
 import toast from "react-hot-toast";
 
 // Firebase configuration
@@ -22,6 +22,9 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
+
+// API base URL from Vite environment
+const USER_API = import.meta.env.VITE_USER_API;
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

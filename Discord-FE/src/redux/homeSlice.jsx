@@ -15,10 +15,13 @@ const initialState = {
   newRequests: [],
 
   voiceChannel: null, // lưu thông tin kênh voice đang join (serverId, serverName, channelId, channelName)
-  isMuted: false,     // trạng thái mic
+  isMuted: false, // trạng thái mic
 
   // Danh sách thành viên trong server
   serverMembers: [],
+
+  //Danh sách server
+  servers: [],
 };
 
 const homeSlice = createSlice({
@@ -114,6 +117,10 @@ const homeSlice = createSlice({
     setServerMembers(state, action) {
       state.serverMembers = action.payload;
     },
+
+    setServers(state, action) {
+      state.servers = action.payload;
+    },
   },
 });
 
@@ -134,7 +141,8 @@ export const {
   joinVoiceChannel,
   leaveVoiceChannel,
   toggleMute,
-  setServerMembers
+  setServerMembers,
+  setServers,
 } = homeSlice.actions;
 
 export default homeSlice.reducer;
