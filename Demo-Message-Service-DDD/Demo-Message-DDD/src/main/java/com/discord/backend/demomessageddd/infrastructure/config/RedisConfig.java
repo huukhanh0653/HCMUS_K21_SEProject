@@ -14,7 +14,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@EnableRedisRepositories(basePackages = "com.discord.backend.demomessageddd.infrastructure.message.schema")
+@EnableRedisRepositories(basePackages = "com.discord.backend.demomessageddd.infrastructure.message.repository")
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
