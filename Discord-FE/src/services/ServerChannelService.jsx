@@ -3,6 +3,7 @@ import axios from "axios";
 
 // API base URL from Vite environment
 const Server_API = import.meta.env.VITE_SERVER_API;
+console.log(Server_API);
 
 // --------------------
 // Các hàm gọi API liên quan đến Server
