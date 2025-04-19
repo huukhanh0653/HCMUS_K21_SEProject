@@ -2,7 +2,7 @@ import axios from "axios";
 //import { User_API } from "../../apiConfig";
 
 // API base URL from Vite environment
-const USER_API = import.meta.env.VITE_USER_API;
+const User_API = import.meta.env.VITE_USER_API;
 
 // --------------------
 // Các hàm gọi API liên quan đến bạn bè và yêu cầu kết bạn

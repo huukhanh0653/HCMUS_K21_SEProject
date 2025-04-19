@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import MessageList from "./Components/MessageList";
 import MessageInput from "./Components/MessageInput";
 import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 
 // newMessageService exports
 import {
@@ -48,6 +49,7 @@ export default function ServerChat(props) {
   const inputRef = useRef(null);
   const ListRef = useRef(null);
   const initialFetchedRef = useRef(false); 
+  const isLoadingRef = useRef(false);
 
   const serverId = server.id || '';
   const channelId = channel.id;
@@ -85,6 +87,19 @@ export default function ServerChat(props) {
   // Kết nối với dịch vụ tin nhắn sử dụng newMessageService để subscribe nhận tin nhắn từ backend
   useEffect(() => {
     if (!channel?.id || !server?.id) return;
+    // reset mọi thứ khi đổi kênh
+    setMessages([]);
+    setHasMore(false);
+    initialFetchedRef.current = false;
+    setLastTimestamp(new Date().toISOString());
+    isLoadingRef.current = false;
+
+    
+    // set channelId hiện tại
+    localStorage.setItem("channelId", channelId);
+
+    // gọi đầu tiên
+    loadMessages();
 
     // Gọi hàm kết nối và truyền vào stompClientRef, setMessages, serverId và channel.id
     const connect = connectMessageService(
@@ -93,15 +108,14 @@ export default function ServerChat(props) {
       server?.id,
       channel?.id
     );
-    refetchBefore;
 
     return () => {
       connect();
     };
-  }, [serverId, channelId, refetchBefore]);
+  }, [serverId, channelId]);
 
   // Khởi tạo tin nhắn khi dữ liệu trước đó đến.
-  useEffect(() => {
+  /*useEffect(() => {
     // 1) Khi load lần đầu từ trước (beforeData)
     if (beforeData?.fetchMessagesBefore && !initialFetchedRef.current) {
       const { messages: fetched, hasMore: more, lastMessageTimestamp } =
@@ -121,7 +135,47 @@ export default function ServerChat(props) {
       // nếu muốn, có thể merge mới vào state:
       // setMessages(prev => [...prev, ...newer]);
     }
-  }, [beforeData, afterData]);
+  }, [beforeData, afterData]);*/
+
+  const loadMessages = useCallback(async () => {
+    // Nếu đã đang chạy, bỏ qua
+    if (isLoadingRef.current) return;
+    isLoadingRef.current = true;
+
+    try {
+      const { data } = await fetchMoreBefore({
+        variables: { serverId, channelId, amount: 20, timestamp: lastTimestamp },
+      });
+
+      // Nếu giữa chừng user đã gọi loadMessages khác (bộ đếm đã thay đổi), bỏ qua kết quả
+      /*if (channel.id != main_channelId) {
+        console.log(main_channelId);
+        console.log(channel.id);
+        return;
+      }*/
+
+      console.log(localStorage.getItem('channelId'));
+        
+      console.log(channel.id);
+
+      const {
+        messages: fetched,
+        hasMore: more,
+        lastMessageTimestamp,
+      } = data.fetchMessagesBefore;
+
+      setMessages(fetched);
+      setHasMore(more);
+      setLastTimestamp(lastMessageTimestamp);
+      initialFetchedRef.current = true;
+      console.log("Loaded messages:", fetched);
+    } catch (err) {
+      console.error("Error loading messages:", err);
+    } finally {
+      // Reset loading flag
+      isLoadingRef.current = false;
+    }
+  }, [serverId, channelId, lastTimestamp, fetchMoreBefore]);
 
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {

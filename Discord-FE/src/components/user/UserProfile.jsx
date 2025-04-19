@@ -13,7 +13,7 @@ import { sendPasswordResetEmail } from "firebase/auth";
 // Khai báo SECRET_KEY (đảm bảo biến môi trường đã được cấu hình)
 const SECRET_KEY = import.meta.env.VITE_SECRET_KEY;
 // API base URL from Vite environment
-const USER_API = import.meta.env.VITE_USER_API;
+const User_API = import.meta.env.VITE_USER_API;
 
 export default function UserProfile({ user, onClose }) {
   const { isDarkMode, toggleTheme } = useTheme();

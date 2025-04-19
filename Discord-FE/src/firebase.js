@@ -24,7 +24,7 @@ const firebaseConfig = {
 };
 
 // API base URL from Vite environment
-const USER_API = import.meta.env.VITE_USER_API;
+const User_API = import.meta.env.VITE_USER_API;
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
