@@ -7,6 +7,7 @@ import com.discord.backend.demomessageddd.application.service.FetchMessageUseCas
 import com.discord.backend.demomessageddd.application.service.SearchMessageUseCase;
 
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
@@ -19,7 +20,8 @@ public class MessageQueryResolver {
     private final SearchMessageUseCase searchMessageUseCase;
     private final EditMessageUseCase editMessageUseCase;
 
-    public MessageQueryResolver(FetchMessageUseCase fetchMessageUseCase, SearchMessageUseCase searchMessageUseCase, EditMessageUseCase editMessageUseCase) {
+    public MessageQueryResolver(FetchMessageUseCase fetchMessageUseCase, SearchMessageUseCase searchMessageUseCase,
+            EditMessageUseCase editMessageUseCase) {
         this.fetchMessageUseCase = fetchMessageUseCase;
         this.searchMessageUseCase = searchMessageUseCase;
         this.editMessageUseCase = editMessageUseCase;
@@ -36,9 +38,9 @@ public class MessageQueryResolver {
      */
     @QueryMapping
     public FetchMessage fetchMessagesBefore(@Argument String serverId,
-                                            @Argument String channelId,
-                                            @Argument int amount,
-                                            @Argument String timestamp) {
+            @Argument String channelId,
+            @Argument int amount,
+            @Argument String timestamp) {
         System.out.println("MessageQueryResolver fetchMessages called with serverId: " + serverId);
         return fetchMessageUseCase.fetchBefore(serverId, channelId, amount, timestamp);
     }
@@ -55,9 +57,9 @@ public class MessageQueryResolver {
 
     @QueryMapping
     public FetchMessage fetchMessagesAfter(@Argument String serverId,
-                                           @Argument String channelId,
-                                           @Argument int amount,
-                                           @Argument String timestamp) {
+            @Argument String channelId,
+            @Argument int amount,
+            @Argument String timestamp) {
         System.out.println("MessageQueryResolver fetchMessages called with serverId: " + serverId);
         return fetchMessageUseCase.fetchAfter(serverId, channelId, amount, timestamp);
 
@@ -89,11 +91,11 @@ public class MessageQueryResolver {
      * @param content   The new content for the message.
      * @return The edited message.
      */
-    @QueryMapping
+    @MutationMapping
     public Message editMessage(@Argument String messageId,
-                               @Argument String serverId,
-                               @Argument String channelId,
-                               @Argument String content) {
+            @Argument String serverId,
+            @Argument String channelId,
+            @Argument String content) {
         System.out.println("MessageQueryResolver editMessages called with messageId: " + messageId);
         return editMessageUseCase.edit(messageId, serverId, channelId, content);
     }
@@ -105,10 +107,10 @@ public class MessageQueryResolver {
      * @param channelId The ID of the channel.
      * @param messageId The ID of the message to delete.
      */
-    @QueryMapping
+    @MutationMapping
     public void deleteMessage(@Argument String serverId,
-                              @Argument String channelId,
-                              @Argument String messageId) {
+            @Argument String channelId,
+            @Argument String messageId) {
         System.out.println("MessageQueryResolver deleteMessages called with messageId: " + messageId);
         editMessageUseCase.delete(serverId, channelId, messageId);
     }
