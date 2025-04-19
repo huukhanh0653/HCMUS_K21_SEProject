@@ -100,12 +100,11 @@ export default function MessageInput({
 
   // emoji insertion
   const insertEmoji = (emoji) => {
-    const txt = getText();
-    const newMsg = txt.replace(/(:\w*)$/, emoji.unicode + " ");
-    editorRef.current.innerText = newMsg;
-    onChange(newMsg);
+    const newMessage = getText().replace(/(:\w*)$/, emoji.unicode + " ");
+    editorRef.current.innerText = newMessage;
+    onChange(newMessage);
     setEmojiSuggestions([]);
-    inputRef.current?.focus();
+    inputRef.current?.focus()
   };
 
   // key handling
@@ -165,6 +164,15 @@ export default function MessageInput({
   const handleEmojiClick = (emoji) => {
     insertEmoji(emoji);
     setShowEmojiMenu(false);
+  };
+
+  const handleFullEmojiSelect = (emoji) => {
+    const txt = getText();                // grab current innerText
+    const newTxt = txt + emoji.unicode;   // append the unicode
+    editorRef.current.innerText = newTxt; // write it back
+    onChange(newTxt);                     // let Formik/Redux/etc know
+    setShowEmojiMenu(false);              // close the picker
+    editorRef.current?.focus();           // refocus the editor
   };
 
   useEffect(() => {
@@ -260,13 +268,19 @@ export default function MessageInput({
           className={`p-2 ml-2 rounded-lg ${
             isDarkMode ? "hover:bg-[#404249]" : "bg-[#2866B7] text-white hover:bg-[#0D6EFD]"
           }`}
-          onClick={() => setShowEmojiMenu((v) => !v)}
+          onClick={(e) => { e.stopPropagation(); setShowEmojiMenu(v => !v) }}
           >
           <SmilePlus size={20} />
         </button>
 
+        {/* full emoji picker positioned below the button */}
         {showEmojiMenu && (
-          <EmojiMenu onSelect={handleEmojiClick} onClose={() => setShowEmojiMenu(false)} />
+          <div className="absolute bottom-14 right-2 z-50">
+            <EmojiMenu
+              onSelect={handleFullEmojiSelect}        // ← use the new one
+              onClose={() => setShowEmojiMenu(false)}
+            />
+          </div>
         )}
       </div>
     </div>
