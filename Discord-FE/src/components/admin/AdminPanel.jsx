@@ -1,8 +1,3 @@
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/6Hb9KBuFmpM
- * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
- */
 import { useState, useEffect } from "react";
 import {
   Card,
@@ -40,6 +35,10 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff6f61"];
+  const tickValues =
+    language === "en"
+      ? ["Day 1", "Day 10", "Day 20", "Day 30"]
+      : ["Ngày 1", "Ngày 10", "Ngày 20", "Ngày 30"];
 
   const userId = JSON.parse(localStorage.getItem("user")).id;
 
@@ -57,71 +56,50 @@ export default function AdminPanel() {
         const serverResponse = await ServerChannelService.getAllServers(userId);
         const servers = serverResponse.servers || [];
 
-        const serverDataFormatted = servers
-          .reduce((acc, server) => {
-            const createdAt = new Date(server.created_at);
-            const day = `Ngày ${createdAt.getDate()}`;
-            const existing = acc.find((item) => item.day === day);
-            if (existing) {
-              existing.Servers += 1;
-            } else {
-              acc.push({ day, Servers: 1 });
-            }
-            return acc;
-          }, [])
-          .slice(0, 7);
+        // Initialize 30 days of the month
+        const serverDataFormatted = Array.from({ length: 30 }, (_, i) => ({
+          day: language === "en" ? `Day ${i + 1}` : `Ngày ${i + 1}`,
+          Servers: 0,
+        }));
 
-        setServerData(
-          language === "en"
-            ? serverDataFormatted.map((item) => ({
-                ...item,
-                day: item.day.replace("Ngày", "Day"),
-              }))
-            : serverDataFormatted
-        );
+        // Count servers per day
+        servers.forEach((server) => {
+          const createdAt = new Date(server.created_at);
+          const dayIndex = createdAt.getDate() - 1;
+          if (dayIndex >= 0 && dayIndex < 30) {
+            serverDataFormatted[dayIndex].Servers += 1;
+          }
+        });
+
+        setServerData(serverDataFormatted);
 
         // Fetch member activity
         const users = await UserService.getUsers();
 
-        const memberDataFormatted = users
-          .reduce((acc, user) => {
-            const created_at = new Date(user.created_at);
-            const week = Math.ceil(created_at.getDate() / 7);
-            const weekKey = `Tuần ${week}`;
-            const existing = acc.find((item) => item.week === weekKey);
-            if (existing) {
-              existing.Members += 1;
-            } else {
-              acc.unshift({ week: weekKey, Members: 1 });
-            }
-            return acc;
-          }, [])
-          .slice(0, 4);
+        // Initialize 4 weeks
+        const memberDataFormatted = Array.from({ length: 4 }, (_, i) => ({
+          week: language === "en" ? `Week ${i + 1}` : `Tuần ${i + 1}`,
+          Members: 0,
+        }));
 
-        setMemberActivity(
-          language === "en"
-            ? memberDataFormatted.map((item) => ({
-                ...item,
-                week: item.week.replace("Tuần", "Week"),
-              }))
-            : memberDataFormatted
-        );
+        // Count members per week
+        users.forEach((user) => {
+          const createdAt = new Date(user.created_at);
+          const dayOfMonth = createdAt.getDate();
+          const weekIndex = Math.floor((dayOfMonth - 1) / 7);
+          if (weekIndex >= 0 && weekIndex < 4) {
+            memberDataFormatted[weekIndex].Members += 1;
+          }
+        });
 
-        // Fetch role distribution across all servers
+        setMemberActivity(memberDataFormatted);
+
+        // Fetch role distribution
         const roleCounts = await Promise.all(
           servers.map(async (server) => {
-            const memberResponse =
-              await ServerChannelService.searchServerMember(server.id);
-            const members = Array.isArray(memberResponse)
-              ? memberResponse
-              : memberResponse.members || [];
-            if (!Array.isArray(members)) {
-              console.warn(
-                `Invalid members data for server ${server.id}:`,
-                members
-              );
-              return [];
-            }
+            const { members } = await ServerChannelService.searchServerMember(
+              server.id
+            );
             return members.map((member) => member.role || "Unknown");
           })
         );
@@ -182,7 +160,14 @@ export default function AdminPanel() {
                         stroke="hsl(var(--border))"
                         strokeDasharray="3 3"
                       />
-                      <XAxis dataKey="day" stroke="hsl(var(--foreground))" />
+                      <XAxis
+                        dataKey="day"
+                        stroke="hsl(var(--foreground))"
+                        ticks={tickValues}
+                        tickFormatter={(value) =>
+                          value.replace(language === "en" ? "Day" : "Ngày", "")
+                        }
+                      />
                       <YAxis stroke="hsl(var(--foreground))" />
                       <Tooltip
                         contentStyle={{
@@ -197,6 +182,16 @@ export default function AdminPanel() {
                         type="monotone"
                         dataKey="Servers"
                         stroke="hsl(var(--primary))"
+                        dot={({ cx, cy, payload }) =>
+                          tickValues.includes(payload.day) ? (
+                            <circle
+                              cx={cx}
+                              cy={cy}
+                              r={3}
+                              fill="hsl(var(--primary))"
+                            />
+                          ) : null
+                        }
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -243,7 +238,7 @@ export default function AdminPanel() {
                 </CardContent>
               </Card>
 
-              {/* Roles Monitoration */}
+              {/* Roles Monitoration (unchanged) */}
               <Card className="p-6 lg:p-8">
                 <CardHeader>
                   <CardTitle className="text-lg lg:text-xl">

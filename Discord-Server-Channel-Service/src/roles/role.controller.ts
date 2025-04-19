@@ -93,7 +93,7 @@ export class RoleController {
     return this.roleService.createRole(serverId, data);
   }
 
-  @Get(':serverId/:name')
+  @Get(':serverId/:name/one')
   @ApiOperation({ summary: 'Get a role in a server by name' })
   @ApiResponse({ status: 200, description: 'Role details' })
   @ApiResponse({ status: 500, description: 'Role not found' })
@@ -124,7 +124,7 @@ export class RoleController {
     return this.roleService.getRoleById(roleId);
   }
 
-  @Get(':serverId')
+  @Get(':serverId/all')
   @ApiOperation({ summary: 'Get all roles in a server' })
   @ApiResponse({ status: 200, description: 'List of roles' })
   @ApiParam({

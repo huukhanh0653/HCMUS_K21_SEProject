@@ -304,7 +304,7 @@ const createRole = async (serverId, roleData) => {
 const getRoleByName = async (serverId, name) => {
   try {
     const response = await axios.get(
-      `${Server_API}/roles/${serverId}/${encodeURIComponent(name)}`,
+      `${Server_API}/roles/${serverId}/${encodeURIComponent(name)}/one`,
       {
         headers: { "Content-Type": "application/json" },
       }
@@ -340,7 +340,7 @@ const getRoleById = async (roleId) => {
  */
 const getRolesByServer = async (serverId) => {
   try {
-    const response = await axios.get(`${Server_API}/roles/${serverId}`, {
+    const response = await axios.get(`${Server_API}/roles/${serverId}/all`, {
       headers: { "Content-Type": "application/json" },
     });
     return response.data.data;
