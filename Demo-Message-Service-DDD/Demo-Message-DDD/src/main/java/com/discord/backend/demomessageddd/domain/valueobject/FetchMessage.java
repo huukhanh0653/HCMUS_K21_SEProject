@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.List;
 
 import com.discord.backend.demomessageddd.domain.entity.Message;
+import com.discord.backend.demomessageddd.interfaceadapter.DTO.MessageSentEvent;
+import com.discord.backend.demomessageddd.interfaceadapter.DTO.MessageFetchRequest;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,11 +20,14 @@ public class FetchMessage {
 
     private int amount;
     private String lastMessageTimestamp;
-    private List<Message> messages;
+    private List<MessageFetchRequest> messages;
     private boolean hasMore;
 
     public FetchMessage(List<Message> messages, int amount, String lastMessageTimestamp, boolean hasMore) {
-        this.messages = messages;
+
+        this.messages = messages.stream().map(message -> new MessageFetchRequest(message.getMessageId(),
+                message.getSenderId(), message.getServerId(), message.getChannelId(), message.getContent().getText(),
+                message.getAttachments(), message.getMentions(), message.getTimestamp())).toList();
         this.amount = amount;
         this.lastMessageTimestamp = lastMessageTimestamp;
         this.hasMore = hasMore;
