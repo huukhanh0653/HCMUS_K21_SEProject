@@ -8,7 +8,7 @@ import {
   Slash,
 } from "lucide-react";
 import { useTheme } from "../layout/ThemeProvider";
-import { User_API } from "../../../apiConfig";
+//import { User_API } from "../../../apiConfig";
 
 export default function FriendList() {
   const { t } = useTranslation();
@@ -19,6 +19,9 @@ export default function FriendList() {
   const { isDarkMode } = useTheme();
 
   const currentUser = JSON.parse(localStorage.getItem("user")) || {};
+
+  // API base URL from Vite environment
+  const USER_API = import.meta.env.VITE_USER_API; 
 
   // Fetch danh sách bạn bè từ API
   useEffect(() => {

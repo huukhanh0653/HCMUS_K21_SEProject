@@ -1,6 +1,9 @@
 import axios from "axios";
 // Base URL của STORAGE SERVICE API
-import { Storage_API } from "../../apiConfig";
+//import { Storage_API } from "../../apiConfig";
+
+// API base URL from Vite environment
+const Storage_API = import.meta.env.VITE_STORAGE_API;
 
 /**
  * Upload file lên Storage API.
