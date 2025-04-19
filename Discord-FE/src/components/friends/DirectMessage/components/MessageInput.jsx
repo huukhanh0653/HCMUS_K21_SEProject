@@ -38,6 +38,7 @@ export default function MessageInput({
     }
     setShowUpload(false);
   };
+  console.log(friend);
 
   const handleRemoveFile = (fileName) => {
     setShowFile((prev) => prev.filter((file) => file.name !== fileName));

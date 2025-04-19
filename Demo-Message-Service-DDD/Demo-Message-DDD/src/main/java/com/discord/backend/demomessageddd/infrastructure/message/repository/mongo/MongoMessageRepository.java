@@ -43,11 +43,8 @@ public class MongoMessageRepository implements MessageRepository {
                                 .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(),
                                                 doc.getChannelId(), doc.getAttachments(), doc.getMentions(),
                                                 new MessageContent(doc.getContent()), doc.getTimestamp()))
+                                .limit(amount)
                                 .collect(Collectors.toList());
-                for (Message message : result) {
-                        System.out.println(message.getTimestamp().toString());
-                }
-
                 return result;
         }
 
@@ -64,6 +61,7 @@ public class MongoMessageRepository implements MessageRepository {
                                 .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(),
                                                 doc.getChannelId(), doc.getAttachments(), doc.getMentions(),
                                                 new MessageContent(doc.getContent()), doc.getTimestamp()))
+                                .limit(amount)
                                 .collect(Collectors.toList());
         }
 
@@ -138,6 +136,7 @@ public class MongoMessageRepository implements MessageRepository {
                                 .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(),
                                                 doc.getChannelId(), doc.getAttachments(), doc.getMentions(),
                                                 new MessageContent(doc.getContent()), doc.getTimestamp()))
+
                                 .filter(message -> message.getContent().getText().contains(content))
                                 .collect(Collectors.toList());
         }

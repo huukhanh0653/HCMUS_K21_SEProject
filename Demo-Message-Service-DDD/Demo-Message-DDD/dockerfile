@@ -53,5 +53,3 @@ USER myuser
 
 # Run app
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
-CMD ["tail", "-f", "/dev/null"]

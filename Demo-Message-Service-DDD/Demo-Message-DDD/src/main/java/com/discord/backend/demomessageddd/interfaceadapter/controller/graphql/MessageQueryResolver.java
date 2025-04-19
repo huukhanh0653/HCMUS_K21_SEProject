@@ -106,13 +106,14 @@ public class MessageQueryResolver {
         Message message = editMessageUseCase.edit(messageId, serverId, channelId, content);
 
         MessageResponse messageResponse = new MessageResponse(
-                message.getMessageId(),
+                messageId,
                 message.getSenderId(),
                 message.getServerId(),
                 message.getChannelId(),
                 message.getContent().getText(),
                 message.getAttachments(),
                 message.getMentions(),
+                message.getTimestamp().toString(),
                 "MESSAGE_UPDATED");
 
         messagingTemplate.convertAndSend(
@@ -136,21 +137,21 @@ public class MessageQueryResolver {
             @Argument String messageId) {
         System.out.println("MessageQueryResolver deleteMessages called with messageId: " + messageId);
 
-        Message message = editMessageUseCase.delete(serverId, channelId, messageId);
+        editMessageUseCase.delete(serverId, channelId, messageId);
 
         MessageResponse messageResponse = new MessageResponse(
-                message.getMessageId(),
-                message.getSenderId(),
-                message.getServerId(),
-                message.getChannelId(),
-                message.getContent().getText(),
-                message.getAttachments(),
-                message.getMentions(),
+                messageId,
+                null,
+                serverId,
+                channelId,
+                null,
+                null,
+                null,
+                null,
                 "MESSAGE_DELETED");
 
         messagingTemplate.convertAndSend(
-                "/topic/server/" + message.getServerId() + "/channel/" + message
-                        .getChannelId(),
+                "/topic/server/" + serverId + "/channel/" + channelId,
                 messageResponse);
     }
 }

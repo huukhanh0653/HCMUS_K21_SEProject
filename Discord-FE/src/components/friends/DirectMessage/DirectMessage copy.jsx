@@ -8,11 +8,12 @@ import {
   disconnectMessageService,
   useFetchMessagesBefore,
   useFetchMessagesAfter,
+  useEditMessage,
+  useDeleteMessage,
 } from "../../../services/newMessageService";
 
-
-export default function DirectMessage({ friend, messages: initialMessages = [] }) {
-  const { t, i18n } = useTranslation();
+export default function DirectMessage({ friend }) {
+  const { t } = useTranslation();
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const serverId = "direct-message";
 
@@ -21,15 +22,15 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
     const ids = [user.id, friend._id].sort();
     return ids.join("-");
   }, [user.id, friend._id]);
-  
+
   // Chat state
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editedContent, setEditedContent] = useState("");
   const [lastTimestamp, setLastTimestamp] = useState(new Date().toISOString());
   const [hasMore, setHasMore] = useState(false);
-  
+
   // Refs
   const stompClientRef = useRef(null);
   const messagesWrapperRef = useRef(null);
@@ -38,16 +39,18 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
   const initialFetchedRef = useRef(false);
   const isLoadingRef = useRef(false);
 
-  useEffect(() => {
-    setMessages(initialMessages);
-  }, [initialMessages]);
+  // GraphQL mutations
+  const [editMessageMutation] = useEditMessage();
+  const [deleteMessageMutation] = useDeleteMessage();
 
   // Hooks to fetch messages
-  const { 
-    data: beforeData,
-    refetch: refetchBefore,
-    fetchMore: fetchMoreBefore 
-  } = useFetchMessagesBefore({
+  const { fetchMore: fetchMoreBefore } = useFetchMessagesBefore({
+    serverId,
+    channelId,
+    amount: 20,
+    timestamp: lastTimestamp,
+  });
+  const { fetchMore: fetchMoreAfter } = useFetchMessagesAfter({
     serverId,
     channelId,
     amount: 20,
@@ -62,7 +65,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
     initialFetchedRef.current = false;
     setLastTimestamp(new Date().toISOString());
     isLoadingRef.current = false;
-  
+
     // Connect to the message service
     const disconnect = connectMessageService(
       stompClientRef,
@@ -70,36 +73,31 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
       serverId,
       channelId
     );
-  
+
     // Fetch initial batch
     loadMessages();
-  
+
     return () => {
       // Clean up subscription on unmount / friend change
       disconnect();
     };
   }, [serverId, channelId]);
 
+  // Load latest messages before now
   const loadMessages = useCallback(async () => {
-    // Nếu đã đang chạy, bỏ qua
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
-
     try {
       const { data } = await fetchMoreBefore({
-        variables: { 
-          serverId, 
-          channelId, 
-          amount: 20, 
-          timestamp: new Date(Date.now()).toISOString() },
+        variables: {
+          serverId,
+          channelId,
+          amount: 20,
+          timestamp: new Date().toISOString(),
+        },
       });
-
-      const {
-        messages: fetched,
-        hasMore: more,
-        lastMessageTimestamp,
-      } = data.fetchMessagesBefore;
-
+      const { messages: fetched, hasMore: more, lastMessageTimestamp } =
+        data.fetchMessagesBefore;
       setMessages(fetched.slice().reverse());
       setHasMore(more);
       setLastTimestamp(lastMessageTimestamp);
@@ -124,24 +122,33 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
     setLastTimestamp(lastMessageTimestamp);
   }, [hasMore, lastTimestamp, fetchMoreBefore, serverId, channelId]);
 
+  // Periodically or on demand load newer messages
+  const loadNewer = useCallback(async () => {
+    const { data } = await fetchMoreAfter({
+      variables: { serverId, channelId, amount: 20, timestamp: lastTimestamp },
+    });
+    const { messages: newer, lastMessageTimestamp } =
+      data.fetchMessagesAfter;
+    setMessages((prev) => [...prev, ...newer]);
+    setLastTimestamp(lastMessageTimestamp);
+  }, [fetchMoreAfter, serverId, channelId, lastTimestamp]);
+
   // Auto-scroll when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-
   // Send a new message
   const handleSendMessage = async () => {
-    if (!messageInput.trim() || !friend) return;
+    if (!messageInput.trim()) return;
     const payload = {
-      messageId: "msg-" + Date.now(), // Tạo id dựa trên timestamp
-      senderId: user.id || "unknown", // Nếu không có thông tin user, để "unknown"
-      serverId: serverId,
-      channelId: channelId, // Hoặc lấy từ channel.id nếu cần
+      messageId: "dm-" + Date.now(),
+      senderId: user.id,
+      serverId,
+      channelId,
       content: messageInput,
-      attachments: [], // Nếu có file đính kèm, cập nhật mảng này
+      attachments: [],
     };
-
     try {
       await fetch("/send", {
         method: "POST",
@@ -152,46 +159,67 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
       console.error("Error sending message:", err);
     }
     setMessageInput("");
-    if (inputRef.current) inputRef.current.style.height = "36px";
+    if (inputRef.current) inputRef.current.style.height = "40px";
   };
 
-  const handleDeleteMessage = (id) => setMessages((prev) => prev.filter((msg) => msg.id !== id));
-
-  const handleEditMessage = (id, content) => {
-    setEditingMessageId(id);
-    setEditedContent(content);
+  // Delete a message
+  const handleDeleteMessage = async (id) => {
+    try {
+      await deleteMessageMutation({
+        variables: { serverId, channelId, messageId: id },
+      });
+      setMessages((prev) =>
+        prev.filter(
+          (msg) => (msg.messageId || msg.message_id) !== id
+        )
+      );
+      toast.success("Đã xóa tin nhắn");
+    } catch (err) {
+      console.error(err);
+      toast.error("Xóa tin nhắn thất bại");
+    }
   };
 
-  const handleSaveEdit = (id) => {
+  // Save an edited message
+  const handleSaveEdit = async (id) => {
     if (!editedContent.trim()) return;
-    setMessages((prev) =>
-      prev.map((msg) => (msg.id === id ? { ...msg, content: editedContent } : msg))
-    );
-    setEditingMessageId(null);
-    setEditedContent("");
+    try {
+      await editMessageMutation({
+        variables: { serverId, channelId, messageId: id, content: editedContent },
+      });
+      setEditingMessageId(null);
+      setEditedContent("");
+      toast.success("Chỉnh sửa tin nhắn thành công");
+    } catch (err) {
+      console.error(err);
+      toast.error("Chỉnh sửa tin nhắn thất bại");
+    }
   };
 
   return (
     <div className="flex flex-col h-full min-h-0 relative">
       <MessageList
         messages={messages}
-        user={user}
-        friend={friend}
+        username={user.username}
+        avatarSrc={friend.avatar}
         editingMessageId={editingMessageId}
         editedContent={editedContent}
         setEditedContent={setEditedContent}
         setEditingMessageId={setEditingMessageId}
         handleDeleteMessage={handleDeleteMessage}
         handleSaveEdit={handleSaveEdit}
+        messagesWrapperRef={messagesWrapperRef}
         messagesEndRef={messagesEndRef}
+        loadOlder={loadOlder}
+        loadNewer={loadNewer}
       />
       <MessageInput
         t={t}
-        messageInput={messageInput}
-        setMessageInput={setMessageInput}
-        handleSendMessage={handleSendMessage}
         inputRef={inputRef}
-        friend={friend}
+        value={messageInput}
+        onChange={setMessageInput}
+        onSend={handleSendMessage}
+        friendName={friend.username}
       />
     </div>
   );
