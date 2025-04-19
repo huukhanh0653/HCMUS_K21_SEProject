@@ -149,7 +149,7 @@ export class ServerController {
   @Put(':userId/:serverId')
   @ApiOperation({ summary: 'Update a server' })
   @ApiResponse({ status: 200, description: 'Server updated successfully' })
-  @ApiResponse({ status: 404, description: 'Server not found' })
+  @ApiResponse({ status: 500, description: 'Server not found' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiParam({
     name: 'serverId',
@@ -166,7 +166,7 @@ export class ServerController {
   @Delete(':userId/:serverId')
   @ApiOperation({ summary: 'Delete a server' })
   @ApiResponse({ status: 200, description: 'Server deleted successfully' })
-  @ApiResponse({ status: 404, description: 'Server not found' })
+  @ApiResponse({ status: 500, description: 'Server not found' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiParam({
     name: 'serverId',

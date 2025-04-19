@@ -157,7 +157,7 @@ export class ChannelController {
   @Put(':userId/:channelId')
   @ApiOperation({ summary: 'Update a channel' })
   @ApiResponse({ status: 200, description: 'Channel updated successfully' })
-  @ApiResponse({ status: 404, description: 'Channel not found' })
+  @ApiResponse({ status: 500, description: 'Channel not found' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiParam({
     name: 'channelId',
@@ -174,7 +174,7 @@ export class ChannelController {
   @Delete(':userId/:channelId')
   @ApiOperation({ summary: 'Delete a channel' })
   @ApiResponse({ status: 200, description: 'Channel deleted successfully' })
-  @ApiResponse({ status: 404, description: 'Channel not found' })
+  @ApiResponse({ status: 500, description: 'Channel not found' })
   @ApiParam({ name: 'userId', description: 'ID of the user' })
   @ApiParam({
     name: 'channelId',

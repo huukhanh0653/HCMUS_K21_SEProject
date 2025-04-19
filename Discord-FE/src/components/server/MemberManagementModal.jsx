@@ -75,7 +75,6 @@ export default function MemberManagementModal({
         userId: id,
         reason,
       });
-      await ServerChannelService.removeServerMember(server.id, userId, id);
       setMemberList(memberList.filter((member) => member.id !== id));
       toast.success(t("Member banned successfully"));
     } catch (error) {

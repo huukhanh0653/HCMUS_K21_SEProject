@@ -147,8 +147,8 @@ export class ChannelService {
     if (!server_member)
       return { message: 'Only the members of the server can create channel' };
 
-    await this.channelMemberRepository.delete({ channel_id: channelId });
-    await this.channelRepository.delete({ id: channelId });
+    this.channelMemberRepository.delete({ channel_id: channelId });
+    this.channelRepository.delete({ id: channelId });
 
     return { message: 'Channel deleted successfully' };
   }

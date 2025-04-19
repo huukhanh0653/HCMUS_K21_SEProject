@@ -21,8 +21,17 @@ export default function InviteServerModal({ server, isOpen, onClose }) {
     if (!isOpen) return;
     const fetchFriends = async () => {
       try {
-        const data = await UserService.getFriends(user.id);
-        setFriends(data || []);
+        const friends = await UserService.getFriends(user.id);
+        const { members } = await ServerChannelService.searchServerMember(
+          server.id
+        );
+
+        const memberIds = new Set(members.map((member) => member.id));
+        const nonServerFriends = friends.filter(
+          (friend) => !memberIds.has(friend.id)
+        );
+
+        setFriends(nonServerFriends || []);
       } catch (err) {
         console.error("Error fetching friends:", err);
       }
@@ -68,13 +77,16 @@ export default function InviteServerModal({ server, isOpen, onClose }) {
           role: "Member",
         }
       );
-      // Sau khi mời thành công, loại bỏ bạn khỏi list
+      // Sau khi mời thành công, loại bỏ bạn khỏi list (nếu bị ban thì không loại bỏ)
+      if (message !== "This user has been banned in this server") {
+        setFriends((prev) => prev.filter((f) => f.id !== friend.id));
+        toast.success(t("Invited member successfully"));
+        return;
+      }
 
-      message !== "This user has been banned in server"
-        ? setFriends((prev) => prev.filter((f) => f.id !== friend.id))
-        : toast.error(t(message));
+      toast.error(t(message));
     } catch (err) {
-      console.error("Failed to invite:", err);
+      toast.error("Failed to invite:", err);
       setInviteError(err.response?.data?.message || err.message);
     } finally {
       setInviteLoading(null);

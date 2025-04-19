@@ -68,7 +68,7 @@ export default function ServerChannels({
           server.id
         );
         const filteredMembers = members.filter(
-          (member) => member.role !== "Owner" && member.id !== user.id
+          (member) => member.role !== "Owner"
         );
         setServerMembers(filteredMembers);
       } catch (error) {

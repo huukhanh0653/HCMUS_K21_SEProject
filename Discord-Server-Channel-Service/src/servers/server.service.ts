@@ -13,6 +13,7 @@ import { Role } from 'src/roles/role.entity';
 import { Channel } from 'src/channels/channel.entity';
 import { ChannelService } from 'src/channels/channel.service';
 import { ChannelMember } from 'src/channel_members/channel_member.entity';
+import { Ban } from 'src/bans/ban.entity';
 
 @Injectable()
 export class ServerService {
@@ -31,6 +32,8 @@ export class ServerService {
     private channelService: ChannelService,
     @InjectRepository(ChannelMember)
     private channelMemberRepository: Repository<ChannelMember>,
+    @InjectRepository(Ban)
+    private banRepository: Repository<Ban>,
   ) {}
 
   async createServer(userId: string, data: ServerDto) {
@@ -164,15 +167,14 @@ export class ServerService {
       '',
     );
 
-    await Promise.all([
-      this.channelMemberRepository.delete({
-        channel_id: In(channels.map((c) => c.id)),
-      }),
+    this.banRepository.delete({ server_id: serverId });
+    this.channelMemberRepository.delete({
+      channel_id: In(channels.map((c) => c.id)),
+    }),
       this.channelRepository.delete({ server_id: serverId }),
-      this.serverMemberRepository.delete({ server_id: serverId }),
-      this.roleRepository.delete({ server_id: serverId }),
-      this.serverRepository.delete({ id: serverId }),
-    ]);
+      this.serverMemberRepository.delete({ server_id: serverId });
+    this.roleRepository.delete({ server_id: serverId });
+    this.serverRepository.delete({ id: serverId });
 
     return { message: 'Server deleted successfully' };
   }

@@ -4,6 +4,11 @@ import { gql, useQuery, useMutation } from "@apollo/client";
 // Không sử dụng dotenv vì require không được định nghĩa trong trình duyệt
 // require("dotenv").config();
 
+const WS_URL =
+  import.meta.env.DEV
+    ? "http://localhost:8082/ws"    // directly hit your backend in dev
+    : "/ws";                        // when built, relative URL still works
+
 const connectMessageService = (
   stompClientRef,
   setChatMessages,
@@ -11,7 +16,7 @@ const connectMessageService = (
   channelId
 ) => {
   console.log("Opening Web Socket...");
-  const socket = new SockJS(`http://localhost:8082/ws`);
+  const socket = new SockJS(WS_URL);
   const stompClient = Stomp.over(socket);
   stompClientRef.current = stompClient;
 
@@ -27,16 +32,14 @@ const connectMessageService = (
       `/topic/server/${serverId}/channel/${channelId}`,
       (msg) => {
         const received = JSON.parse(msg.body);
-        // Chuyển object content: { text: "kak" } -> "kak"
-        const updatedReceived = {
-          ...received,
-          content:
-            typeof received.content === "object" && received.content.text
-              ? received.content.text
-              : received.content,
-        };
-
-        setChatMessages((prev) => [...prev, updatedReceived]);
+        const content =
+          typeof received.content === "object" && received.content.text
+            ? received.content.text
+            : received.content;
+        setChatMessages((prev) => [
+          ...prev,
+          { ...received, content }
+        ]);
       }
     );
   });
@@ -56,15 +59,13 @@ const connectMessageService = (
 const disconnectMessageService = (stompClientRef) => {
   console.log("Disconnecting STOMP client...");
   if (stompClientRef.current && stompClientRef.current.connected) {
-    stompClientRef.current.disconnect(() => {
-      console.log(">>> DISCONNECT");
-    });
+    stompClientRef.current.disconnect(() => console.log(">>> STOMP disconnected"));
   }
-}
+};
 
 // GrapQL API URL
 
-const GRAPHQL_API_URL = "http://localhost:8082/graphql"; // Địa chỉ GraphQL API của bạn
+const GRAPHQL_API_URL = "/graphql"; // Địa chỉ GraphQL API của bạn
 
 function useSearchMessages({ serverId, channelId, keyword }) {
   const SEARCH_MESSAGES = gql`
