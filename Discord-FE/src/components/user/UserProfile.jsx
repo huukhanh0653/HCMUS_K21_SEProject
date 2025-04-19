@@ -163,10 +163,10 @@ export default function UserProfile({ user, onClose }) {
       const updatedUsedUserList = usedUserList.map((acc) =>
         acc.email === updatedUser.email
           ? {
-            ...acc,
-            username: updatedUser.username,
-            photoURL: updatedUser.avatar,
-          }
+              ...acc,
+              username: updatedUser.username,
+              photoURL: updatedUser.avatar,
+            }
           : acc
       );
       localStorage.setItem("used_user", JSON.stringify(updatedUsedUserList));
@@ -196,7 +196,11 @@ export default function UserProfile({ user, onClose }) {
       await sendPasswordResetEmail(auth, storedUser.email);
 
       // Hiển thị thông báo thành công
-      alert(t("Đã gửi email đặt lại mật khẩu đến địa chỉ của bạn. Vui lòng kiểm tra hộp thư để đặt lại mật khẩu."));
+      alert(
+        t(
+          "Đã gửi email đặt lại mật khẩu đến địa chỉ của bạn. Vui lòng kiểm tra hộp thư để đặt lại mật khẩu."
+        )
+      );
 
       // Đóng form
       setShowChangePassword(false);
@@ -205,7 +209,6 @@ export default function UserProfile({ user, onClose }) {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-
     } catch (error) {
       console.error("Error:", error);
       let errorMessage = t("Có lỗi xảy ra khi gửi email đặt lại mật khẩu.");
@@ -286,15 +289,17 @@ export default function UserProfile({ user, onClose }) {
     >
       <div
         ref={modalRef}
-        className={`w-full max-w-2xl rounded-md overflow-hidden ${isDarkMode
-          ? "bg-[#313338] text-gray-100"
-          : "bg-white text-[#333333] shadow-md"
-          }`}
+        className={`w-full max-w-2xl rounded-md overflow-hidden ${
+          isDarkMode
+            ? "bg-[#313338] text-gray-100"
+            : "bg-white text-[#333333] shadow-md"
+        }`}
       >
         {/* Header */}
         <div
-          className={`flex justify-between items-center p-4 border-b ${isDarkMode ? "border-[#232428]" : "border-gray-300"
-            }`}
+          className={`flex justify-between items-center p-4 border-b ${
+            isDarkMode ? "border-[#232428]" : "border-gray-300"
+          }`}
         >
           <h1 className="text-xl font-bold">{t(getTitle())}</h1>
           <div className="flex items-center gap-2">
@@ -308,10 +313,11 @@ export default function UserProfile({ user, onClose }) {
                   onClose();
                 }
               }}
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${isDarkMode
-                ? "bg-[#2b2d31] hover:bg-[#232428]"
-                : "bg-gray-200 hover:bg-gray-300"
-                }`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                isDarkMode
+                  ? "bg-[#2b2d31] hover:bg-[#232428]"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
             >
               <X size={20} />
             </button>
@@ -325,8 +331,9 @@ export default function UserProfile({ user, onClose }) {
               <div className="mb-6">
                 <div className="relative mb-6">
                   <div
-                    className={`h-24 ${isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"
-                      } rounded-t-md overflow-hidden`}
+                    className={`h-24 ${
+                      isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"
+                    } rounded-t-md overflow-hidden`}
                   >
                     {background && (
                       <img
@@ -336,8 +343,9 @@ export default function UserProfile({ user, onClose }) {
                       />
                     )}
                     <label
-                      className={`absolute right-2 bottom-2 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"
-                        } rounded-full flex items-center justify-center cursor-pointer`}
+                      className={`absolute right-2 bottom-2 w-8 h-8 ${
+                        isDarkMode ? "bg-[#313338]" : "bg-gray-200"
+                      } rounded-full flex items-center justify-center cursor-pointer`}
                     >
                       <Camera size={16} />
                       <input
@@ -352,10 +360,11 @@ export default function UserProfile({ user, onClose }) {
                   <div className="flex justify-center">
                     <div className="relative -mt-10">
                       <div
-                        className={`w-20 h-20 rounded-full overflow-hidden ${isDarkMode
-                          ? "bg-[#36393f] border-4 border-[#232428]"
-                          : "bg-gray-200 border-4 border-gray-300"
-                          }`}
+                        className={`w-20 h-20 rounded-full overflow-hidden ${
+                          isDarkMode
+                            ? "bg-[#36393f] border-4 border-[#232428]"
+                            : "bg-gray-200 border-4 border-gray-300"
+                        }`}
                       >
                         <img
                           src={avatar || "/placeholder.svg"}
@@ -364,8 +373,9 @@ export default function UserProfile({ user, onClose }) {
                         />
                       </div>
                       <label
-                        className={`absolute bottom-0 right-0 w-8 h-8 ${isDarkMode ? "bg-[#313338]" : "bg-gray-200"
-                          } rounded-full flex items-center justify-center cursor-pointer`}
+                        className={`absolute bottom-0 right-0 w-8 h-8 ${
+                          isDarkMode ? "bg-[#313338]" : "bg-gray-200"
+                        } rounded-full flex items-center justify-center cursor-pointer`}
                       >
                         <Camera size={16} />
                         <input
@@ -387,10 +397,11 @@ export default function UserProfile({ user, onClose }) {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className={`w-full rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${isDarkMode
-                      ? "bg-[#1e1f22] border border-[#232428] text-white focus:ring-[#5865f2]"
-                      : "bg-gray-100 border border-gray-300 text-[#333333] focus:ring-[#1877F2]"
-                      }`}
+                    className={`w-full rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                      isDarkMode
+                        ? "bg-[#1e1f22] border border-[#232428] text-white focus:ring-[#5865f2]"
+                        : "bg-gray-100 border border-gray-300 text-[#333333] focus:ring-[#1877F2]"
+                    }`}
                   />
                 </div>
               </div>
@@ -399,36 +410,39 @@ export default function UserProfile({ user, onClose }) {
                 <button
                   type="button"
                   onClick={() => setShowEditProfile(false)}
-                  className={`px-4 py-2 rounded-md ${isDarkMode
-                    ? "bg-[#2b2d31] hover:bg-[#35373c]"
-                    : "bg-gray-200 hover:bg-gray-300"
-                    }`}
+                  className={`px-4 py-2 rounded-md ${
+                    isDarkMode
+                      ? "bg-[#2b2d31] hover:bg-[#35373c]"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
                 >
                   {t("Cancel")}
                 </button>
                 <button
                   type="submit"
-                  className={`px-4 py-2 rounded-md ${isDarkMode
-                    ? "bg-[#5865f2] hover:bg-[#4752c4]"
-                    : "bg-[#1877F2] hover:bg-[#0D6EFD]"
-                    } `}
+                  className={`px-4 py-2 rounded-md ${
+                    isDarkMode
+                      ? "bg-[#5865f2] hover:bg-[#4752c4]"
+                      : "bg-[#1877F2] hover:bg-[#0D6EFD]"
+                  } `}
                 >
                   {t("Save Changes")}
                 </button>
               </div>
             </form>
           </div>
-        ) :
-          showChangePassword ? (
-            // Form Request Password Reset Email
-            <div className="p-4">
-              <form onSubmit={handleChangePassword}>
-                <div className="mb-6">
-                  <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"} mb-4`}>
-                    
-                  </p>
-                  {/* We don't need the current password field anymore */}
-                  {/* <div className="mb-4">
+        ) : showChangePassword ? (
+          // Form Request Password Reset Email
+          <div className="p-4">
+            <form onSubmit={handleChangePassword}>
+              <div className="mb-6">
+                <p
+                  className={`text-sm ${
+                    isDarkMode ? "text-gray-400" : "text-gray-600"
+                  } mb-4`}
+                ></p>
+                {/* We don't need the current password field anymore */}
+                {/* <div className="mb-4">
                             <label className="block text-sm font-medium mb-2">
                               {t("Current Password")}
                             </label>
@@ -442,8 +456,8 @@ export default function UserProfile({ user, onClose }) {
                                 }`}
                             />
                           </div> */}
-                  {/* We also don't need the new password and confirm password fields */}
-                  {/* <div className="mb-4">
+                {/* We also don't need the new password and confirm password fields */}
+                {/* <div className="mb-4">
                             <label className="block text-sm font-medium mb-2">
                               {t("New Password")}
                             </label>
@@ -471,152 +485,164 @@ export default function UserProfile({ user, onClose }) {
                                 }`}
                             />
                           </div> */}
-                </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowChangePassword(false)}
-                    className={`px-4 py-2 rounded-md ${isDarkMode
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowChangePassword(false)}
+                  className={`px-4 py-2 rounded-md ${
+                    isDarkMode
                       ? "bg-[#2b2d31] hover:bg-[#35373c]"
                       : "bg-gray-200 hover:bg-gray-300"
-                      }`}
-                  >
-                    {t("Cancel")}
-                  </button>
-                  <button
-                    type="submit"
-                    className={`px-4 py-2 rounded-md ${isDarkMode
+                  }`}
+                >
+                  {t("Cancel")}
+                </button>
+                <button
+                  type="submit"
+                  className={`px-4 py-2 rounded-md ${
+                    isDarkMode
                       ? "bg-[#5865f2] hover:bg-[#4752c4]"
                       : "bg-[#1877F2] hover:bg-[#0D6EFD]"
-                      } `}
-                  >
-                    {t("Send Reset Email")}
-                  </button>
-                </div>
-              </form>
-            </div>
-          ) : (
-            <div className="flex">
-              {/* Sidebar user settings */}
-              <div
-                className={`w-60 p-4 ${isDarkMode ? "bg-[#2b2d31]" : "bg-white border border-gray-300"
+                  } `}
+                >
+                  {t("Send Reset Email")}
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div className="flex">
+            {/* Sidebar user settings */}
+            <div
+              className={`w-60 p-4 ${
+                isDarkMode ? "bg-[#2b2d31]" : "bg-white border border-gray-300"
+              }`}
+            >
+              <div className="mb-8">
+                <div
+                  className={`text-xs font-semibold mb-2 ${
+                    isDarkMode ? "text-gray-400" : "text-gray-600"
                   }`}
-              >
-                <div className="mb-8">
-                  <div
-                    className={`text-xs font-semibold mb-2 ${isDarkMode ? "text-gray-400" : "text-gray-600"
-                      }`}
-                  >
-                    {t("USER SETTINGS")}
-                  </div>
-                </div>
-                <div className="mt-auto">
-                  <button
-                    onClick={toggleLanguage}
-                    className={`flex items-center gap-2 p-2 rounded w-full ${isDarkMode
-                      ? "text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-[#333333]"
-                      }`}
-                  >
-                    {language === "en"
-                      ? "Switch to Vietnamese"
-                      : "Chuyển sang Tiếng Anh"}
-                  </button>
-                  <button
-                    onClick={toggleTheme}
-                    className={`flex items-center gap-2 p-2 rounded w-full ${isDarkMode
-                      ? "text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-[#333333]"
-                      }`}
-                  >
-                    {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-                    {isDarkMode ? (
-                      <span>{t("Change Light Mode")}</span>
-                    ) : (
-                      <span>{t("Change Dark Mode")}</span>
-                    )}
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className={`flex items-center gap-2 p-2 rounded w-full ${isDarkMode
-                      ? "text-[#ed4245] hover:bg-[#ed4245] hover:text-white"
-                      : "text-red-600 hover:bg-red-100 hover:text-red-700"
-                      }`}
-                  >
-                    <LogOut size={16} />
-                    <span>{t("Logout")}</span>
-                  </button>
+                >
+                  {t("USER SETTINGS")}
                 </div>
               </div>
+              <div className="mt-auto">
+                <button
+                  onClick={toggleLanguage}
+                  className={`flex items-center gap-2 p-2 rounded w-full ${
+                    isDarkMode
+                      ? "text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-[#333333]"
+                  }`}
+                >
+                  {language === "en"
+                    ? "Switch to Vietnamese"
+                    : "Chuyển sang Tiếng Anh"}
+                </button>
+                <button
+                  onClick={toggleTheme}
+                  className={`flex items-center gap-2 p-2 rounded w-full ${
+                    isDarkMode
+                      ? "text-[#656262FF] hover:bg-[#2B2B2BFF] hover:text-white"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-[#333333]"
+                  }`}
+                >
+                  {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+                  {isDarkMode ? (
+                    <span>{t("Change Light Mode")}</span>
+                  ) : (
+                    <span>{t("Change Dark Mode")}</span>
+                  )}
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className={`flex items-center gap-2 p-2 rounded w-full ${
+                    isDarkMode
+                      ? "text-[#ed4245] hover:bg-[#ed4245] hover:text-white"
+                      : "text-red-600 hover:bg-red-100 hover:text-red-700"
+                  }`}
+                >
+                  <LogOut size={16} />
+                  <span>{t("Logout")}</span>
+                </button>
+              </div>
+            </div>
 
-              {/* Profile overview */}
-              <div className="flex-1 p-4">
-                <div
-                  className={`rounded-md overflow-hidden mb-6 ${isDarkMode
+            {/* Profile overview */}
+            <div className="flex-1 p-4">
+              <div
+                className={`rounded-md overflow-hidden mb-6 ${
+                  isDarkMode
                     ? "bg-[#232428]"
                     : "bg-gray-100 border border-gray-300"
-                    }`}
+                }`}
+              >
+                <div
+                  className={`h-24 ${
+                    isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"
+                  }`}
                 >
-                  <div
-                    className={`h-24 ${isDarkMode ? "bg-[#9b84b7]" : "bg-gray-300"
-                      }`}
-                  >
-                    {background && (
-                      <img
-                        src={background || "/placeholder.svg"}
-                        alt="background"
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="px-4 pb-4 relative">
-                    <div className="flex justify-between items-end">
-                      <div className="flex items-end gap-4">
-                        <div
-                          className={`w-20 h-20 rounded-full overflow-hidden ${isDarkMode
+                  {background && (
+                    <img
+                      src={background || "/placeholder.svg"}
+                      alt="background"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+                <div className="px-4 pb-4 relative">
+                  <div className="flex justify-between items-end">
+                    <div className="flex items-end gap-4">
+                      <div
+                        className={`w-20 h-20 rounded-full overflow-hidden ${
+                          isDarkMode
                             ? "bg-[#36393f] border-4 border-[#232428]"
                             : "bg-gray-200 border-4 border-gray-300"
-                            } -mt-10`}
-                        >
-                          <img
-                            src={avatar || "/placeholder.svg"}
-                            alt="Profile"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <h2 className="text-xl font-bold mb-2">{username}</h2>
+                        } -mt-10`}
+                      >
+                        <img
+                          src={avatar || "/placeholder.svg"}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
+                      <h2 className="text-xl font-bold mb-2">{username}</h2>
                     </div>
                   </div>
                 </div>
-                <button
-                  className={`flex items-center gap-1 text-sm rounded px-4 py-1 ${isDarkMode
+              </div>
+              <button
+                className={`flex items-center gap-1 text-sm rounded px-4 py-1 ${
+                  isDarkMode
                     ? "bg-[#5865f2] hover:bg-[#4752c4]"
                     : "bg-[#1877F2] hover:bg-[#0D6EFD]"
-                    } text-white`}
-                  onClick={() => setShowEditProfile(true)}
-                >
-                  <User size={14} />
-                  {t("Edit User Profile")}
-                </button>
+                } text-white`}
+                onClick={() => setShowEditProfile(true)}
+              >
+                <User size={14} />
+                {t("Edit User Profile")}
+              </button>
 
-                <div className="mt-8 text-center">
-                  <h3 className="text-lg font-semibold mb-4">
-                    {t("Password and Authentication")}
-                  </h3>
-                  <button
-                    className={`flex items-center gap-1 mx-auto text-sm rounded px-3 py-2 ${isDarkMode
+              <div className="mt-8 text-center">
+                <h3 className="text-lg font-semibold mb-4">
+                  {t("Password and Authentication")}
+                </h3>
+                <button
+                  className={`flex items-center gap-1 mx-auto text-sm rounded px-3 py-2 ${
+                    isDarkMode
                       ? "bg-[#5865f2] hover:bg-[#4752c4]"
                       : "bg-[#1877F2] hover:bg-[#0D6EFD]"
-                      } text-white`}
-                    onClick={() => checkChangePassword()}
-                  >
-                    <Lock size={14} /> {t("Change Password")}
-                  </button>
-                </div>
+                  } text-white`}
+                  onClick={() => checkChangePassword()}
+                >
+                  <Lock size={14} /> {t("Change Password")}
+                </button>
               </div>
             </div>
-          )}
+          </div>
+        )}
       </div>
     </div>
   );

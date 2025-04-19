@@ -79,25 +79,6 @@ const DMSidebar = ({
             {t("Friends")}
           </button>
 
-          {/* Online Tab */}
-          <button
-            className={`w-full px-2 py-1 rounded text-left ${
-              activeTab === "online"
-                ? isDarkMode
-                  ? "bg-[#5865f2] text-white"
-                  : "bg-[#1877F2] text-white"
-                : isDarkMode
-                ? "text-gray-400 hover:bg-[#35373c]"
-                : "text-gray-700 hover:bg-gray-200"
-            }`}
-            onClick={() => {
-              setActiveTab("online");
-              setShowAddFriend(false);
-            }}
-          >
-            {t("Online")}
-          </button>
-
           {/* Friend Requests Tab with badge */}
           <button
             className={`w-full px-2 py-1 rounded flex justify-between items-center ${
