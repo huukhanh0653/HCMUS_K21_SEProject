@@ -17,8 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-@Repository
-@RedisHash(value = "message", timeToLive = 1296000) // 15 days in seconds
+@Repository // 15 days in seconds
 public class RedisMessageRepository implements CacheMessageRepository {
     private final RedisTemplate<String, Object> redisTemplate;
 
