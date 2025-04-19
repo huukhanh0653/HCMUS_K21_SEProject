@@ -6,8 +6,10 @@ import com.discord.backend.demomessageddd.domain.repository.MessageRepository;
 import com.discord.backend.demomessageddd.domain.valueobject.MessageContent;
 import com.discord.backend.demomessageddd.domain.repository.CacheMessageRepository;
 
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators.In;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -60,7 +62,7 @@ public class SendMessageUseCase {
 
         MessageContent content = new MessageContent(contentText);
         Message message = new Message(messageId, senderId, serverId, channelId,
-                attachments, mentions, content);
+                attachments, mentions, content, Instant.now());
 
         // Save to redis
         cacheMessageRepository.save(message);

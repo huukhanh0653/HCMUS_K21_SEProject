@@ -28,7 +28,7 @@ public class MessageKafkaPublisher implements MessageEventPublisher {
                 message.getChannelId(),
                 message.getContent().getText(),
                 message.getAttachments(),
-                message.getTimestamp());
+                message.getTimestamp().toString());
 
         kafkaTemplate.send("message-topic", event);
     }
@@ -47,7 +47,7 @@ public class MessageKafkaPublisher implements MessageEventPublisher {
                 message.getServerId(),
                 message.getChannelId(),
                 message.getMentions(),
-                message.getTimestamp());
+                message.getTimestamp().toString());
 
         kafkaTemplate.send("mention-topic", event);
     }

@@ -7,6 +7,7 @@ import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageD
 import com.discord.backend.demomessageddd.infrastructure.message.schema.MessageMongoRepository;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Sort;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,31 +32,38 @@ public class MongoMessageRepository implements MessageRepository {
 
         @Override
         public List<Message> findByChannelBeforeTimeStamp(String serverId, String channelId, long amount,
-                        String timestamp) {
-                System.out.println(
-                                "MongoMessageRepository findByChannel called with serverId: " + serverId
-                                                + ", channelId: " + channelId);
+                        Instant timestamp) {
+                System.out.println("MongoMessageRepository findByChannelBefore called with timestamp: " + timestamp);
 
-                return mongoRepository.findByServerIdAndChannelIdBefore(serverId, channelId, timestamp)
+                List<Message> result = mongoRepository
+                                .findByServerIdAndChannelIdAndTimestampLessThan(serverId, channelId, timestamp,
+                                                Sort.by(Sort.Direction.DESC,
+                                                                "timestamp"))
                                 .stream()
-                                .limit(amount) // Apply pagination limit
                                 .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(),
                                                 doc.getChannelId(), doc.getAttachments(), doc.getMentions(),
-                                                new MessageContent(doc.getContent())))
+                                                new MessageContent(doc.getContent()), doc.getTimestamp()))
                                 .collect(Collectors.toList());
+                for (Message message : result) {
+                        System.out.println(message.getTimestamp().toString());
+                }
+
+                return result;
         }
 
         @Override
         public List<Message> findByChannelAfterTimeStamp(String serverId, String channelId, long amount,
-                        String timestamp) {
+                        Instant timestamp) {
                 System.out.println(
                                 "MongoMessageRepository findByChannel called with serverId: " + serverId
                                                 + ", channelId: " + channelId);
-                return mongoRepository.findByServerIdAndChannelIdAfter(serverId, channelId, timestamp)
+                return mongoRepository.findByServerIdAndChannelIdAndTimestampGreaterThan(serverId, channelId, timestamp,
+                                Sort.by(Sort.Direction.ASC,
+                                                "timestamp"))
                                 .stream()
                                 .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(),
                                                 doc.getChannelId(), doc.getAttachments(), doc.getMentions(),
-                                                new MessageContent(doc.getContent())))
+                                                new MessageContent(doc.getContent()), doc.getTimestamp()))
                                 .collect(Collectors.toList());
         }
 
@@ -67,13 +75,13 @@ public class MongoMessageRepository implements MessageRepository {
                 if (doc != null) {
                         return new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(),
                                         doc.getChannelId(), doc.getAttachments(), doc.getMentions(),
-                                        new MessageContent(doc.getContent()));
+                                        new MessageContent(doc.getContent()), doc.getTimestamp());
                 }
                 return null;
         }
 
         @Override
-        public long countByChannelBeforeTimeStamp(String serverId, String channelId, String timestamp) {
+        public long countByChannelBeforeTimeStamp(String serverId, String channelId, Instant timestamp) {
                 System.out.println("MongoMessageRepository countByChannel called with serverId: " + serverId
                                 + ", channelId: "
                                 + channelId);
@@ -81,7 +89,7 @@ public class MongoMessageRepository implements MessageRepository {
         }
 
         @Override
-        public long countByChannelAfterTimeStamp(String serverId, String channelId, String timestamp) {
+        public long countByChannelAfterTimeStamp(String serverId, String channelId, Instant timestamp) {
                 System.out.println("MongoMessageRepository countByChannel called with serverId: " + serverId
                                 + ", channelId: "
                                 + channelId);
@@ -129,7 +137,8 @@ public class MongoMessageRepository implements MessageRepository {
                                 .stream()
                                 .map(doc -> new Message(doc.getMessageId(), doc.getSenderId(), doc.getServerId(),
                                                 doc.getChannelId(), doc.getAttachments(), doc.getMentions(),
-                                                new MessageContent(doc.getContent())))
+                                                new MessageContent(doc.getContent()), doc.getTimestamp()))
+                                .filter(message -> message.getContent().getText().contains(content))
                                 .collect(Collectors.toList());
         }
 

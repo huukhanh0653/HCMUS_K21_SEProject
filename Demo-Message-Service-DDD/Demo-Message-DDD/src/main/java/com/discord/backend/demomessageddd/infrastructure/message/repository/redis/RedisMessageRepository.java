@@ -28,11 +28,11 @@ public class RedisMessageRepository implements CacheMessageRepository {
         // 2. Lưu ID vào sorted set theo channel (dùng timestamp làm score)
         String zsetKey = "server:" + message.getServerId() + ":channel:" + message.getChannelId() + ":messages";
         redisTemplate.opsForZSet().add(zsetKey, message.getMessageId(),
-                Instant.parse(message.getTimestamp()).toEpochMilli());
+                message.getTimestamp().toEpochMilli());
     }
 
     @Override
-    public List<Message> findByChannel(String serverId, String channelId, int amount, String timestamp) {
+    public List<Message> findByChannelBefore(String serverId, String channelId, int amount, Instant timestamp) {
 
         System.out.println("find by " + serverId + " by " + channelId + " by " + timestamp);
 
@@ -50,8 +50,8 @@ public class RedisMessageRepository implements CacheMessageRepository {
 
             // 2. Retrieve message IDs from the sorted set
             long offset = 0; // Start from the beginning
-            Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(zsetKey, 0,
-                    Instant.parse(timestamp).toEpochMilli(), offset, amount);
+            Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(
+                    zsetKey, 0, timestamp.toEpochMilli() - 1, offset, amount);
 
             // 3. Retrieve message content from individual keys
             List<Message> messages = new ArrayList<>();
@@ -60,16 +60,19 @@ public class RedisMessageRepository implements CacheMessageRepository {
                     String messageKey = "message:" + messageId;
                     Object value = redisTemplate.opsForValue().get(messageKey);
                     if (value != null && value instanceof Message message) {
-                        if (Instant.parse(message.getTimestamp()).isBefore(Instant.parse(timestamp))) {
+
+                        if (message.getTimestamp().isBefore(timestamp)) {
                             messages.add(message);
+                            System.out.println(
+                                    "Message: " + message.getMessageId() + ", Timestamp: " + message.getTimestamp());
                         }
                     }
                 }
             }
 
             // 4. Sort messages by timestamp in descending order
-            messages.sort((m1, m2) -> Long.compare(Instant.parse(m2.getTimestamp()).toEpochMilli(),
-                    Instant.parse(m1.getTimestamp()).toEpochMilli()));
+            messages.sort((m1, m2) -> Long.compare(m2.getTimestamp().toEpochMilli(),
+                    m1.getTimestamp().toEpochMilli()));
             return messages;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -77,7 +80,7 @@ public class RedisMessageRepository implements CacheMessageRepository {
     }
 
     @Override
-    public List<Message> findByChannelAfter(String serverId, String channelId, int amount, String timestamp) {
+    public List<Message> findByChannelAfter(String serverId, String channelId, int amount, Instant timestamp) {
         try {
             // Validate input parameters
             if (serverId == null || channelId == null || timestamp == null) {
@@ -91,7 +94,7 @@ public class RedisMessageRepository implements CacheMessageRepository {
             long offset = 0; // Start from the beginning
             long count = amount; // Limit the number of results
             Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(zsetKey, 0,
-                    Instant.parse(timestamp).toEpochMilli(), offset, count);
+                    timestamp.toEpochMilli(), offset, count);
 
             // 3. Retrieve message content from individual keys
             List<Message> messages = new ArrayList<>();
@@ -105,7 +108,7 @@ public class RedisMessageRepository implements CacheMessageRepository {
                         System.out.println("Type: " + value.getClass().getName());
 
                         if (value != null && value instanceof Message message) {
-                            if (Instant.parse(message.getTimestamp()).isAfter(Instant.parse(timestamp))) {
+                            if (message.getTimestamp().isAfter(timestamp)) {
                                 messages.add(message);
                             }
                         }
@@ -116,8 +119,8 @@ public class RedisMessageRepository implements CacheMessageRepository {
             }
 
             // 4. Sort messages by timestamp in descending order
-            messages.sort((m1, m2) -> Long.compare(Instant.parse(m2.getTimestamp()).toEpochMilli(),
-                    Instant.parse(m1.getTimestamp()).toEpochMilli()));
+            messages.sort((m1, m2) -> Long.compare(m2.getTimestamp().toEpochMilli(),
+                    m1.getTimestamp().toEpochMilli()));
 
             return messages;
         } catch (Exception e) {
@@ -126,7 +129,7 @@ public class RedisMessageRepository implements CacheMessageRepository {
     }
 
     @Override
-    public long countByChannelBefore(String serverId, String channelId, String timestamp) {
+    public long countByChannelBefore(String serverId, String channelId, Instant timestamp) {
         System.out.println("CountByChannel called with serverId: " + serverId + ", channelId: " + channelId
                 + ", timestamp: " + timestamp);
 
@@ -134,7 +137,7 @@ public class RedisMessageRepository implements CacheMessageRepository {
         String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
 
         // 2. Parse timestamp into milliseconds (epoch time)
-        long maxScore = Instant.parse(timestamp).toEpochMilli();
+        long maxScore = timestamp.toEpochMilli();
 
         // 3. Use ZCOUNT to count messages with score < timestamp
         long count = redisTemplate.opsForZSet().count(zsetKey, 0, maxScore - 1); // < timestamp
@@ -145,12 +148,12 @@ public class RedisMessageRepository implements CacheMessageRepository {
     }
 
     @Override
-    public long countByChannelAfter(String serverId, String channelId, String timestamp) {
+    public long countByChannelAfter(String serverId, String channelId, Instant timestamp) {
         System.out.println("Counting NEWER messages with serverId: " + serverId + ", channelId: " + channelId
                 + ", timestamp: " + timestamp);
 
         String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
-        long minScore = Instant.parse(timestamp).toEpochMilli();
+        long minScore = timestamp.toEpochMilli();
 
         // ZCOUNT với min = timestamp + 1 để đảm bảo "mới hơn"
         long count = redisTemplate.opsForZSet().count(zsetKey, minScore + 1, Long.MAX_VALUE);
@@ -161,17 +164,17 @@ public class RedisMessageRepository implements CacheMessageRepository {
     }
 
     @Override
-    public void deleteByChannel(String serverId, String channelId, String timestamp) {
+    public void deleteByChannel(String serverId, String channelId, Instant timestamp) {
         // 1. Xóa tất cả message trong sorted set theo channel
         String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
-        redisTemplate.opsForZSet().removeRangeByScore(zsetKey, 0, Instant.parse(timestamp).toEpochMilli());
+        redisTemplate.opsForZSet().removeRangeByScore(zsetKey, 0, timestamp.toEpochMilli());
     }
 
     @Override
-    public void deleteByServer(String serverId, String timestamp) {
+    public void deleteByServer(String serverId, Instant timestamp) {
         // 1. Xóa tất cả message trong sorted set theo server
         String zsetKey = "server:" + serverId + ":messages";
-        redisTemplate.opsForZSet().removeRangeByScore(zsetKey, 0, Instant.parse(timestamp).toEpochMilli());
+        redisTemplate.opsForZSet().removeRangeByScore(zsetKey, 0, timestamp.toEpochMilli());
     }
 
     @Override
@@ -209,12 +212,12 @@ public class RedisMessageRepository implements CacheMessageRepository {
     }
 
     @Override
-    public List<Message> findByContent(String content, String timestamp, int amount, String serverId,
+    public List<Message> findByContent(String content, Instant timestamp, int amount, String serverId,
             String channelId) {
         // 1. Tìm kiếm nội dung message theo content
         String zsetKey = "server:" + serverId + ":channel:" + channelId + ":messages";
         Set<Object> messageIds = redisTemplate.opsForZSet().rangeByScore(zsetKey, 0,
-                Instant.parse(timestamp).toEpochMilli(), 0,
+                timestamp.toEpochMilli(), 0,
                 amount);
 
         // 2. Lấy nội dung message từ key riêng

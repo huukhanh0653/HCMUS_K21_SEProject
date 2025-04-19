@@ -27,12 +27,12 @@ public class FetchMessage {
 
         this.messages = messages.stream().map(message -> new MessageFetchRequest(message.getMessageId(),
                 message.getSenderId(), message.getServerId(), message.getChannelId(), message.getContent().getText(),
-                message.getAttachments(), message.getMentions(), message.getTimestamp())).toList();
+                message.getAttachments(), message.getMentions(), message.getTimestamp().toString())).toList();
         this.amount = amount;
         this.lastMessageTimestamp = lastMessageTimestamp;
         this.hasMore = hasMore;
 
-        System.out.println("FetchMessage constructor called with messages: " + messages + ", amount: " + amount
+        System.out.println("FetchMessage constructor called with amount: " + amount
                 + ", lastMessageTimestamp: " + lastMessageTimestamp + ", hasMore: " + hasMore);
 
     }
