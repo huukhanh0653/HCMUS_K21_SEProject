@@ -19,18 +19,18 @@ export class RoleService {
   async createRole(serverId: string, data: RoleDto) {
     const roleDto = plainToClass(RoleDto, data);
     const errors = await validate(roleDto);
-    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+    if (errors.length > 0) throw new Error(`Validation failed: ${errors}`);
 
     const server = await this.serverRepository.findOne({
       where: { id: serverId },
     });
-    if (!server) return { message: 'Server not found' };
+    if (!server) throw new Error('Server not found');
 
     const existingRole = await this.roleRepository.findOne({
       where: { server_id: serverId, name: data.name },
     });
     if (existingRole)
-      return { message: 'Role with this name already exists in the server' };
+      throw new Error('Role with this name already exists in the server');
 
     const role = this.roleRepository.create({
       server_id: serverId,
@@ -48,10 +48,10 @@ export class RoleService {
   async updateRole(roleId: string, data: RoleDto) {
     const roleDto = plainToClass(RoleDto, data);
     const errors = await validate(roleDto, { skipMissingProperties: true });
-    if (errors.length > 0) return { message: `Validation failed: ${errors}` };
+    if (errors.length > 0) throw new Error(`Validation failed: ${errors}`);
 
     const role = await this.getRoleById(roleId);
-    if (!role) return { message: 'Role not found' };
+    if (!role) throw new Error('Role not found');
 
     await this.roleRepository.update(roleId, data);
 

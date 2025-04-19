@@ -16,16 +16,16 @@ const SocialLogin = ({ onError }) => {
     try {
       const user = await signInWithGoogle();
       if (!user) return onError("Đăng nhập Google thất bại");
-  
+
       await UserService.syncFirebaseUser(user.uid, user.email);
       const response = await UserService.getUserByEmail(user.email);
-  
+
       console.log("User response from backend:", response);
-  
+
       // Convert string to boolean if needed
-      const isActivated = response.isActivated === true || response.isActivated === "true";
-  
-      if (!isActivated) {
+      const isBanned = response.status === "banned";
+
+      if (isBanned) {
         console.log("User is not activated:", response);
         const auth = getAuth();
         auth.signOut(); // Đăng xuất người dùng nếu tài khoản không được kích hoạt
@@ -35,8 +35,7 @@ const SocialLogin = ({ onError }) => {
 
         onError("User is not activated");
         throw new Error("User is not activated");
-      }
-      else{
+      } else {
         localStorage.setItem("email", response.email);
         localStorage.setItem("username", response.username);
         localStorage.setItem("user", JSON.stringify(response));
@@ -49,7 +48,6 @@ const SocialLogin = ({ onError }) => {
       onError("Google login failed: " + err.message);
     }
   };
-  
 
   return (
     <button
