@@ -119,29 +119,6 @@ export default function ServerChat(props) {
     };
   }, [serverId, channelId]);
 
-  // Khởi tạo tin nhắn khi dữ liệu trước đó đến.
-  /*useEffect(() => {
-    // 1) Khi load lần đầu từ trước (beforeData)
-    if (beforeData?.fetchMessagesBefore && !initialFetchedRef.current) {
-      const { messages: fetched, hasMore: more, lastMessageTimestamp } =
-        beforeData.fetchMessagesBefore;
-
-      setMessages(fetched);
-      setHasMore(more);
-      console.log("Fetched before:", fetched);
-      initialFetchedRef.current = true;
-      setLastTimestamp(lastMessageTimestamp);
-    }
-
-    // 2) Khi có kết quả fetchMessagesAfter
-    if (afterData?.fetchMessagesAfter) {
-      const { messages: newer } = afterData.fetchMessagesAfter;
-      console.log("Fetched after:", newer);
-      // nếu muốn, có thể merge mới vào state:
-      // setMessages(prev => [...prev, ...newer]);
-    }
-  }, [beforeData, afterData]);*/
-
   const loadMessages = useCallback(async () => {
     // Nếu đã đang chạy, bỏ qua
     if (isLoadingRef.current) return;
