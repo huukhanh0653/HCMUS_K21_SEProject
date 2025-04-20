@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Friend = require("../models/Friend");
 const FriendRequest = require("../models/FriendRequest");
+const Block = require("../models/Block");
 const { Op } = require("sequelize");
 
 class FriendService {
@@ -10,6 +11,7 @@ class FriendService {
         throw new Error("Both user_id and friend_id are required");
       }
 
+      // Check if the friend relationship already exists
       const existingFriend = await Friend.findOne({
         where: {
           [Op.or]: [
@@ -22,7 +24,8 @@ class FriendService {
         throw new Error("Friend already exists");
       }
 
-      return await Friend.create({ user_id, friend_id });
+      await Friend.create({ user_id, friend_id });
+      return { message: "Friend added successfully" };
     } catch (error) {
       throw new Error(`Failed to add friend: ${error.message}`);
     }
@@ -32,6 +35,19 @@ class FriendService {
     try {
       if (!user_id || !friend_id) {
         throw new Error("Both user_id and friend_id are required");
+      }
+
+      // Check if either user has blocked the other
+      const existingBlock = await Block.findOne({
+        where: {
+          [Op.or]: [
+            { user_id, friend_id },
+            { user_id: friend_id, friend_id: user_id },
+          ],
+        },
+      });
+      if (existingBlock) {
+        throw new Error("This friend has been blocked");
       }
 
       const existingRequest = await FriendRequest.findOne({
@@ -163,6 +179,17 @@ class FriendService {
         throw new Error("Both user_id and friend_id are required");
       }
 
+      // Delete all blocks involving these two users (in either direction)
+      await Block.destroy({
+        where: {
+          [Op.or]: [
+            { user_id, friend_id },
+            { user_id: friend_id, friend_id: user_id },
+          ],
+        },
+      });
+
+      // Now remove the friend relationship
       const result = await Friend.destroy({
         where: {
           [Op.or]: [

@@ -1,5 +1,4 @@
 import axios from "axios";
-//import { User_API } from "../../apiConfig";
 
 // API base URL from Vite environment
 const User_API = import.meta.env.VITE_USER_API;
@@ -15,6 +14,41 @@ const getFriends = async (userId) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching friends data:", error);
+    throw error;
+  }
+};
+
+const addFriend = async (userId, friendId) => {
+  try {
+    const response = await axios.post(
+      `${User_API}/api/friends/add`,
+      {
+        user_id: userId,
+        friend_id: friendId,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding friend:", error);
+    throw error;
+  }
+};
+
+const removeFriend = async (userId, friendId) => {
+  try {
+    const response = await axios.delete(`${User_API}/api/friends/remove`, {
+      headers: { "Content-Type": "application/json" },
+      data: {
+        user_id: userId,
+        friend_id: friendId,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error removing friend:", error);
     throw error;
   }
 };
@@ -74,6 +108,56 @@ const declineFriendRequest = async (requestID) => {
     return response;
   } catch (error) {
     console.error("Error declining friend request:", error);
+    throw error;
+  }
+};
+
+// --------------------
+// Các hàm gọi API liên quan đến block
+// --------------------
+const getBlockedFriends = async (userId) => {
+  try {
+    const response = await axios.get(`${User_API}/api/blocks/${userId}`, {
+      headers: { accept: "application/json" },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching blocked friends:", error);
+    throw error;
+  }
+};
+
+const addBlock = async (userId, friendId) => {
+  try {
+    const response = await axios.post(
+      `${User_API}/api/blocks`,
+      {
+        user_id: userId,
+        friend_id: friendId,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding block:", error);
+    throw error;
+  }
+};
+
+const removeBlock = async (userId, friendId) => {
+  try {
+    const response = await axios.delete(`${User_API}/api/blocks`, {
+      headers: { "Content-Type": "application/json" },
+      data: {
+        user_id: userId,
+        friend_id: friendId,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error removing block:", error);
     throw error;
   }
 };
@@ -174,7 +258,7 @@ const updateUser = async (userId, userData) => {
     );
     return response;
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("Error updating user:", error);
     throw error;
   }
 };
@@ -185,10 +269,17 @@ const updateUser = async (userId, userData) => {
 const UserService = {
   // Bạn bè & friend requests
   getFriends,
+  addFriend,
+  removeFriend,
   sendFriendRequest,
   getFriendRequests,
   acceptFriendRequest,
   declineFriendRequest,
+
+  // Block
+  getBlockedFriends,
+  addBlock,
+  removeBlock,
 
   // Người dùng
   syncFirebaseUser,

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Plus, UserPlus } from "lucide-react";
+import { UserPlus, UserX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import FriendContextMenu from "./FriendContextMenu";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 const DMSidebar = ({
   isDarkMode,
@@ -14,7 +14,6 @@ const DMSidebar = ({
   friends,
   handleFriendAction,
   getStatusColor,
-  user,
 }) => {
   const { t } = useTranslation();
   const { pendingRequests } = useSelector((state) => state.home);
@@ -128,6 +127,27 @@ const DMSidebar = ({
           >
             <UserPlus size={16} />
             {t("Add friend")}
+          </button>
+
+          {/* Blocked Friends Tab */}
+          <button
+            className={`w-full px-2 py-1 rounded text-left flex items-center gap-2 ${
+              activeTab === "blocked_friends"
+                ? isDarkMode
+                  ? "bg-red-600 text-white"
+                  : "bg-red-500 text-white"
+                : isDarkMode
+                ? "text-gray-400 hover:bg-[#35373c]"
+                : "text-gray-700 hover:bg-gray-200"
+            }`}
+            onClick={() => {
+              setActiveTab("blocked_friends");
+              setShowAddFriend(false);
+              setSelectedFriend(null);
+            }}
+          >
+            <UserX size={16} />
+            {t("Blocked friends")}
           </button>
         </div>
       </div>

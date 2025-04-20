@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   MoreVertical,
@@ -8,66 +8,44 @@ import {
   Slash,
 } from "lucide-react";
 import { useTheme } from "../layout/ThemeProvider";
-//import { User_API } from "../../../apiConfig";
+import toast from "react-hot-toast";
+import UserService from "../../services/UserService";
+import { useSelector, useDispatch } from "react-redux";
+import { setSelectedFriend, setActiveTab } from "../../redux/homeSlice";
 
-export default function FriendList() {
+export default function FriendList({ refreshFriends }) {
   const { t } = useTranslation();
-  const [friends, setFriends] = useState([]);
   const [showMenuForFriend, setShowMenuForFriend] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [friendToUnfriend, setFriendToUnfriend] = useState(null);
+  const [action, setAction] = useState("unfriend");
+  const [friendToAction, setFriendToAction] = useState(null);
   const { isDarkMode } = useTheme();
+  const dispatch = useDispatch();
+  const friends = useSelector((state) => state.home.friends);
 
   const currentUser = JSON.parse(localStorage.getItem("user")) || {};
 
-  // API base URL from Vite environment
-  const User_API = import.meta.env.VITE_USER_API;
-
-  // Fetch danh sách bạn bè từ API
-  useEffect(() => {
-    const fetchFriends = async () => {
-      try {
-        const userID = currentUser.id; // Lấy userID từ localStorage
-        const response = await fetch(`${User_API}/api/friends/${userID}`, {
-          headers: { accept: "application/json" },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const transformed = data.map((friend) => ({
-            ...friend,
-            status: "online", // hoặc logic khác tùy bạn
-          }));
-          setFriends(transformed);
-        } else {
-          console.error("Failed to fetch friends data");
-        }
-      } catch (error) {
-        console.error("Error fetching friends data:", error);
-      }
-    };
-
-    fetchFriends();
-  }, [currentUser.id]);
-
-  // Xử lý nút Message
+  // Handle Message button
   const handleMessage = (friend) => {
-    console.log("Message friend:", friend);
-    // Xử lý mở DM, chuyển tab chat, v.v.
+    dispatch(setSelectedFriend(friend.username));
+    dispatch(setActiveTab("friend"));
   };
 
-  // Xử lý các option trong menu 3 chấm
+  // Handle options in the three-dot menu
   const handleOptionClick = (friendId, action) => {
     switch (action) {
       case "video":
         console.log(`Video call with friend: ${friendId}`);
         break;
       case "unfriend":
-        // Hiện modal xác nhận hủy kết bạn
-        setFriendToUnfriend(friendId);
+        setFriendToAction(friendId);
         setShowConfirmModal(true);
+        setAction("unfriend");
         break;
       case "block":
-        console.log(`Block friend: ${friendId}`);
+        setFriendToAction(friendId);
+        setShowConfirmModal(true);
+        setAction("block");
         break;
       default:
         break;
@@ -75,44 +53,45 @@ export default function FriendList() {
     setShowMenuForFriend(null);
   };
 
-  // Hàm gọi API DELETE hủy kết bạn
+  // Call API to unfriend
   const unfriend = async () => {
     try {
-      const response = await fetch(`${User_API}/api/friends/remove`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-        },
-        body: JSON.stringify({
-          userID: currentUser.id,
-          friendID: friendToUnfriend,
-        }),
-      });
-      if (response.ok) {
-        console.log(`Successfully unfriended friend: ${friendToUnfriend}`);
-        // Cập nhật lại danh sách bạn bè (ví dụ: loại bỏ bạn vừa hủy kết bạn)
-        setFriends((prev) =>
-          prev.filter((friend) => friend.id !== friendToUnfriend)
-        );
-      } else {
-        console.error("Failed to unfriend");
-      }
+      await UserService.removeFriend(currentUser.id, friendToAction);
+      toast.success(t("Successfully unfriended friend"));
+      // Re-fetch friends to ensure consistency with server
+      await refreshFriends();
     } catch (error) {
       console.error("Error during unfriending:", error);
+      toast.error(t("Failed to unfriend"));
     } finally {
       setShowConfirmModal(false);
-      setFriendToUnfriend(null);
+      setFriendToAction(null);
     }
   };
 
-  // Hàm xử lý khi người dùng chọn No trong modal
-  const cancelUnfriend = () => {
-    setShowConfirmModal(false);
-    setFriendToUnfriend(null);
+  // Call API to block
+  const block = async () => {
+    try {
+      await UserService.addBlock(currentUser.id, friendToAction);
+      toast.success(t("Successfully blocked friend"));
+      // Re-fetch friends to ensure consistency with server
+      await refreshFriends();
+    } catch (error) {
+      console.error("Error during blocking:", error);
+      toast.error(t("Failed to block"));
+    } finally {
+      setShowConfirmModal(false);
+      setFriendToAction(null);
+    }
   };
 
-  // Xác định các lớp CSS cho modal dựa trên Dark/Light mode
+  // Handle cancellation in modal
+  const cancelAction = () => {
+    setShowConfirmModal(false);
+    setFriendToAction(null);
+  };
+
+  // Determine CSS classes for modal based on Dark/Light mode
   const modalContainerClasses = isDarkMode
     ? "bg-gray-800 text-white"
     : "bg-white text-gray-800";
@@ -134,16 +113,16 @@ export default function FriendList() {
         {t("Your friends are listed below.")}
       </p>
 
-      {/* Danh sách bạn bè */}
+      {/* Friends list */}
       <div className="flex flex-col gap-2">
         {friends.map((friend) => (
           <div
-            key={friend.id}
+            key={friend._id}
             className={`p-2 rounded flex justify-between items-center ${
               isDarkMode ? "bg-[#1e1f22]" : "bg-white border border-gray-300"
             }`}
           >
-            {/* Thông tin bạn bè */}
+            {/* Friend info */}
             <div className="flex items-center gap-2 w-[60%]">
               <div
                 className={`w-8 h-8 rounded-full overflow-hidden ${
@@ -170,9 +149,9 @@ export default function FriendList() {
               </div>
             </div>
 
-            {/* Các nút hành động */}
+            {/* Action buttons */}
             <div className="flex items-center gap-2 relative">
-              {/* Nút Message */}
+              {/* Message button */}
               <button
                 className="relative group"
                 onClick={() => handleMessage(friend)}
@@ -186,13 +165,13 @@ export default function FriendList() {
                 </span>
               </button>
 
-              {/* Nút Options */}
+              {/* Options button */}
               <div className="relative">
                 <button
                   className="relative group"
                   onClick={() =>
                     setShowMenuForFriend(
-                      showMenuForFriend === friend.id ? null : friend.id
+                      showMenuForFriend === friend._id ? null : friend._id
                     )
                   }
                 >
@@ -205,8 +184,8 @@ export default function FriendList() {
                   </span>
                 </button>
 
-                {/* Menu thả xuống */}
-                {showMenuForFriend === friend.id && (
+                {/* Dropdown menu */}
+                {showMenuForFriend === friend._id && (
                   <div
                     className={`absolute right-0 top-full mt-2 rounded shadow-md z-10 w-36 ${
                       isDarkMode
@@ -215,21 +194,21 @@ export default function FriendList() {
                     }`}
                   >
                     <button
-                      onClick={() => handleOptionClick(friend.id, "video")}
+                      onClick={() => handleOptionClick(friend._id, "video")}
                       className="flex items-center w-full px-4 py-2 hover:bg-[#3a3c41] text-left"
                     >
                       <Video size={16} className="mr-2" />
                       {t("Video Call")}
                     </button>
                     <button
-                      onClick={() => handleOptionClick(friend.id, "unfriend")}
+                      onClick={() => handleOptionClick(friend._id, "unfriend")}
                       className="flex items-center w-full px-4 py-2 hover:bg-[#3a3c41] text-left"
                     >
                       <UserMinus size={16} className="mr-2" />
                       {t("Unfriend")}
                     </button>
                     <button
-                      onClick={() => handleOptionClick(friend.id, "block")}
+                      onClick={() => handleOptionClick(friend._id, "block")}
                       className="flex items-center w-full px-4 py-2 hover:bg-[#3a3c41] text-left"
                     >
                       <Slash size={16} className="mr-2" />
@@ -243,23 +222,22 @@ export default function FriendList() {
         ))}
       </div>
 
-      {/* Modal xác nhận hủy kết bạn */}
+      {/* Confirmation modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
           <div className={`${modalContainerClasses} p-4 rounded shadow-md`}>
             <p className="mb-4">
-              {t("Are you sure you want to")} {t("unfriend")}{" "}
-              {t("this person?")}
+              {t("Are you sure you want to")} {t(action)} {t("this person?")}
             </p>
             <div className="flex justify-end gap-2">
               <button
-                onClick={cancelUnfriend}
+                onClick={cancelAction}
                 className="px-4 py-2 border rounded"
               >
                 {t("No")}
               </button>
               <button
-                onClick={unfriend}
+                onClick={action === "unfriend" ? unfriend : block}
                 className="px-4 py-2 border rounded bg-red-500 text-white"
               >
                 {t("Yes")}

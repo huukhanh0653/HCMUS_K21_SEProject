@@ -1,6 +1,7 @@
 {
   "Find or start a conversation": "Tìm hoặc bắt đầu cuộc trò chuyện",
   "Friends": "Bạn bè",
+  "Blocked friends": "Bạn bè bị chặn",
   "ONLINE": "TRỰC TUYẾN",
   "OFFLINE": "NGOẠI TUYẾN",
   "Online": "Trực tuyến",
@@ -83,6 +84,7 @@
   "Unfriend": "Hủy kết bạn",
   "unfriend": "hủy kết bạn",
   "Block": "Chặn",
+  "Unblock": "Bỏ chặn",
   "Ban": "Cấm",
   "ban": "cấm",
   "Unban": "Bỏ cấm",
