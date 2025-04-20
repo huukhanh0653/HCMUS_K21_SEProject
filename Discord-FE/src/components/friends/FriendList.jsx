@@ -32,7 +32,7 @@ export default function FriendList({
   const handleMessage = (friend) => {
     //console.log("Message friend:", friend);
     // Xử lý mở DM, chuyển tab chat, v.v.
-    setSelectedFriend(friend.id);
+    setSelectedFriend(friend._id);
     setActiveTab("friend");
   };
 
