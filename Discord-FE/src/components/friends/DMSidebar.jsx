@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Plus, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import FriendContextMenu from "./FriendContextMenu";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import Fuse from "fuse.js";
 
 const DMSidebar = ({
   isDarkMode,
@@ -19,14 +20,71 @@ const DMSidebar = ({
   const { t } = useTranslation();
   const { pendingRequests } = useSelector((state) => state.home);
   const requestCount = pendingRequests.length;
+
+  // State và debounce cho search
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
-  const filteredFriends = friends.filter((friend) =>
-    friend.username.toLowerCase().includes(searchQuery.toLowerCase())
+  // Khởi tạo Fuse.js, chỉ rebuild khi friends thay đổi
+  const fuse = useMemo(() => {
+    return new Fuse(friends, {
+      keys: ["username"],
+      threshold: 0.3,        // độ tương đồng, <0.3 chặt hơn
+      distance: 100,
+      includeMatches: true,  // để highlight
+    });
+  }, [friends]);
+
+  // Kết quả search: nếu query rỗng => trả về toàn bộ, ngược lại fuse.search
+  const filteredResults = useMemo(() => {
+    if (!debouncedQuery.trim()) {
+      return friends.map((f) => ({ item: f, matches: [] }));
+    }
+    return fuse.search(debouncedQuery);
+  }, [debouncedQuery, fuse, friends]);
+
+  // Đặt filteredFriends thành danh sách bạn bè đã search
+  const filteredFriends = filteredResults.map((res) => res.item);
+
+  // Hàm render username có highlight
+  const highlightMatch = useCallback(
+    (username, matches) => {
+      if (!matches || matches.length === 0) return username;
+
+      const match = matches.find((m) => m.key === "username");
+      if (!match) return username;
+
+      let lastIndex = 0;
+      const parts = [];
+
+      match.indices.forEach(([start, end], idx) => {
+        // text trước highlight
+        if (start > lastIndex) {
+          parts.push(username.slice(lastIndex, start));
+        }
+        // phần highlight
+        parts.push(
+          <mark
+            key={idx}
+            className={isDarkMode ? "bg-yellow-600" : "bg-yellow-200"}
+          >
+            {username.slice(start, end + 1)}
+          </mark>
+        );
+        lastIndex = end + 1;
+      });
+      // text còn lại
+      if (lastIndex < username.length) {
+        parts.push(username.slice(lastIndex));
+      }
+      return parts;
+    },
+    [isDarkMode]
   );
 
   return (
@@ -51,7 +109,7 @@ const DMSidebar = ({
               isDarkMode ? "text-gray-300" : "text-gray-700"
             }`}
             value={searchQuery}
-            onChange={handleSearchChange}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
@@ -79,7 +137,7 @@ const DMSidebar = ({
             {t("Friends")}
           </button>
 
-          {/* Friend Requests Tab with badge */}
+          {/* Friend Requests Tab */}
           <button
             className={`w-full px-2 py-1 rounded flex justify-between items-center ${
               activeTab === "friend_requests"
@@ -145,46 +203,53 @@ const DMSidebar = ({
       <div className="flex-1 overflow-y-auto pb-16">
         <div className="px-2 py-1">
           {filteredFriends.length > 0 ? (
-            filteredFriends.map((friend, index) => (
-              <FriendContextMenu
-                key={index}
-                friend={friend}
-                onAction={handleFriendAction}
-              >
-                <div
-                  className={`flex items-center gap-2 p-1 rounded cursor-pointer ${
-                    selectedFriend === friend.username
-                      ? isDarkMode
-                        ? "bg-[#35373c]"
-                        : "bg-gray-200"
-                      : isDarkMode
-                      ? "hover:bg-[#35373c]"
-                      : "hover:bg-gray-100"
-                  }`}
-                  onClick={() => {
-                    setSelectedFriend(friend._id);
-                    setShowAddFriend(false);
-                    setActiveTab("friend");
-                  }}
+            filteredResults.map((res, idx) => {
+              const friend = res.item;
+              return (
+                <FriendContextMenu
+                  key={friend._id}
+                  friend={friend}
+                  onAction={handleFriendAction}
                 >
-                  <div className="relative">
-                    <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden bg-[#36393f]">
-                      <img
-                        src={friend.avatar || "/placeholder.svg"}
-                        alt={friend.username}
-                        className="w-full h-full object-cover"
+                  <div
+                    className={`flex items-center gap-2 p-1 rounded cursor-pointer ${
+                      selectedFriend === friend._id
+                        ? isDarkMode
+                          ? "bg-[#35373c]"
+                          : "bg-gray-200"
+                        : isDarkMode
+                        ? "hover:bg-[#35373c]"
+                        : "hover:bg-gray-100"
+                    }`}
+                    onClick={() => {
+                      setSelectedFriend(friend._id);
+                      setShowAddFriend(false);
+                      setActiveTab("friend");
+                    }}
+                  >
+                    {/* Avatar & status */}
+                    <div className="relative">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-[#36393f]">
+                        <img
+                          src={friend.avatar || "/placeholder.svg"}
+                          alt={friend.username}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div
+                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 ${
+                          isDarkMode ? "border-[#2b2d31]" : "border-white"
+                        } ${getStatusColor(friend.status)}`}
                       />
                     </div>
-                    <div
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 ${
-                        isDarkMode ? "border-[#2b2d31]" : "border-white"
-                      } ${getStatusColor(friend.status)}`}
-                    ></div>
+                    {/* Username with highlight */}
+                    <span className="text-sm">
+                      {highlightMatch(friend.username, res.matches)}
+                    </span>
                   </div>
-                  <span>{friend.username}</span>
-                </div>
-              </FriendContextMenu>
-            ))
+                </FriendContextMenu>
+              );
+            })
           ) : (
             <div
               className={`px-2 py-1 text-sm ${

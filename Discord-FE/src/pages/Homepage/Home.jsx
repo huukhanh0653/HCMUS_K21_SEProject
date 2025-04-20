@@ -341,13 +341,7 @@ export default function Home({ user }) {
                 </div>
               </div>
               
-              {/* Log activeTab and selectedFriend for debugging */}
-              {(() => {
-                console.log("activeTab:", activeTab);
-                console.log("Friend:", selectedFriend);
-                console.log("Friends:", friends);
-                console.log("selectedFriendObj:", selectedFriendObj);
-              })()}              {/* Nội dung chính DM */}
+              {/* Nội dung chính DM */}
               <Suspense fallback={<div>Loading Main Content...</div>}>
                 {activeTab === "friends" ? (
                   <FriendList 

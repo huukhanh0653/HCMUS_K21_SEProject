@@ -130,7 +130,6 @@ export default function UserProfile({ user, onClose }) {
     const updatedUser = {
       username: username.trim(),
       email: storedUser.email,
-      password: "", // Không cập nhật mật khẩu ở đây
       avatar: avatarUrl,
       background: backgroundUrl,
       is_admin: storedUser.is_admin,
@@ -148,7 +147,7 @@ export default function UserProfile({ user, onClose }) {
       }
 
       const responseData = await res.json();
-      console.log("✅ User updated:", responseData);
+      //console.log("✅ User updated:", responseData);
 
       const newUserData = {
         ...storedUser,
