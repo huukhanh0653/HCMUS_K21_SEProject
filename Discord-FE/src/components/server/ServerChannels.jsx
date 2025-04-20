@@ -288,11 +288,6 @@ export default function ServerChannels({
 
   // Handle joining/leaving voice channel
   const voiceChannel = useSelector((state) => state.home.voiceChannel);
-  useEffect(() => {
-    if (!voiceChannel) setJoinedVoiceChannelId(null);
-  }, [voiceChannel]);
-
-  const handleLeaveVoiceChannel = () => setJoinedVoiceChannelId(null);
 
   // Confirmation & action for leaving server
   const handleLeaveServer = async () => {
@@ -651,12 +646,10 @@ export default function ServerChannels({
                 )}
               </div>
 
-              {channel.type === "voice" &&
-                channel.id === joinedVoiceChannelId && (
+              {channel.type === "voice" && (
                   <VoiceChat
                     user={JSON.parse(localStorage.getItem("user"))}
                     channel={channel}
-                    onLeave={handleLeaveVoiceChannel}
                   />
                 )}
             </div>

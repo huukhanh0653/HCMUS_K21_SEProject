@@ -25,10 +25,26 @@ spec:
         - name: storage-service
           image: huukhanh0653/echo-chat-gcs-service:latest
           ports:
-            - containerPort: 8083
+            - containerPort: 80
           env:
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /var/secrets/google/key.json
+            - name: SPRING_APPLICATION_NAME
+              value: GCSService
+            - name: GCP_STORAGE_BUCKET_NAME
+              value: discord_clone
+            - name: SPRING_CLOUD_GCP_STORAGE_BUCKET_NAME
+              value: discord_clone
+            - name: SPRING_CLOUD_GCP_STORAGE_ENABLED
+              value: "true"
+            - name: SERVER_PORT
+              value: "8083"
+            - name: SPRING_SERVLET_MULTIPART_ENABLED
+              value: "true"
+            - name: SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE
+              value: 10MB
+            - name: SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE
+              value: 20MB
           volumeMounts:
             - name: gcp-service-account-volume
               mountPath: /var/secrets/google
@@ -56,4 +72,4 @@ spec:
     - protocol: TCP
       port: 8083
       targetPort: 8083
-  type: LoadBalancer
+  type: NodePort # Exposes the service internally within the cluster

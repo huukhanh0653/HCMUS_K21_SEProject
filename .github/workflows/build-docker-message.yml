@@ -1,48 +1,48 @@
-name: Build and Deploy Docker Image
+# name: Build and Deploy Docker Image
 
-on:
-  push:
-    branches:
-      [ "master" ]
-  pull_request:
-    branches:
-      [ "master" ]
+# on:
+#   push:
+#     branches:
+#       [ "master" ]
+#   pull_request:
+#     branches:
+#       [ "master" ]
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v2
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Message Service - Build and Push Docker Image
-        run: |
-          docker build \
-            --build-arg SPRING_APPLICATION_NAME=Demo-Message-DDD \
-            --build-arg SPRING_DATA_MONGODB_URI='${{ secrets.MONGODB_URI }}' \
-            --build-arg SPRING_GRAPHQL_SCHEMA_LOCATIONS='${{ secrets.GRAPHQL_SCHEMA_LOCATIONS }}' \
-            --build-arg SPRING_GRAPHQL_GRAPHIQL_ENABLED='${{ secrets.GRAPHQL_GRAPHIQL_ENABLED }}' \
-            --build-arg SPRING_GRAPHQL_GRAPHIQL_PATH='${{ secrets.GRAPHQL_GRAPHIQL_PATH }}' \
-            --build-arg SPRING_JACKSON_SERIALIZATION_WRITE_DATES_AS_TIMESTAMPS='${{ secrets.SPRING_JACKSON_SERIALIZATION_WRITE_DATES_AS_TIMESTAMPS }}' \
-            --build-arg SERVER_PORT=${{ secrets.MESSAGE_SERVICE_PORT }} \
-            --build-arg SPRING_KAFKA_BOOTSTRAP_SERVERS='${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}' \
-            --build-arg SPRING_KAFKA_PRODUCER_KEY_SERIALIZER='${{ secrets.KAFKA_PRODUCER_KEY_SERIALIZER }}' \
-            --build-arg SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER='${{ secrets.KAFKA_PRODUCER_VALUE_SERIALIZER }}' \
-            --build-arg SPRING_KAFKA_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS='${{ secrets.KAFKA_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS }}' \
-            --build-arg SPRING_DATA_REDIS_HOST='${{ secrets.REDIS_HOST }}' \
-            --build-arg SPRING_DATA_REDIS_PORT=${{ secrets.REDIS_PORT }} \
-            --build-arg SPRING_DATA_REDIS_PASSWORD='${{ secrets.REDIS_PASSWORD }}' \
-            -t ${{ secrets.DOCKER_USERNAME }}/echo-chat-message-service:latest ./Demo-Message-Service-DDD/Demo-Message-DDD
+#       - name: Message Service - Build and Push Docker Image
+#         run: |
+#           docker build \
+#             --build-arg SPRING_APPLICATION_NAME=Demo-Message-DDD \
+#             --build-arg SPRING_DATA_MONGODB_URI='${{ secrets.MONGODB_URI }}' \
+#             --build-arg SPRING_GRAPHQL_SCHEMA_LOCATIONS='${{ secrets.GRAPHQL_SCHEMA_LOCATIONS }}' \
+#             --build-arg SPRING_GRAPHQL_GRAPHIQL_ENABLED='${{ secrets.GRAPHQL_GRAPHIQL_ENABLED }}' \
+#             --build-arg SPRING_GRAPHQL_GRAPHIQL_PATH='${{ secrets.GRAPHQL_GRAPHIQL_PATH }}' \
+#             --build-arg SPRING_JACKSON_SERIALIZATION_WRITE_DATES_AS_TIMESTAMPS='${{ secrets.SPRING_JACKSON_SERIALIZATION_WRITE_DATES_AS_TIMESTAMPS }}' \
+#             --build-arg SERVER_PORT=${{ secrets.MESSAGE_SERVICE_PORT }} \
+#             --build-arg SPRING_KAFKA_BOOTSTRAP_SERVERS='${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}' \
+#             --build-arg SPRING_KAFKA_PRODUCER_KEY_SERIALIZER='${{ secrets.KAFKA_PRODUCER_KEY_SERIALIZER }}' \
+#             --build-arg SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER='${{ secrets.KAFKA_PRODUCER_VALUE_SERIALIZER }}' \
+#             --build-arg SPRING_KAFKA_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS='${{ secrets.KAFKA_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS }}' \
+#             --build-arg SPRING_DATA_REDIS_HOST='${{ secrets.REDIS_HOST }}' \
+#             --build-arg SPRING_DATA_REDIS_PORT=${{ secrets.REDIS_PORT }} \
+#             --build-arg SPRING_DATA_REDIS_PASSWORD='${{ secrets.REDIS_PASSWORD }}' \
+#             -t ${{ secrets.DOCKER_USERNAME }}/echo-chat-message-service:latest ./Demo-Message-Service-DDD/Demo-Message-DDD
 
-          docker push ${{ secrets.DOCKER_USERNAME }}/echo-chat-message-service:latest
+#           docker push ${{ secrets.DOCKER_USERNAME }}/echo-chat-message-service:latest
 

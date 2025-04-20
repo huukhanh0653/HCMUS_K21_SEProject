@@ -1,20 +1,22 @@
-import { useEffect, useState } from "react";
-import { Settings, Wifi, Mic, MicOff, PhoneCall } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Settings, Mic, MicOff, PhoneCall } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleMute, leaveVoiceChannel } from "../../redux/homeSlice";
 import SampleAvt from "../../assets/sample_avatar.svg";
+import VoiceChatService from "../../services/VoiceChatService";
 
 export default function UserPanel({ user, onProfileClick }) {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const dispatch = useDispatch();
 
+  const voiceServiceRef = useRef(null); // ✅ Add VoiceChatService reference
+
   const [username, setUsername] = useState("Unknown");
   const [avatarSrc, setAvatarSrc] = useState(SampleAvt);
 
-  // Lấy state voiceChannel & isMuted từ Redux
   const { voiceChannel, isMuted } = useSelector((state) => state.home);
 
   const updateUserInfo = () => {
@@ -57,6 +59,25 @@ export default function UserPanel({ user, onProfileClick }) {
     };
   }, []);
 
+  // ✅ Connect/disconnect to voice channel when voiceChannel changes
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser || !storedUser.id) return;
+
+    if (!voiceServiceRef.current) {
+      voiceServiceRef.current = new VoiceChatService();
+    }
+
+    if (voiceChannel) {
+      // Nếu đã vào voice channel, thực hiện kết nối
+      voiceServiceRef.current.join(storedUser.id, voiceChannel.channelId);
+    }
+
+    return () => {
+      voiceServiceRef.current?.leave();
+    };
+  }, [voiceChannel]);
+
   const truncateText = (text, maxLength) => {
     if (!text) return "";
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
@@ -64,10 +85,16 @@ export default function UserPanel({ user, onProfileClick }) {
 
   const handleToggleMic = () => {
     dispatch(toggleMute());
+    if (voiceServiceRef.current) {
+      voiceServiceRef.current.toggleMic(!isMuted);
+    }
   };
 
   const handleLeaveVoice = () => {
-    dispatch(leaveVoiceChannel());
+    if (voiceServiceRef.current) {
+      dispatch(leaveVoiceChannel());
+      voiceServiceRef.current.leave();
+    }
   };
 
   return (
@@ -79,7 +106,6 @@ export default function UserPanel({ user, onProfileClick }) {
       }`}
       style={{ minHeight: "50px" }}
     >
-      {/* Nếu đang ở voiceChannel thì hiển thị block Voice Connected */}
       {voiceChannel && (
         <div
           className={`mt-2 p-2 rounded-md flex flex-col gap-1 ${
@@ -87,30 +113,28 @@ export default function UserPanel({ user, onProfileClick }) {
           }`}
         >
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-green-500">
+            <span className="font-semibold text-green-300">
               {voiceChannel.channelName} / {voiceChannel.serverName}
             </span>
+            
+            <div className="flex items-right gap-2 mt-1">
+              <button onClick={handleToggleMic}>
+                {isMuted ? (
+                  <MicOff className="text-gray-400 hover:text-white" size={16} />
+                ) : (
+                  <Mic className="text-gray-400 hover:text-white" size={16} />
+                )}
+              </button>
+              <button onClick={handleLeaveVoice}>
+                <PhoneCall className="text-red-500 hover:text-red-400" size={16} />
+              </button> 
+            </div>
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <button onClick={handleToggleMic}>
-              {isMuted ? (
-                <MicOff className="text-gray-400 hover:text-white" size={16} />
-              ) : (
-                <Mic className="text-gray-400 hover:text-white" size={16} />
-              )}
-            </button>
-            <button onClick={handleLeaveVoice}>
-              <PhoneCall
-                className="text-red-500 hover:text-red-400"
-                size={16}
-              />
-            </button>
-          </div>
+          
         </div>
       )}
-      {/* Khối user info */}
-      <div className="flex items-center">
-        {/* Avatar */}
+
+      <div className="flex items-center gap-2 mt-1">
         <div
           className={`w-8 h-8 ${
             isDarkMode ? "bg-[#36393f]" : "bg-gray-200"
@@ -122,8 +146,6 @@ export default function UserPanel({ user, onProfileClick }) {
             className="w-full h-full rounded-full object-cover"
           />
         </div>
-
-        {/* Username + Status */}
         <div className="flex-1 ml-2 flex flex-col items-start">
           <div
             className={`text-sm font-semibold ${
@@ -141,8 +163,6 @@ export default function UserPanel({ user, onProfileClick }) {
             {t("Online")}
           </div>
         </div>
-
-        {/* Settings icon */}
         <div className="flex gap-1">
           <Settings
             size={20}

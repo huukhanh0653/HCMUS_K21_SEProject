@@ -1,0 +1,8 @@
+front-end-service.yaml
+back-end-service.yaml
+ingress.yaml
+server-channel-service.yaml
+notification-service.yaml
+user-service.yaml
+kafka.yaml
+gcs-service.yaml

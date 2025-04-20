@@ -2,12 +2,20 @@ import React, { useEffect, useRef, useState } from "react";
 import { X, MessageSquare, UserPlus, UserMinus, Ban } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../layout/ThemeProvider";
+import { useDispatch } from "react-redux";
 
-export default function FriendProfile({ friend, onClose, isFriend = true }) {
+export default function FriendProfile({ 
+  friend, 
+  setActiveTab,
+  setSelectedFriend,
+  onClose, 
+  isFriend = true 
+}) {
   const modalRef = useRef(null);
-  const [activeTab, setActiveTab] = useState("about");
+  const [ProfileActiveTab, setProfileActiveTab] = useState("about");
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
+  const dispatch = useDispatch();
 
   const handleClickOutside = (event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -26,9 +34,27 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
+  // Handle actions
   const handleAction = (action) => {
-    console.log(`${action} user:`, friend.name);
-    // Handle các hành động: message, unfriend, block, ...
+    switch (action) {
+      case "message":
+        // dispatch selected friend and switch to DM
+        setSelectedFriend(friend._id);
+        setActiveTab("friend");
+        onClose();
+        break;
+      case "unfriend":
+        console.log(`Unfriend user: ${friend.username}`);
+        break;
+      case "add_friend":
+        console.log(`Add friend: ${friend.username}`);
+        break;
+      case "block":
+        console.log(`Block user: ${friend.username}`);
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -126,20 +152,20 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
           <div className={`border-b mb-4 ${isDarkMode ? "border-[#232428]" : "border-gray-300"}`}>
             <div className="flex gap-4">
               <button
-                className={`pb-2 ${activeTab === "about" ? "text-white border-b-2 border-white font-semibold" : isDarkMode ? "text-gray-400" : "text-gray-600"}`}
-                onClick={() => setActiveTab("about")}
+                className={`pb-2 ${ProfileActiveTab === "about" ? "text-white border-b-2 border-white font-semibold" : isDarkMode ? "text-gray-400" : "text-gray-600"}`}
+                onClick={() => setProfileActiveTab("about")}
               >
                 {t('About Me')}
               </button>
               <button
-                className={`pb-2 ${activeTab === "mutual_friends" ? "text-white border-b-2 border-white font-semibold" : isDarkMode ? "text-gray-400" : "text-gray-600"}`}
-                onClick={() => setActiveTab("mutual_friends")}
+                className={`pb-2 ${ProfileActiveTab === "mutual_friends" ? "text-white border-b-2 border-white font-semibold" : isDarkMode ? "text-gray-400" : "text-gray-600"}`}
+                onClick={() => setProfileActiveTab("mutual_friends")}
               >
                 {t('Mutual Friends')}
               </button>
               <button
-                className={`pb-2 ${activeTab === "mutual_servers" ? "text-white border-b-2 border-white font-semibold" : isDarkMode ? "text-gray-400" : "text-gray-600"}`}
-                onClick={() => setActiveTab("mutual_servers")}
+                className={`pb-2 ${ProfileActiveTab === "mutual_servers" ? "text-white border-b-2 border-white font-semibold" : isDarkMode ? "text-gray-400" : "text-gray-600"}`}
+                onClick={() => setProfileActiveTab("mutual_servers")}
               >
                 {t('Mutual Servers')}
               </button>
@@ -148,7 +174,7 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
 
           {/* Tab content */}
           <div className="space-y-4">
-            {activeTab === "about" && (
+            {ProfileActiveTab === "about" && (
               <>
                 <div className="flex items-center">
                   <h3 className="text-xs font-semibold uppercase w-32 text-gray-400">
@@ -174,8 +200,8 @@ export default function FriendProfile({ friend, onClose, isFriend = true }) {
                 )}
               </>
             )}
-            {activeTab === "mutual_friends" && <p className="text-gray-400">{t('No mutual friends')}</p>}
-            {activeTab === "mutual_servers" && <p className="text-gray-400">{t('No mutual servers')}</p>}
+            {ProfileActiveTab === "mutual_friends" && <p className="text-gray-400">{t('No mutual friends')}</p>}
+            {ProfileActiveTab === "mutual_servers" && <p className="text-gray-400">{t('No mutual servers')}</p>}
           </div>
         </div>
       </div>

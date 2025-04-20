@@ -13,7 +13,11 @@ import UserService from "../../services/UserService";
 import { useSelector, useDispatch } from "react-redux";
 import { setSelectedFriend, setActiveTab } from "../../redux/homeSlice";
 
-export default function FriendList({ refreshFriends }) {
+export default function FriendList({
+  setActiveTab,
+  setSelectedFriend,
+  refreshFriends,
+}) {
   const { t } = useTranslation();
   const [showMenuForFriend, setShowMenuForFriend] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -29,6 +33,10 @@ export default function FriendList({ refreshFriends }) {
   const handleMessage = (friend) => {
     dispatch(setSelectedFriend(friend.username));
     dispatch(setActiveTab("friend"));
+    //console.log("Message friend:", friend);
+    // Xử lý mở DM, chuyển tab chat, v.v.
+    setSelectedFriend(friend.id);
+    setActiveTab("friend");
   };
 
   // Handle options in the three-dot menu

@@ -162,7 +162,7 @@ export default function Home({ user }) {
   };
 
   const selectedFriendObj = selectedFriend
-    ? friends.find((f) => f.username === selectedFriend)
+    ? friends.find((f) => f._id === selectedFriend)
     : null;
 
   const handleFriendAction = async (action, friend) => {
@@ -369,7 +369,13 @@ export default function Home({ user }) {
                   <Bell size={20} className="text-gray-400" />
                 </div>
               </div>
-
+              {/* Log activeTab and selectedFriend for debugging */}
+              {(() => {
+                console.log("activeTab:", activeTab);
+                console.log("Friend:", selectedFriend);
+                console.log("Friends:", friends);
+                console.log("selectedFriendObj:", selectedFriendObj);
+              })()}{" "}
               {/* Nội dung chính DM */}
               <Suspense fallback={<div>Loading Main Content...</div>}>
                 {activeTab === "friends" ? (
@@ -418,6 +424,10 @@ export default function Home({ user }) {
         {showProfile && selectedProfileFriend && (
           <FriendProfile
             friend={selectedProfileFriend}
+            setActiveTab={(tab) => dispatch(setActiveTab(tab))}
+            setSelectedFriend={(friend) => {
+              dispatch(setSelectedFriend(friend));
+            }}
             onClose={() => {
               dispatch(setShowProfile(false));
               dispatch(setSelectedProfileFriend(null));

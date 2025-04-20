@@ -1,0 +1,58 @@
+type Query {
+
+  fetchMessagesBefore(
+    serverId: String!
+    channelId: String!
+    amount: Int!
+    timestamp: String!
+  ): FetchMessage
+
+  fetchMessagesAfter(
+    serverId: String!
+    channelId: String!
+    amount: Int!
+    timestamp: String!
+  ): FetchMessage
+
+  searchMessages(
+    content: String!
+    serverId: String!
+    channelId: String!
+  ): [Message]
+
+}
+
+type Mutation {
+    
+  editMessage(
+    serverId: String!
+    channelId: String!
+    messageId: String!
+    content: String!
+  ): Message
+
+  deleteMessage(
+    serverId: String!
+    channelId: String!
+    messageId: String!
+  ): Boolean
+
+}
+
+type FetchMessage {
+  messages: [Message!]!
+  lastMessageTimestamp: String!
+  hasMore: Boolean!
+  amount: Int!
+}
+
+type Message {
+  messageId: String!
+  serverId: String!
+  channelId: String!
+  senderId: String!
+  content: String!
+  attachments: [String]
+  mentions: [String]
+  timestamp: String!
+}

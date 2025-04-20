@@ -42,7 +42,6 @@ const SocialLogin = ({ onError }) => {
         return navigate("/");
       }
     } catch (err) {
-      console.log("1232");
       navigate("/login");
       console.error("Google login error:", err);
       onError("Google login failed: " + err.message);

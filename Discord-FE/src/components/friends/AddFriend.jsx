@@ -53,7 +53,7 @@ export default function AddFriend() {
       }
 
       const data = await response;
-      console.log("Friend request sent:", data);
+      //console.log("Friend request sent:", data);
       setSuccessMessage("Friend request sent successfully!");
     } catch (error) {
       setErrorMessage(error.response.data.error);
