@@ -27,12 +27,12 @@ export const uploadFile = async (file) => {
         );
         // Response dạng chuỗi ví dụ: "File uploaded successfully: https://storage.googleapis.com/discord_clone/your-file-name.png"
         const message = response.data;
-        console.log(message)
+        //console.log(message)
         const prefix = "File uploaded successfully: ";
         const url = message.startsWith(prefix)
             ? message.replace(prefix, "").trim()
             : message;
-        console.log("Uploaded file URL:", url);
+        //console.log("Uploaded file URL:", url);
         return { url };
     } catch (error) {
         console.error("Error uploading file:", error);

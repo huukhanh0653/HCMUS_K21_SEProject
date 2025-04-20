@@ -10,7 +10,10 @@ import {
 import { useTheme } from "../layout/ThemeProvider";
 //import { User_API } from "../../../apiConfig";
 
-export default function FriendList() {
+export default function FriendList({
+  setActiveTab,
+  setSelectedFriend,
+}) {
   const { t } = useTranslation();
   const [friends, setFriends] = useState([]);
   const [showMenuForFriend, setShowMenuForFriend] = useState(null);
@@ -51,8 +54,10 @@ export default function FriendList() {
 
   // Xử lý nút Message
   const handleMessage = (friend) => {
-    console.log("Message friend:", friend);
+    //console.log("Message friend:", friend);
     // Xử lý mở DM, chuyển tab chat, v.v.
+    setSelectedFriend(friend.id);
+    setActiveTab("friend");
   };
 
   // Xử lý các option trong menu 3 chấm

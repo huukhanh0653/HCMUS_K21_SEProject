@@ -162,7 +162,7 @@ const DMSidebar = ({
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => {
-                    setSelectedFriend(friend.username);
+                    setSelectedFriend(friend._id);
                     setShowAddFriend(false);
                     setActiveTab("friend");
                   }}

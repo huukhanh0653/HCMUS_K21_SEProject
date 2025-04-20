@@ -140,11 +140,11 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
   }, [messages]);
 
 
-  // Send a new message
+  // Hàm gửi tin nhắn qua API (POST)
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !friend) return;
 
-    // Upload all files, gather URLs
+    // Upload tất cả các files, lấy URLs
     let uploadedUrls = [];
     if (files.length > 0) {
       try {
