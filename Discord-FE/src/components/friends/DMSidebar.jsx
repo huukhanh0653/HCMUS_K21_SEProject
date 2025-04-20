@@ -1,5 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Plus, UserPlus,  Search, UserX, ShieldOff } from "lucide-react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
+import { Plus, UserPlus, Search, UserX, ShieldOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import FriendContextMenu from "./FriendContextMenu";
 import { useSelector } from "react-redux";
@@ -33,9 +39,9 @@ const DMSidebar = ({
   const fuse = useMemo(() => {
     return new Fuse(friends, {
       keys: ["username"],
-      threshold: 0.3,        // độ tương đồng, <0.3 chặt hơn
+      threshold: 0.3, // độ tương đồng, <0.3 chặt hơn
       distance: 100,
-      includeMatches: true,  // để highlight
+      includeMatches: true, // để highlight
     });
   }, [friends]);
 
