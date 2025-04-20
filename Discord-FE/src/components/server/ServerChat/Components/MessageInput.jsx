@@ -14,6 +14,8 @@ export default function MessageInput({
   onSend,
   t,
   channelName,
+  files,
+  setFiles,
 }) {
   const editorRef = useRef(null);
   const inputRef = useRef(null);
@@ -25,9 +27,9 @@ export default function MessageInput({
   const [mentionUsers, setMentionUsers] = useState([]);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
 
-  // — file upload state —
-  const [showFile, setShowFile] = useState([]);
-  const [uploadedUrls, setUploadedUrls] = useState([]);
+  // Thêm/xóa file object vào state
+  const handleFileSelect = (file) => setFiles(prev => [...prev, file]);
+  const handleRemoveFile = (fileName) => setFiles(prev => prev.filter(f => f.name !== fileName));
 
   // — emoji picker / suggestions state —
   const [showEmojiMenu, setShowEmojiMenu] = useState(false);
@@ -137,7 +139,7 @@ export default function MessageInput({
       e.preventDefault();
       const text = getText().trim();
       if (text || uploadedUrls.length) {
-        onSend({ content: text, files: uploadedUrls });
+        onSend({ content: text});
         editorRef.current.innerHTML = "";
         onChange("");
         setShowFile([]);
@@ -145,20 +147,6 @@ export default function MessageInput({
       }
     }
   };
-
-  // file upload
-  const handleFileSelect = async (file) => {
-    setShowFile((p) => [...p, file]);
-    try {
-      const { url } = await StorageService.uploadFile(file);
-      setUploadedUrls((u) => [...u, url]);
-    } catch {
-      console.warn("Upload failed");
-    }
-  };
-
-  const handleRemoveFile = (name) =>
-    setShowFile((p) => p.filter((f) => f.name !== name));
 
   // emoji menu click
   const handleEmojiClick = (emoji) => {
@@ -188,7 +176,7 @@ export default function MessageInput({
   return (
     <div className={`absolute bottom-0 left-0 right-0 ${containerCls} rounded-lg p-2`}>
       <ShowFile
-        files={showFile}
+        files={files}
         onRemoveFile={handleRemoveFile}
         onFileSelect={handleFileSelect}
       />

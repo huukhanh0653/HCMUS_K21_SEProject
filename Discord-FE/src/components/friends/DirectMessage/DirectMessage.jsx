@@ -9,6 +9,7 @@ import {
   useFetchMessagesBefore,
   useFetchMessagesAfter,
 } from "../../../services/newMessageService";
+import StorageService from "../../../services/StorageService";
 
 
 export default function DirectMessage({ friend, messages: initialMessages = [] }) {
@@ -29,6 +30,10 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
   const [editedContent, setEditedContent] = useState("");
   const [lastTimestamp, setLastTimestamp] = useState(new Date().toISOString());
   const [hasMore, setHasMore] = useState(false);
+  const [skipAutoScroll, setSkipAutoScroll] = useState(false);   // flag để tạm không auto-scroll khi load tin cũ
+
+  //Biến lưu file chuẩn bị trước khi gửi tin nhắn
+  const [files, setFiles] = useState([]);
   
   // Refs
   const stompClientRef = useRef(null);
@@ -111,9 +116,10 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
     }
   }, [fetchMoreBefore, serverId, channelId]);
 
-  // Infinite scroll: load older messages
+  // Load tin nhắn cũ (infinite scroll)
   const loadOlder = useCallback(async () => {
     if (!hasMore) return;
+    setSkipAutoScroll(true);
     const { data } = await fetchMoreBefore({
       variables: { serverId, channelId, amount: 20, timestamp: lastTimestamp },
     });
@@ -124,8 +130,12 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
     setLastTimestamp(lastMessageTimestamp);
   }, [hasMore, lastTimestamp, fetchMoreBefore, serverId, channelId]);
 
-  // Auto-scroll when messages change
+  // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
+    if (skipAutoScroll) {
+      setSkipAutoScroll(false);
+      return;
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -133,13 +143,27 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
   // Send a new message
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !friend) return;
+
+    // Upload all files, gather URLs
+    let uploadedUrls = [];
+    if (files.length > 0) {
+      try {
+        const uploads = files.map(file => StorageService.uploadFile(file));
+        const results = await Promise.all(uploads);
+        uploadedUrls = results.map(r => r.url);
+      } catch (err) {
+        console.error("File upload error:", err);
+        toast.error("Upload file thất bại");
+      }
+    }
+
     const payload = {
       messageId: "msg-" + Date.now(), // Tạo id dựa trên timestamp
       senderId: user.id || "unknown", // Nếu không có thông tin user, để "unknown"
       serverId: serverId,
       channelId: channelId, // Hoặc lấy từ channel.id nếu cần
       content: messageInput,
-      attachments: [], // Nếu có file đính kèm, cập nhật mảng này
+      attachments: uploadedUrls, // Nếu có file đính kèm, cập nhật mảng này
     };
 
     try {
@@ -152,6 +176,7 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
       console.error("Error sending message:", err);
     }
     setMessageInput("");
+    setFiles([]);
     if (inputRef.current) inputRef.current.style.height = "36px";
   };
 
@@ -184,6 +209,8 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
         handleDeleteMessage={handleDeleteMessage}
         handleSaveEdit={handleSaveEdit}
         messagesEndRef={messagesEndRef}
+        loadOlder={loadOlder}
+        hasMore={hasMore}
       />
       <MessageInput
         t={t}
@@ -192,6 +219,8 @@ export default function DirectMessage({ friend, messages: initialMessages = [] }
         handleSendMessage={handleSendMessage}
         inputRef={inputRef}
         friend={friend}
+        files={files}
+        setFiles={setFiles}
       />
     </div>
   );

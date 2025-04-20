@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, File, PlayCircle, Eye, Download } from "lucide-react";
 import SampleAvt from "../../../../assets/sample_avatar.svg";
 import { useTranslation } from "react-i18next";
 
@@ -14,6 +14,8 @@ export default function MessageList({
   handleDeleteMessage,
   handleSaveEdit,
   messagesEndRef,
+  loadOlder,
+  hasMore,
 }) {
   const { i18n } = useTranslation();
 
@@ -35,8 +37,17 @@ export default function MessageList({
       });
   }, [messages]);
 
+  // GỌi thêm tin nhắn khi kéo scrollbar lên trên
+  const handleScroll = e => {
+    // when scroll hits (or nears) the top, fetch older
+    if (e.target.scrollTop <= 0 && hasMore) {
+      loadOlder();
+    }
+  };
+
   return (
     <div
+      onScroll={handleScroll}
       className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
       style={{
         minHeight: '200px',
@@ -114,6 +125,46 @@ export default function MessageList({
                 ) : (
                   <p className="text-gray-100 break-words whitespace-pre-wrap text-left mt-1 pr-14">{msg.content}</p>
                 )}
+
+                {/* Attachments preview with view/download at top-right */}
+                {msg.attachments && msg.attachments.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {msg.attachments.map((url, i) => {
+                      const filename = url.substring(url.lastIndexOf('/') + 1).split('?')[0];
+                      const ext = filename.split('.').pop().toLowerCase();
+                      const isImage = ['jpg','jpeg','png','gif','svg'].includes(ext);
+                      const isVideo = ['mp4','webm','ogg','mov'].includes(ext);
+
+                      return (
+                        <div key={i} className="relative w-24 h-24 bg-[#404249] rounded-lg overflow-hidden">
+                          {isImage && (
+                            <img src={url} alt={filename} className="w-full h-full object-cover" />
+                          )}
+                          {isVideo && (
+                            <video src={url} controls className="w-full h-full object-cover" />
+                          )}
+                          {!isImage && !isVideo && (
+                            <div className="flex flex-col items-center justify-center w-full h-full text-gray-200 p-2">
+                              <File size={24} />
+                              <span className="mt-1 text-xs truncate">{filename}</span>
+                            </div>
+                          )}
+
+                          {/* View/Download buttons at top-right */}
+                          <div className="absolute top-1 right-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                            <button onClick={() => window.open(url, '_blank')} className="p-1 bg-black bg-opacity-50 rounded">
+                              <Eye size={16} className="text-white" />
+                            </button>
+                            <a href={url} download={filename} className="p-1 bg-black bg-opacity-50 rounded">
+                              <Download size={16} className="text-white" />
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {isMine && (
                   <div className="absolute top-0 right-0 hidden group-hover:flex items-center gap-2">
                     <button

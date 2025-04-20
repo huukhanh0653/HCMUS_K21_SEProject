@@ -14,35 +14,20 @@ export default function MessageInput({
   t,
   friend,
   inputRef,
+  files,
+  setFiles,
 }) {
-  const [showUpload, setShowUpload] = useState(false);
-  const [showFile, setShowFile] = useState([]);
-  const [uploadedUrls, setUploadedUrls] = useState([]);
-  const [showEmojiMenu, setShowEmojiMenu] = useState(false);
+  
   const { isDarkMode } = useTheme();
+  const [showEmojiMenu, setShowEmojiMenu] = useState(false);
 
-  // State cho các gợi ý emoji dựa theo từ khóa bắt đầu bằng dấu :
+  // Gợi ý emoji
+  const allEmojis = Object.values(emojiGroups).flat();
   const [emojiSuggestions, setEmojiSuggestions] = useState([]);
 
-  // Tạo mảng các emoji từ tất cả các nhóm để lọc cho gợi ý
-  const allEmojis = Object.values(emojiGroups).flat();
-
-  // Xử lý file chọn và upload qua StorageService
-  const handleFileSelect = async (file) => {
-    setShowFile((prev) => [...prev, file]);
-    try {
-      const { url } = await StorageService.uploadFile(file);
-      setUploadedUrls((prev) => [...prev, url]);
-    } catch (error) {
-      console.warn("File upload failed:", error);
-    }
-    setShowUpload(false);
-  };
-  console.log(friend);
-
-  const handleRemoveFile = (fileName) => {
-    setShowFile((prev) => prev.filter((file) => file.name !== fileName));
-  };
+  // Thêm/xóa file object vào state
+  const handleFileSelect = (file) => setFiles(prev => [...prev, file]);
+  const handleRemoveFile = (fileName) => setFiles(prev => prev.filter(f => f.name !== fileName));
 
   // Kiểm tra từ khóa emoji xuất hiện ở cuối messageInput
   const checkEmojiKeyword = (text) => {
@@ -59,9 +44,7 @@ export default function MessageInput({
   };
 
   // Cập nhật gợi ý mỗi khi messageInput thay đổi
-  useEffect(() => {
-    checkEmojiKeyword(messageInput);
-  }, [messageInput]);
+  useEffect(() => { checkEmojiKeyword(messageInput); }, [messageInput]);
 
   const handleKeyDown = (e) => {
     // Khi nhấn TAB và có gợi ý emoji, thực hiện autocomplete
@@ -85,14 +68,6 @@ export default function MessageInput({
     }
   };
 
-  const handleSendClick = () => {
-    const trimmedMessage = messageInput.trim();
-    if (trimmedMessage !== "") {
-      handleSendMessage(trimmedMessage);
-      setMessageInput("");
-    }
-  };
-
   // Khi chọn emoji từ menu, chèn vào messageInput
   const handleEmojiSelect = (emoji) => {
     setMessageInput((prev) => prev + emoji.unicode);
@@ -103,6 +78,7 @@ export default function MessageInput({
     }
   };
 
+  // Auto-resize textarea
   useEffect(() => {
     if (inputRef?.current) {
       // Điều chỉnh chiều cao của textarea tự động theo nội dung
@@ -128,7 +104,7 @@ export default function MessageInput({
     <div className={`absolute bottom-0 left-0 right-0 ${containerClass} border border-gray-400 rounded-lg p-2`}>
       <div className="flex flex-col">
         <ShowFile
-          files={showFile}
+          files={files}
           onRemoveFile={handleRemoveFile}
           onFileSelect={handleFileSelect}
         />
@@ -151,7 +127,7 @@ export default function MessageInput({
             }}
           />
 
-          <button className={EmojiButtonClass} onClick={handleSendClick}>
+          <button className={EmojiButtonClass}>
             <SmilePlus
               size={20}
               className="text-gray-200"

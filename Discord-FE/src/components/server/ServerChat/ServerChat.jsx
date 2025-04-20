@@ -14,6 +14,7 @@ import MessageList from "./Components/MessageList";
 import MessageInput from "./Components/MessageInput";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
+import StorageService from "../../../services/StorageService";
 
 // newMessageService exports
 import {
@@ -41,6 +42,10 @@ export default function ServerChat(props) {
   const [searchTerm, setSearchTerm] = useState("");
   const [lastTimestamp, setLastTimestamp] = useState(new Date().toISOString());
   const [hasMore, setHasMore] = useState(false);
+  const [skipAutoScroll, setSkipAutoScroll] = useState(false);   // flag để tạm không auto-scroll khi load tin cũ
+
+  //Biến lưu file chuẩn bị trước khi gửi tin nhắn
+  const [files, setFiles] = useState([]);
 
   // Refs
   const stompClientRef = useRef(null);
@@ -181,13 +186,17 @@ export default function ServerChat(props) {
 
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
-    console.log("Có tin mới")
+    if (skipAutoScroll) {
+      setSkipAutoScroll(false);
+      return;
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   // Load tin nhắn cũ (infinite scroll)
   const loadOlder = useCallback(async () => {
     if (!hasMore) return;
+    setSkipAutoScroll(true);
     const { data } = await fetchMoreBefore({ variables: { serverId, channelId, amount: 20, timestamp: lastTimestamp } });
     console.log("Data:",data);
     const { messages: older, hasMore: more, lastMessageTimestamp } = data.fetchMessagesBefore;
@@ -209,13 +218,27 @@ export default function ServerChat(props) {
   // Hàm gửi tin nhắn qua API (POST)
   const handleSendMessage = async () => {
     if (!messageInput.trim()) return;
+
+    // Upload tất cả các files, lấy URLs
+    let uploadedUrls = [];
+    if (files.length > 0) {
+      try {
+        const uploads = files.map(file => StorageService.uploadFile(file));
+        const results = await Promise.all(uploads);
+        uploadedUrls = results.map(r => r.url);
+      } catch (err) {
+        console.error("File upload error:", err);
+        toast.error("Upload file thất bại");
+      }
+    }
+
     const payload = {
       messageId: "msg-" + Date.now(), // Tạo id dựa trên timestamp
       senderId: user.id || "unknown", // Nếu không có thông tin user, để "unknown"
       serverId: server.id,
       channelId: channel.id, // Hoặc lấy từ channel.id nếu cần
       content: messageInput,
-      attachments: [], // Nếu có file đính kèm, cập nhật mảng này
+      attachments: uploadedUrls, // Nếu có file đính kèm, cập nhật mảng này
     };
 
     try {
@@ -236,6 +259,7 @@ export default function ServerChat(props) {
     }
 
     setMessageInput("");
+    setFiles([]);
     if (inputRef.current) inputRef.current.style.height = "40px";
   };
 
@@ -309,6 +333,8 @@ export default function ServerChat(props) {
         handleSaveEdit={handleSaveEdit}
         messagesWrapperRef={messagesWrapperRef}
         messagesEndRef={messagesEndRef}
+        loadOlder={loadOlder}
+        hasMore={hasMore}
       />
 
       <MessageInput
@@ -318,6 +344,8 @@ export default function ServerChat(props) {
         onChange={setMessageInput}
         onSend={handleSendMessage}
         channelName={channel?.name || ""}
+        files={files}
+        setFiles={setFiles}
       />
     </div>
   );
