@@ -22,6 +22,7 @@ FROM nginx:stable-alpine
 # Copy file build từ bước trước vào thư mục phục vụ của Nginx
 COPY --from=0 /app/dist /usr/share/nginx/html
 
+EXPOSE 80
 EXPOSE 5173
 
 

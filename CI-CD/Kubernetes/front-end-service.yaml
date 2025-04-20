@@ -18,7 +18,7 @@ spec:
       - name: echo-chat-front-end-service
         image: huukhanh0653/echo-chat-front-end-service:latest
         ports:
-        - containerPort: 5173
+        - containerPort: 80
         env:
         - name: VITE_FIREBASE_API_KEY
           value: "AIzaSyBKlHIrMJDTZbNPK3xl8x1MoSNZTFYSAFQ"
@@ -65,6 +65,6 @@ spec:
     app: echo-chat-front-end-service
   ports:
     - protocol: TCP
-      port: 5173
-      targetPort: 5173
+      port: 80
+      targetPort: 80
   type: NodePort # Exposes the service internally within the cluster

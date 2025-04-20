@@ -37,13 +37,6 @@ spec:
                 name: storage-service
                 port:
                   number: 8083
-          - path: /api/notification
-            pathType: Prefix
-            backend:
-              service:
-                name: notification-service
-                port:
-                  number: 8085
           - path: /api/server-channel
             pathType: Prefix
             backend:
@@ -51,3 +44,24 @@ spec:
                 name: echo-chat-manage-server-service
                 port:
                   number: 8084
+          - path: /api/notification
+            pathType: Prefix
+            backend:
+              service:
+                name: notification-service
+                port:
+                  number: 8085
+          - path: /api/voice
+            pathType: Prefix
+            backend:
+              service:
+                name: echo-chat-voice-service
+                port:
+                  number: 8086
+          - path: /ui
+            pathType: Prefix
+            backend:
+              service:
+                name: echo-chat-front-end-service
+                port:
+                  number: 80

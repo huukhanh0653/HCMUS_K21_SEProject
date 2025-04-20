@@ -1,13 +1,5 @@
 name: Build Docker Images
 
-# on:
-#   workflow_run:
-#     workflows: ["Run Unit Tests"]  # 🔥 Chỉ chạy khi CI build thành công
-#     types:
-#       - completed
-#     status:
-#       - success  # Chỉ chạy khi các bài test đã passed
-
 on:
   push:
     branches: ["master"]
@@ -70,6 +62,12 @@ jobs:
           file: ./Discord-FE/Dockerfile
           push: true
           tags: huukhanh0653/echo-chat-front-end-service:latest
+          build-args: |
+            VITE_USER_API=https://34.126.79.147.nip.io/api/user
+            VITE_MESSAGE_API=https://34.126.79.147.nip.io/api/message
+            VITE_STORAGE_API=https://34.126.79.147.nip.io/api/storage
+            VITE_SERVER_API=https://34.126.79.147.nip.io/api/server-channel
+            VITE_VOICE_API=https://34.126.79.147.nip.io/api/voice
 
       - name: Build and Push Notification Service
         uses: docker/build-push-action@v4
