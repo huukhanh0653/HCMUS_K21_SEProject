@@ -41,7 +41,7 @@ export class ServerMemberService {
     const ban = await this.banRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
     });
-    if (ban) throw new Error('This user has been banned in this server');
+    if (ban) return { message: 'This user has been banned in this server' };
 
     const role = await this.roleService.getRoleByName(serverId, data.role!);
     if (!role) throw new Error('Role not found');
@@ -81,7 +81,7 @@ export class ServerMemberService {
     const ban = await this.banRepository.findOne({
       where: { server_id: serverId, user_id: data.memberId },
     });
-    if (ban) throw new Error('This member has been banned in this server');
+    if (ban) return { message: 'This user has been banned in this server' };
 
     const role = await this.roleService.getRoleByName(serverId, data.role!);
     if (!role) throw new Error('Role not found');
