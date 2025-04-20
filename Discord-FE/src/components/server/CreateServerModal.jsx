@@ -143,13 +143,13 @@ export default function CreateServerModal({ onClose, onCreated, onLoad }) {
       if (!userId) throw new Error(t("User not logged in"));
 
       // Thêm thành viên vào server với role Member
-      const { message } = await ServerChannelService.joinServer(
+      const { message, member } = await ServerChannelService.joinServer(
         foundServer.id,
         { memberId: userId, role: "Member" }
       );
 
       // Nếu đã bị ban thì không tham gia được
-      if (message === "This user has been banned in this server") {
+      if (!member) {
         toast.error(t(`${message}`));
         return;
       }

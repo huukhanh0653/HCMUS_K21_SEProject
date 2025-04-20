@@ -6,6 +6,7 @@ const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const userRoutes = require("./src/routes/userRoutes");
 const friendRoutes = require("./src/routes/friendRoutes");
+const blockRoutes = require("./src/routes/blockRoutes");
 const sequelize = require("./src/config/postgres");
 
 const app = express();
@@ -48,5 +49,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use("/api/users", userRoutes);
 app.use("/api/friends", friendRoutes);
+app.use("/api/blocks", blockRoutes);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
