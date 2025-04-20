@@ -11,7 +11,6 @@ import { useTheme } from "../layout/ThemeProvider";
 import toast from "react-hot-toast";
 import UserService from "../../services/UserService";
 import { useSelector, useDispatch } from "react-redux";
-import { setSelectedFriend, setActiveTab } from "../../redux/homeSlice";
 
 export default function FriendList({
   setActiveTab,
@@ -31,8 +30,6 @@ export default function FriendList({
 
   // Handle Message button
   const handleMessage = (friend) => {
-    dispatch(setSelectedFriend(friend.username));
-    dispatch(setActiveTab("friend"));
     //console.log("Message friend:", friend);
     // Xử lý mở DM, chuyển tab chat, v.v.
     setSelectedFriend(friend.id);
@@ -118,7 +115,7 @@ export default function FriendList({
           isDarkMode ? "text-gray-400" : "text-gray-600"
         }`}
       >
-        {t("Your friends are listed below.")}
+        {t("Your friends are listed below")}
       </p>
 
       {/* Friends list */}

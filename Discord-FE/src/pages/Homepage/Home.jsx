@@ -379,7 +379,13 @@ export default function Home({ user }) {
               {/* Nội dung chính DM */}
               <Suspense fallback={<div>Loading Main Content...</div>}>
                 {activeTab === "friends" ? (
-                  <FriendList refreshFriends={refreshFriends} />
+                  <FriendList
+                    setActiveTab={(tab) => dispatch(setActiveTab(tab))}
+                    setSelectedFriend={(friend) => {
+                      dispatch(setSelectedFriend(friend));
+                    }}
+                    refreshFriends={refreshFriends}
+                  />
                 ) : activeTab === "addfriend" ? (
                   <AddFriend />
                 ) : activeTab === "friend_requests" ? (

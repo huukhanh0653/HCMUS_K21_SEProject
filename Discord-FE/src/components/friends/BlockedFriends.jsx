@@ -57,7 +57,7 @@ const BlockedFriends = ({ onUnblock }) => {
             isDarkMode ? "text-white" : "text-gray-800"
           }`}
         >
-          {t("Blocked Friends")}
+          {t("Blocked friends")}
         </h2>
         {blockedFriends.length > 0 ? (
           blockedFriends.map((friend, index) => (
