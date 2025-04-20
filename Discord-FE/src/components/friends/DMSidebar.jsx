@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Plus, UserPlus } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { Plus, UserPlus,  Search, UserX, ShieldOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import FriendContextMenu from "./FriendContextMenu";
 import { useSelector } from "react-redux";
