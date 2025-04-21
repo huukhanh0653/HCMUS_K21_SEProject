@@ -78,7 +78,7 @@ export default function InviteServerModal({
     setInviteError(null);
     try {
       // Gọi đúng theo định nghĩa trong ServerChannelService:
-      const { message } = await ServerChannelService.addServerMember(
+      const { message, member } = await ServerChannelService.addServerMember(
         server.id,
         user.id,
         {
@@ -86,8 +86,10 @@ export default function InviteServerModal({
           role: "Member",
         }
       );
+      console.log(message);
+
       // Sau khi mời thành công, loại bỏ bạn khỏi list (nếu bị ban thì không loại bỏ)
-      if (message !== "This user has been banned in this server") {
+      if (member) {
         setFriends((prev) => prev.filter((f) => f.id !== friend.id));
         toast.success(t("Invited member successfully"));
         onInviteSuccess();

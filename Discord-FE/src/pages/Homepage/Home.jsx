@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "../../components/layout/ThemeProvider";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 // Redux actions
 import {
@@ -37,6 +38,9 @@ const FriendList = lazy(() => import("../../components/friends/FriendList"));
 const AddFriend = lazy(() => import("../../components/friends/AddFriend"));
 const FriendRequests = lazy(() =>
   import("../../components/friends/FriendRequests")
+);
+const BlockedFriends = lazy(() =>
+  import("../../components/friends/BlockedFriends")
 );
 const DirectMessage = lazy(() =>
   import("../../components/friends/DirectMessage/DirectMessage")
@@ -107,23 +111,27 @@ export default function Home({ user }) {
   const currentUser = JSON.parse(localStorage.getItem("user")) || {};
 
   // Fetch dữ liệu bạn bè và yêu cầu kết bạn khi component mount
+  const refreshFriends = async () => {
+    try {
+      const data = await UserService.getFriends(currentUser.id);
+      const transformed = data.map((friend) => ({
+        _id: friend.id,
+        username: friend.username,
+        email: friend.email,
+        avatar: friend.avatar,
+        status: "Offline",
+      }));
+      dispatch(setFriends(transformed));
+    } catch (error) {
+      console.error("Failed to fetch friends data");
+    }
+  };
+
   useEffect(() => {
     if (!currentUser.id) return;
 
     const fetchFriends = async () => {
-      try {
-        const data = await UserService.getFriends(currentUser.id);
-        const transformed = data.map((friend) => ({
-          _id: friend.id,
-          username: friend.username,
-          email: friend.email,
-          avatar: friend.avatar,
-          status: "Offline",
-        }));
-        dispatch(setFriends(transformed));
-      } catch (error) {
-        console.error("Failed to fetch friends data");
-      }
+      await refreshFriends();
     };
 
     const fetchRequests = async () => {
@@ -157,20 +165,39 @@ export default function Home({ user }) {
     ? friends.find((f) => f._id === selectedFriend)
     : null;
 
-  const handleFriendAction = (action, friend) => {
+  const handleFriendAction = async (action, friend) => {
     switch (action) {
       case "profile":
         dispatch(setSelectedProfileFriend(friend));
         dispatch(setShowProfile(true));
         break;
       case "unfriend":
-        console.log(`Unfriend ${friend.username}`);
+        try {
+          await UserService.removeFriend(currentUser.id, friend._id);
+          toast.success(t("Successfully unfriended friend"));
+          await refreshFriends();
+        } catch (error) {
+          console.error("Error unfriending friend:", error);
+          toast.error(t("Failed to unfriend"));
+        }
         break;
       case "block":
-        console.log(`Block ${friend.username}`);
+        try {
+          await UserService.addBlock(currentUser.id, friend._id);
+          toast.success(t("Successfully blocked friend"));
+          await refreshFriends();
+        } catch (error) {
+          console.error("Error blocking friend:", error);
+          toast.error(t("Failed to block"));
+        }
+        break;
+      case "message":
+        dispatch(setSelectedFriend(friend.username));
+        dispatch(setActiveTab("friend"));
+        dispatch(setShowAddFriend(false));
         break;
       default:
-        break;
+        console.log("Unknown action:", action);
     }
   };
 
@@ -198,6 +225,7 @@ export default function Home({ user }) {
       dispatch(
         setNewRequests(newRequests.filter((req) => req.id !== requestID))
       );
+      await refreshFriends();
     } catch (error) {
       console.error("Error accepting request:", error);
     }
@@ -286,7 +314,7 @@ export default function Home({ user }) {
                 friends={friends}
                 handleFriendAction={handleFriendAction}
                 getStatusColor={getStatusColor}
-                user={user}
+                refreshFriends={refreshFriends}
               />
             </Suspense>
             <div
@@ -306,7 +334,8 @@ export default function Home({ user }) {
                   }`}
                   onClick={() => {
                     if (selectedFriendObj) {
-                      // Xử lý khi nhấn vào profile của friend (nếu cần)
+                      dispatch(setSelectedProfileFriend(selectedFriendObj));
+                      dispatch(setShowProfile(true));
                     }
                   }}
                 >
@@ -341,20 +370,15 @@ export default function Home({ user }) {
                 </div>
               </div>
               
-              {/* Log activeTab and selectedFriend for debugging */}
-              {(() => {
-                console.log("activeTab:", activeTab);
-                console.log("Friend:", selectedFriend);
-                console.log("Friends:", friends);
-                console.log("selectedFriendObj:", selectedFriendObj);
-              })()}              {/* Nội dung chính DM */}
+              {/* Nội dung chính DM */}
               <Suspense fallback={<div>Loading Main Content...</div>}>
                 {activeTab === "friends" ? (
-                  <FriendList 
+                  <FriendList
                     setActiveTab={(tab) => dispatch(setActiveTab(tab))}
                     setSelectedFriend={(friend) => {
                       dispatch(setSelectedFriend(friend));
                     }}
+                    refreshFriends={refreshFriends}
                   />
                 ) : activeTab === "addfriend" ? (
                   <AddFriend />
@@ -364,6 +388,8 @@ export default function Home({ user }) {
                     onAccept={handleAcceptRequest}
                     onDecline={handleDeclineRequest}
                   />
+                ) : activeTab === "blocked_friends" ? (
+                  <BlockedFriends onUnblock={refreshFriends} />
                 ) : activeTab === "friend" && selectedFriendObj ? (
                   <DirectMessage friend={selectedFriendObj} messages={[]} />
                 ) : (

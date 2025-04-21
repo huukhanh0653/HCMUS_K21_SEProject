@@ -130,7 +130,6 @@ export default function UserProfile({ user, onClose }) {
     const updatedUser = {
       username: username.trim(),
       email: storedUser.email,
-      password: "", // Không cập nhật mật khẩu ở đây
       avatar: avatarUrl,
       background: backgroundUrl,
       is_admin: storedUser.is_admin,
@@ -148,7 +147,7 @@ export default function UserProfile({ user, onClose }) {
       }
 
       const responseData = await res.json();
-      console.log("✅ User updated:", responseData);
+      //console.log("✅ User updated:", responseData);
 
       const newUserData = {
         ...storedUser,
@@ -254,11 +253,11 @@ export default function UserProfile({ user, onClose }) {
 
   const getTitle = () => {
     if (showEditProfile) {
-      return t("Edit Profile");
+      return "Edit Profile";
     } else if (showChangePassword) {
-      return t("Change Password");
+      return "Change Password";
     } else {
-      return t("My Account");
+      return "My Account";
     }
   };
 

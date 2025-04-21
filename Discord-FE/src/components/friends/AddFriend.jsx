@@ -56,7 +56,7 @@ export default function AddFriend() {
       //console.log("Friend request sent:", data);
       setSuccessMessage("Friend request sent successfully!");
     } catch (error) {
-      setErrorMessage("Error adding friend: " + error.message);
+      setErrorMessage(error.response.data.error);
     }
   };
 

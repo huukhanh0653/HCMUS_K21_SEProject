@@ -9,8 +9,6 @@ import {
   EmailAuthProvider,
   linkWithCredential,
 } from "firebase/auth";
-//import { User_API } from "../apiConfig";
-import toast from "react-hot-toast";
 
 // Firebase configuration
 const firebaseConfig = {
