@@ -7,5 +7,5 @@ npm install cors
 
 nodemon server.js
 
-url test api : http://localhost:80877/api-docs/
+url test api : http://localhost:8087/api-docs/
  

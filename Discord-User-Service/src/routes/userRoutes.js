@@ -83,8 +83,6 @@ router.get("/", async (req, res) => {
  *                 type: string
  *               email:
  *                 type: string
- *               password:
- *                 type: string
  *               avatar:
  *                 type: string
  *               background:
@@ -95,11 +93,11 @@ router.get("/", async (req, res) => {
  */
 router.post("/", async (req, res) => {
   try {
-    const { username, email, password, avatar, background } = req.body;
+    const { username, email, avatar, background } = req.body;
     const user = await UserService.createUser(
       username,
       email,
-      password,
+
       avatar,
       background
     );
@@ -219,8 +217,6 @@ router.get("/:id", async (req, res) => {
  *               username:
  *                 type: string
  *               email:
- *                 type: string
- *               password:
  *                 type: string
  *               avatar:
  *                 type: string
