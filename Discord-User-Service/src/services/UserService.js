@@ -1,15 +1,12 @@
 const User = require("../models/User");
-const bcrypt = require("bcrypt");
 const admin = require("../config/firebaseAdmin");
 
 class UserService {
   async createUser(username, email, password, avatar, background) {
     try {
-      const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
       return await User.create({
         username,
         email,
-        password: hashedPassword,
         avatar,
         background,
       });
@@ -88,9 +85,7 @@ class UserService {
 
   async updateUser(id, updates) {
     try {
-      if (updates.password) {
-        updates.password = await bcrypt.hash(updates.password, 10);
-      }
+
       const [updatedCount, updatedUsers] = await User.update(updates, {
         where: { id },
         returning: true,
